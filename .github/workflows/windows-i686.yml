@@ -1,0 +1,94 @@
+name: Windows 32-bit engine (source dependencies)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-i686:
+    runs-on: windows-latest
+    name: Build native Windows i686 SyndicatFX
+    defaults:
+      run:
+        shell: msys2 {0}
+        working-directory: upstream
+    steps:
+      - name: Checkout exact unmodified SyndicatFX engine
+        uses: actions/checkout@v4
+        with:
+          repository: swfans/syndicatfx
+          ref: 0.0.6.1022
+          path: upstream
+          persist-credentials: false
+      - name: Install current 32-bit packages
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          update: false
+          install: >-
+            git
+            unzip
+            wget
+            python
+            python-pip
+            autoconf
+            automake
+            libtool
+            make
+            cmake
+            ninja
+            mingw-w64-i686-toolchain
+            mingw-w64-i686-libpng
+            mingw-w64-i686-SDL2
+            mingw-w64-i686-libvorbis
+            mingw-w64-i686-libogg
+      - name: Install Python helper
+        run: |
+          /usr/bin/python -m pip install --break-system-packages polib
+      - name: Build 32-bit OpenAL Soft from source
+        run: |
+          git clone --depth 1 --branch 1.24.3 https://github.com/kcat/openal-soft.git openal-source
+          cmake -S openal-source -B openal-build -G Ninja \
+            -DCMAKE_C_COMPILER=/mingw32/bin/gcc.exe \
+            -DCMAKE_CXX_COMPILER=/mingw32/bin/g++.exe \
+            -DCMAKE_RC_COMPILER=/mingw32/bin/windres.exe \
+            -DCMAKE_INSTALL_PREFIX=/mingw32 \
+            -DALSOFT_EXAMPLES=OFF -DALSOFT_UTILS=OFF -DALSOFT_TESTS=OFF
+          cmake --build openal-build
+          cmake --install openal-build
+      - name: Build 32-bit WildMIDI from source
+        run: |
+          git clone --depth 1 --branch wildmidi-0.4.5 https://github.com/Mindwerks/wildmidi.git wildmidi-source
+          cmake -S wildmidi-source -B wildmidi-build -G Ninja \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_C_COMPILER=/mingw32/bin/gcc.exe \
+            -DCMAKE_CXX_COMPILER=/mingw32/bin/g++.exe \
+            -DCMAKE_INSTALL_PREFIX=/mingw32
+          cmake --build wildmidi-build
+          cmake --install wildmidi-build
+      - name: Regenerate configure scripts
+        run: autoreconf -ivf
+      - name: Configure native 32-bit game
+        env:
+          CFLAGS: -m32
+          CXXFLAGS: -m32
+          LDFLAGS: -m32
+        run: |
+          mkdir -p release
+          cd release
+          ../configure --prefix=/ --enable-lbs-structs-expand
+      - name: Compile original engine
+        run: make -C release V=1
+      - name: Stage native Windows executable
+        run: |
+          cd release
+          make V=1 DESTDIR="$PWD/pkg" install
+      - name: Upload 32-bit executable without retail data
+        uses: actions/upload-artifact@v4
+        with:
+          name: syndicatfx-windows-i686-unmodified
+          path: upstream/release/pkg/**
+          if-no-files-found: error
+          retention-days: 14
