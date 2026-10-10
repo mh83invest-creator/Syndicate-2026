@@ -55,6 +55,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=/mingw32/bin/g++.exe \
             -DCMAKE_RC_COMPILER=/mingw32/bin/windres.exe \
             -DCMAKE_INSTALL_PREFIX=/mingw32 \
+            -DCMAKE_CXX_STANDARD_LIBRARIES='-lole32 -luuid' \
             -DALSOFT_EXAMPLES=OFF -DALSOFT_UTILS=OFF -DALSOFT_TESTS=OFF
           cmake --build openal-build
           cmake --install openal-build
