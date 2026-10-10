@@ -32,7 +32,7 @@ jobs:
             wget
             unzip
             python
-            python-pip
+            mingw-w64-ucrt-x86_64-python-pip
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
             autoconf
