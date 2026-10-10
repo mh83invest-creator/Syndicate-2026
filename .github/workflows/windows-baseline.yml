@@ -1,4 +1,4 @@
-name: Windows baseline (unmodified SyndicatFX)
+name: Engine baseline build (32-bit)
 
 on:
   workflow_dispatch:
@@ -7,74 +7,58 @@ permissions:
   contents: read
 
 jobs:
-  windows-msys2:
-    name: Build upstream 0.0.6.1022 (32-bit)
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-        working-directory: upstream
+  linux-baseline:
+    name: Build unmodified SyndicatFX 0.0.6.1022 (32-bit Linux)
+    runs-on: ubuntu-22.04
+    container:
+      image: ubuntu:22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: Etc/UTC
     steps:
-      - name: Check out tagged upstream engine source
+      - name: Install Git
+        run: |
+          apt-get update
+          apt-get install -y git
+      - name: Check out exact upstream release
         uses: actions/checkout@v4
         with:
           repository: swfans/syndicatfx
           ref: 0.0.6.1022
-          path: upstream
+          fetch-depth: 0
           persist-credentials: false
-
-      - name: Install 32-bit MSYS2 toolchain
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW32
-          update: true
-          install: >-
-            git
-            unzip
-            wget
-            mingw-w64-i686-python-pip
-            mingw-w64-i686-toolchain
-            mingw-w64-i686-autotools
-            mingw-w64-i686-libpng
-            mingw-w64-i686-SDL2
-            mingw-w64-i686-openal
-            mingw-w64-i686-libvorbis
-            mingw-w64-i686-libogg
-
-      - name: Install Python build helper
-        run: python -m pip install polib
-
-      - name: Install upstream WildMIDI release
+      - name: Install 32-bit development dependencies
         run: |
-          wget -q https://github.com/Mindwerks/wildmidi/releases/download/wildmidi-0.4.5/wildmidi-0.4.5-win32.zip
-          unzip -q wildmidi-0.4.5-win32.zip
-          cp wildmidi-0.4.5-win32/*.h /mingw32/include/
-          cp wildmidi-0.4.5-win32/*.a /mingw32/lib/
-          cp wildmidi-0.4.5-win32/*.dll /mingw32/bin/
-
-      - name: Generate configure scripts
+          dpkg --add-architecture i386
+          apt-get update
+          apt-get install -y \
+            build-essential autoconf automake libtool make pkg-config \
+            gcc-multilib g++-multilib lib32z1 python3 python3-polib \
+            libsdl2-dev:i386 libopenal-dev:i386 \
+            libvorbis-dev:i386 libvorbisfile3:i386 \
+            libogg-dev:i386 libwildmidi-dev:i386 libpng-dev:i386
+      - name: Generate configure script
         run: autoreconf -ivf
-
-      - name: Configure original 32-bit engine
+      - name: Configure engine (32-bit)
         env:
           CFLAGS: "-m32"
           CXXFLAGS: "-m32"
           LDFLAGS: "-m32"
+          PKG_CONFIG_PATH: "/usr/lib/i386-linux-gnu/pkgconfig"
         run: |
           mkdir -p release
           cd release
           ../configure --prefix="/" --enable-lbs-structs-expand
-
-      - name: Compile unmodified engine
+      - name: Compile engine
         run: make -C release V=1
-
-      - name: Install into distributable staging folder
-        run: make -C release V=1 DESTDIR="$PWD/release/pkg" install
-
-      - name: Publish Windows baseline build (no retail game data)
+      - name: Package baseline binary
+        run: |
+          cd release
+          make V=1 DESTDIR="$PWD/pkg" install
+      - name: Upload Linux build (no retail game data)
         uses: actions/upload-artifact@v4
         with:
-          name: syndicate-2026-unmodified-windows-baseline
-          path: upstream/release/pkg/**
+          name: syndicate-2026-unmodified-linux-baseline
+          path: release/pkg/**
           if-no-files-found: error
           retention-days: 14
