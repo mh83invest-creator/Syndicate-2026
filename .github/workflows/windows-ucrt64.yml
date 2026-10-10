@@ -51,7 +51,7 @@ jobs:
       - name: Build native UCRT64 WildMIDI dependency
         run: |
           git clone --depth 1 --branch wildmidi-0.4.5 https://github.com/Mindwerks/wildmidi.git wildmidi-source
-          cmake -S wildmidi-source -B wildmidi-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/ucrt64
+          cmake -S wildmidi-source -B wildmidi-build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/ucrt64 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           cmake --build wildmidi-build
           cmake --install wildmidi-build
       - name: Generate configure scripts
