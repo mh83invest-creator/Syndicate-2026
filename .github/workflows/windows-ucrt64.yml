@@ -1,0 +1,76 @@
+name: Windows engine build (UCRT64 experimental)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-ucrt64:
+    name: Compile unmodified engine on Windows UCRT64
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+        working-directory: upstream
+    steps:
+      - name: Check out upstream SyndicatFX 0.0.6.1022
+        uses: actions/checkout@v4
+        with:
+          repository: swfans/syndicatfx
+          ref: 0.0.6.1022
+          path: upstream
+          persist-credentials: false
+      - name: Install supported UCRT64 Windows dependencies
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            git
+            wget
+            unzip
+            python
+            python-pip
+            autoconf
+            automake
+            libtool
+            make
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-libpng
+            mingw-w64-ucrt-x86_64-SDL2
+            mingw-w64-ucrt-x86_64-openal
+            mingw-w64-ucrt-x86_64-libvorbis
+            mingw-w64-ucrt-x86_64-libogg
+      - name: Install translation helper
+        run: |
+          python -m pip install --break-system-packages polib
+      - name: Install upstream WildMIDI Windows headers and library
+        run: |
+          wget -q https://github.com/Mindwerks/wildmidi/releases/download/wildmidi-0.4.5/wildmidi-0.4.5-win32.zip
+          unzip -q wildmidi-0.4.5-win32.zip
+          find wildmidi-0.4.5-win32 -maxdepth 2 -type f | head -30
+          cp wildmidi-0.4.5-win32/*.h /ucrt64/include/
+          cp wildmidi-0.4.5-win32/*.a /ucrt64/lib/
+          cp wildmidi-0.4.5-win32/*.dll /ucrt64/bin/
+      - name: Generate configure scripts
+        run: autoreconf -ivf
+      - name: Configure native Windows engine
+        run: |
+          mkdir -p release
+          cd release
+          ../configure --prefix="/" --enable-lbs-structs-expand
+      - name: Compile native Windows engine
+        run: make -C release V=1
+      - name: Package compiled binary
+        run: |
+          cd release
+          make V=1 DESTDIR="$PWD/pkg" install
+      - name: Upload engine-only Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: syndicate-2026-windows-ucrt64-experimental
+          path: upstream/release/pkg/**
+          if-no-files-found: error
+          retention-days: 14
