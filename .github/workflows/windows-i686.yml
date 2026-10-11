@@ -43,13 +43,15 @@ jobs:
             cmake
             ninja
             mingw-w64-i686-toolchain
+            mingw-w64-i686-python-pip
             mingw-w64-i686-libpng
             mingw-w64-i686-SDL2
             mingw-w64-i686-libvorbis
             mingw-w64-i686-libogg
-      - name: Install Python helper
+      - name: Install Python helper for compiler-target interpreter
         run: |
-          /usr/bin/python -m pip install --break-system-packages polib
+          /mingw32/bin/python -m pip install --break-system-packages polib
+          /mingw32/bin/python -c 'import polib; print(polib.__file__)'
       - name: Build 32-bit OpenAL Soft from source
         run: |
           git clone --depth 1 --branch 1.24.3 https://github.com/kcat/openal-soft.git openal-source
