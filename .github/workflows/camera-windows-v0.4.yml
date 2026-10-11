@@ -153,6 +153,23 @@ jobs:
           mkdir -p release
           cd release
           ../configure --prefix=/ --enable-lbs-structs-expand
+      - name: Pin native MinGW audio import libraries
+        run: |
+          set -eux
+          test -f /mingw32/lib/libopenal.dll.a
+          test -f /mingw32/lib/libWildMidi.dll.a
+          test -f release/src/Makefile
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("release/src/Makefile")
+          s = p.read_text()
+          assert "-lopenal" in s
+          assert "-lWildMidi" in s
+          s = s.replace("-lopenal", "/mingw32/lib/libopenal.dll.a")
+          s = s.replace("-lWildMidi", "/mingw32/lib/libWildMidi.dll.a")
+          p.write_text(s)
+          print("Pinned engine audio linkage to MinGW32 native import libraries")
+          PY
       - name: Compile original engine
         run: make -C release V=1
       - name: Reject MSYS audio DLL imports
