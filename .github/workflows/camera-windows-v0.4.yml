@@ -148,13 +148,21 @@ jobs:
         env:
           CFLAGS: -m32
           CXXFLAGS: -m32
-          LDFLAGS: -m32
+          LDFLAGS: -m32 -L/mingw32/lib
         run: |
           mkdir -p release
           cd release
           ../configure --prefix=/ --enable-lbs-structs-expand
       - name: Compile original engine
         run: make -C release V=1
+      - name: Reject MSYS audio DLL imports
+        run: |
+          set -eu
+          objdump -p release/src/syndicatfx.exe | grep 'DLL Name:'
+          if objdump -p release/src/syndicatfx.exe | grep -Ei 'DLL Name:.*msys-(openal|wildmidi)'; then
+            echo 'ERROR: engine linked to POSIX MSYS sound DLLs instead of native MinGW runtime'
+            exit 1
+          fi
       - name: Stage native Windows executable
         run: |
           cd release
