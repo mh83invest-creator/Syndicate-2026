@@ -1,0 +1,91 @@
+name: Camera edge experiment v0.4
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [diagnostics/camera-v0.4]
+    paths: ['.github/workflows/camera-v0.4.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  camera-experiment:
+    runs-on: ubuntu-22.04
+    container:
+      image: ubuntu:22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: Etc/UTC
+    steps:
+      - name: Install build dependencies
+        run: |
+          dpkg --add-architecture i386
+          apt-get update
+          apt-get install -y git python3 build-essential autoconf automake libtool make pkg-config gcc-multilib g++-multilib lib32z1 python3-polib libsdl2-dev:i386 libopenal-dev:i386 libvorbis-dev:i386 libvorbisfile3:i386 libogg-dev:i386 libwildmidi-dev:i386 libpng-dev:i386
+      - name: Checkout fixed upstream release
+        uses: actions/checkout@v4
+        with:
+          repository: swfans/syndicatfx
+          ref: 0.0.6.1022
+          persist-credentials: false
+      - name: Apply camera-edge experiment to assembly
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/syndre.sx')
+          src = p.read_text()
+          marker = "scroll_map:\t/* 0x1e400 */"
+          assert src.count(marker) == 1
+          pos = src.index(marker)
+          start = src.index("\t\tmov    0x4(%esp),%edx", pos)
+          anchor = "\t\tcmpb   $0x0,EXPORT_SYMBOL(lbKeyOn)+0x48"
+          stop = src.index(anchor, start)
+          assert "mov    0x8(%esp),%eax" in src[start:stop]
+          replacement = """\t\tmov    0x4(%esp),%edx
+          \t\tmov    0x8(%esp),%eax
+          #if !defined(DOS)
+          \t\tcmp    $8,%edx
+          \t\tja     camera_26_not_left
+          \t\txor    %edx,%edx
+          \t\tjmp    camera_26_x_done
+          camera_26_not_left:
+          \t\tcmp    $630,%edx
+          \t\tjb     camera_26_x_done
+          \t\tmov    $638,%edx
+          camera_26_x_done:
+          \t\tcmp    $8,%eax
+          \t\tja     camera_26_not_top
+          \t\txor    %eax,%eax
+          \t\tjmp    camera_26_y_done
+          camera_26_not_top:
+          \t\tcmp    $390,%eax
+          \t\tjb     camera_26_y_done
+          \t\tmov    $398,%eax
+          camera_26_y_done:
+          #endif
+          """
+          replacement = "\n".join(line.lstrip() for line in replacement.splitlines()) + "\n"
+          p.write_text(src[:start] + replacement + src[stop:])
+          assert p.read_text().count("camera_26_x_done") == 3
+          print("Applied release-specific camera edge experimental change")
+          PY
+      - name: Generate and configure 32-bit engine
+        run: |
+          autoreconf -ivf
+          mkdir -p release
+          cd release
+          CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig ../configure --prefix=/ --enable-lbs-structs-expand
+      - name: Compile experiment
+        run: make -C release V=1
+      - name: Install experiment
+        run: |
+          cd release
+          make V=1 DESTDIR="$PWD/pkg" install
+      - name: Upload Linux experimental engine (not for Windows gameplay)
+        uses: actions/upload-artifact@v4
+        with:
+          name: syndicatfx-camera-v0.4-linux-compile-check
+          path: release/pkg/**
+          if-no-files-found: error
+          retention-days: 14
