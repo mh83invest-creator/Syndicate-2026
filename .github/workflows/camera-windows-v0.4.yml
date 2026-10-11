@@ -87,9 +87,9 @@ jobs:
           file /mingw32/bin/OpenAL32.dll /mingw32/bin/libWildMidi.dll || true
           pkg-config --modversion sdl2
           echo 'Audio import-library DLL targets:'
-          dlltool -I /mingw32/lib/libopenal.dll.a
+          dlltool -I /mingw32/lib/libOpenAL32.dll.a
           dlltool -I /mingw32/lib/libWildMidi.dll.a
-          if dlltool -I /mingw32/lib/libopenal.dll.a | grep -qi '^msys-'; then exit 1; fi
+          if dlltool -I /mingw32/lib/libOpenAL32.dll.a | grep -qi '^msys-'; then exit 1; fi
           if dlltool -I /mingw32/lib/libWildMidi.dll.a | grep -qi '^msys-'; then exit 1; fi
           echo 'Compiler target:'
           gcc -dumpmachine
@@ -164,7 +164,7 @@ jobs:
       - name: Pin native MinGW audio import libraries
         run: |
           set -eux
-          test -f /mingw32/lib/libopenal.dll.a
+          test -f /mingw32/lib/libOpenAL32.dll.a
           test -f /mingw32/lib/libWildMidi.dll.a
           test -f release/src/Makefile
           python - <<'PY'
@@ -173,7 +173,7 @@ jobs:
           s = p.read_text()
           assert "-lopenal" in s
           assert "-lWildMidi" in s
-          s = s.replace("-lopenal", "/mingw32/lib/libopenal.dll.a")
+          s = s.replace("-lopenal", "/mingw32/lib/libOpenAL32.dll.a")
           s = s.replace("-lWildMidi", "/mingw32/lib/libWildMidi.dll.a")
           p.write_text(s)
           print("Pinned engine audio linkage to MinGW32 native import libraries")
