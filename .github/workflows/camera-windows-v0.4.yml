@@ -171,10 +171,10 @@ jobs:
           from pathlib import Path
           p = Path("release/src/Makefile")
           s = p.read_text()
-          assert "-lopenal" in s
-          assert "-lWildMidi" in s
-          s = s.replace("-lopenal", "/mingw32/lib/libOpenAL32.dll.a")
-          s = s.replace("-lWildMidi", "/mingw32/lib/libWildMidi.dll.a")
+          import re
+          s, audio_count = re.subn(r"(?<!\\S)-lopenal(?:32)?(?=\\s|$)", "/mingw32/lib/libOpenAL32.dll.a", s)
+          s, midi_count = re.subn(r"(?<!\\S)-lWildMidi(?=\\s|$)", "/mingw32/lib/libWildMidi.dll.a", s)
+          assert audio_count > 0 and midi_count > 0, (audio_count, midi_count)
           p.write_text(s)
           print("Pinned engine audio linkage to MinGW32 native import libraries")
           PY
