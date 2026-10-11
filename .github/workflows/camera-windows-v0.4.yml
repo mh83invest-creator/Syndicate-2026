@@ -172,8 +172,8 @@ jobs:
           p = Path("release/src/Makefile")
           s = p.read_text()
           import re
-          s, audio_count = re.subn(r"(?<!\\S)-lopenal(?:32)?(?=\\s|$)", "/mingw32/lib/libOpenAL32.dll.a", s)
-          s, midi_count = re.subn(r"(?<!\\S)-lWildMidi(?=\\s|$)", "/mingw32/lib/libWildMidi.dll.a", s)
+          s, audio_count = re.subn(r"(?<!\S)-lopenal(?:32)?(?=\s|$)", "/mingw32/lib/libOpenAL32.dll.a", s)
+          s, midi_count = re.subn(r"(?<!\S)-lWildMidi(?=\s|$)", "/mingw32/lib/libWildMidi.dll.a", s)
           assert audio_count > 0 and midi_count > 0, (audio_count, midi_count)
           p.write_text(s)
           print("Pinned engine audio linkage to MinGW32 native import libraries")
