@@ -43,6 +43,8 @@ jobs:
             cmake
             ninja
             mingw-w64-i686-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-i686-ninja
             mingw-w64-i686-python-pip
             mingw-w64-i686-libpng
             mingw-w64-i686-SDL2
@@ -55,26 +57,27 @@ jobs:
       - name: Build 32-bit OpenAL Soft from source
         run: |
           git clone --depth 1 --branch 1.24.3 https://github.com/kcat/openal-soft.git openal-source
-          cmake -S openal-source -B openal-build -G Ninja \
+          /mingw32/bin/cmake -S openal-source -B openal-build -G Ninja \
+            -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER=/mingw32/bin/gcc.exe \
             -DCMAKE_CXX_COMPILER=/mingw32/bin/g++.exe \
             -DCMAKE_RC_COMPILER=/mingw32/bin/windres.exe \
             -DCMAKE_INSTALL_PREFIX=/mingw32 \
             -DCMAKE_CXX_STANDARD_LIBRARIES='-lole32 -luuid' \
             -DALSOFT_EXAMPLES=OFF -DALSOFT_UTILS=OFF -DALSOFT_TESTS=OFF
-          cmake --build openal-build
-          cmake --install openal-build
+          /mingw32/bin/cmake --build openal-build
+          /mingw32/bin/cmake --install openal-build
       - name: Build 32-bit WildMIDI from source
         run: |
           git clone --depth 1 --branch wildmidi-0.4.5 https://github.com/Mindwerks/wildmidi.git wildmidi-source
-          cmake -S wildmidi-source -B wildmidi-build -G Ninja \
+          /mingw32/bin/cmake -S wildmidi-source -B wildmidi-build -G Ninja \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_C_COMPILER=/mingw32/bin/gcc.exe \
             -DCMAKE_CXX_COMPILER=/mingw32/bin/g++.exe \
             -DCMAKE_INSTALL_PREFIX=/mingw32 \
             -DCMAKE_C_STANDARD_LIBRARIES='-lwinmm'
-          cmake --build wildmidi-build
-          cmake --install wildmidi-build
+          /mingw32/bin/cmake --build wildmidi-build
+          /mingw32/bin/cmake --install wildmidi-build
       - name: Verify installed 32-bit dependencies
         run: |
           set -eux
@@ -83,6 +86,11 @@ jobs:
           test -f /mingw32/include/SDL2/SDL.h
           file /mingw32/bin/OpenAL32.dll /mingw32/bin/libWildMidi.dll || true
           pkg-config --modversion sdl2
+          echo 'Audio import-library DLL targets:'
+          dlltool -I /mingw32/lib/libopenal.dll.a
+          dlltool -I /mingw32/lib/libWildMidi.dll.a
+          if dlltool -I /mingw32/lib/libopenal.dll.a | grep -qi '^msys-'; then exit 1; fi
+          if dlltool -I /mingw32/lib/libWildMidi.dll.a | grep -qi '^msys-'; then exit 1; fi
           echo 'Compiler target:'
           gcc -dumpmachine
           test "$(gcc -dumpmachine)" = 'i686-w64-mingw32'
