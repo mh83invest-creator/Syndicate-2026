@@ -1,0 +1,45 @@
+name: Classify menu and mission frame update call sites
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [diagnostics/camera-v0.4]
+    paths: ['.github/workflows/classify-frame-calls.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: swfans/syndicatfx
+          ref: 0.0.6.1022
+          persist-credentials: false
+      - name: Extract enclosing assembly labels and nearby timing logic
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('src/syndre.sx')
+          lines=p.read_text(errors='replace').splitlines()
+          hits=[i for i,line in enumerate(lines) if re.search(r'\bcall\s+ac_game_update\b',line)]
+          assert len(hits)==13, f'Expected 13 original references, found {len(hits)}'
+          result=['Source: SyndicatFX 0.0.6.1022 / src/syndre.sx','Original game_update assembly calls: '+str(len(hits)),'']
+          for i in hits:
+              prev=[(k,lines[k].strip()) for k in range(max(0,i-500),i) if re.match(r'^[A-Za-z_][A-Za-z_0-9.]*:\s*(?:/\*.*\*/)?\s*$',lines[k])]
+              label=prev[-1] if prev else None
+              result.append(f'## Call at line {i+1} — previous label: {label}')
+              for n in range(max(0,i-38),min(len(lines),i+40)):
+                  result.append(f'{n+1:>6} {lines[n]}')
+              result.append('')
+          Path('frame-call-contexts.txt').write_text('\n'.join(result))
+          print('\n'.join(result)[:42000])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: original-assembly-frame-call-contexts
+          path: frame-call-contexts.txt
+          retention-days: 30
