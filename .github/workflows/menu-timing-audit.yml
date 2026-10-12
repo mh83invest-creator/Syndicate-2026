@@ -1,0 +1,46 @@
+name: Menu timing call-site audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [diagnostics/camera-v0.4]
+    paths: ['.github/workflows/menu-timing-audit.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: swfans/syndicatfx
+          ref: 0.0.6.1022
+          persist-credentials: false
+      - name: Map timing, menu, mission and rendering call sites
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          out = ['SyndicatFX 0.0.6.1022 timing call site audit', '']
+          patterns = [r'\bgame_update\s*\(', r'\bgame_update_full\s*\(', r'\bSDL_RenderPresent\s*\(', r'\bSDL_Delay\s*\(', r'\bLbScreenSwap\s*\(']
+          for pat in patterns:
+              out += ['### ' + pat]
+              for p in sorted(Path('.').rglob('*')):
+                  if p.suffix.lower() not in ('.c','.cpp','.h','.sx'): continue
+                  try: lines = p.read_text(errors='replace').splitlines()
+                  except OSError: continue
+                  for i,line in enumerate(lines):
+                      if re.search(pat,line):
+                          lo=max(0,i-4); hi=min(len(lines),i+5)
+                          out += [f'[{p}:{i+1}]', *[f'{k+1}: {lines[k]}' for k in range(lo,hi)],'']
+          Path('menu-timing-audit.txt').write_text('\n'.join(out))
+          print('\n'.join(out)[:15000])
+          PY
+      - name: Upload call-site audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: syndicatfx-menu-timing-audit
+          path: menu-timing-audit.txt
+          retention-days: 30
