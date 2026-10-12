@@ -35,6 +35,18 @@ jobs:
                       if re.search(pat,line):
                           lo=max(0,i-4); hi=min(len(lines),i+5)
                           out += [f'[{p}:{i+1}]', *[f'{k+1}: {lines[k]}' for k in range(lo,hi)],'']
+          # Look beyond C function-call spelling: original game contains symbolic assembly.
+          for term in ('game_update', 'LbScreenSwap', 'scroll_map', 'LbSleepUntil', 'frame_duration'):
+              matches = []
+              for p in sorted(Path('.').rglob('*')):
+                  if p.suffix.lower() not in ('.c','.cpp','.h','.sx','.s','.asm','.conf'): continue
+                  try:
+                      lines = p.read_text(errors='replace').splitlines()
+                  except (OSError,UnicodeError): continue
+                  for line_number, line in enumerate(lines,1):
+                      if term.lower() in line.lower():
+                          matches.append(f'{p}:{line_number}: {line[:260]}')
+              out += [f'### Literal source references: {term} (count={len(matches)})', *matches[:120], '']
           Path('menu-timing-audit.txt').write_text('\n'.join(out))
           print('\n'.join(out)[:15000])
           PY
