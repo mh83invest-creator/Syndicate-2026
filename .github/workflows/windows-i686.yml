@@ -122,7 +122,7 @@ jobs:
           mkdir -p release
           cd release
           ../configure --prefix=/ --enable-lbs-structs-expand
-      - name: Compile original engine
+      - name: Compile pinned source with project patches
         run: make -C release V=1
       - name: Stage native Windows executable
         run: |
@@ -134,10 +134,17 @@ jobs:
           find release/pkg -type f | sort
           find release/pkg -iname '*.exe' -type f | grep -q .
           find release/pkg -iname '*.exe' -type f -exec file {} \;
+      - name: Record exact source provenance
+        run: |
+          mkdir -p release/pkg/source-provenance
+          git rev-parse HEAD > release/pkg/source-provenance/upstream-commit.txt
+          git -C ../project rev-parse HEAD > release/pkg/source-provenance/project-commit.txt
+          find ../project/patches -maxdepth 1 -type f -name '*.patch' -print | sort | sed 's|.*/||' > release/pkg/source-provenance/applied-patches.txt
+          git diff --stat > release/pkg/source-provenance/source-diff-stat.txt
       - name: Upload 32-bit executable without retail data
         uses: actions/upload-artifact@v4
         with:
-          name: syndicatfx-windows-i686-unmodified
+          name: syndicatfx-windows-i686-patch-workflow
           path: upstream/release/pkg/**
           if-no-files-found: error
           retention-days: 14
