@@ -200,7 +200,7 @@ jobs:
           assert s.count(briefing_anchor) >= 1
           briefing_candidates = []
           import re
-          for hit in re.finditer(r'call   ac_game_update\\b', s):
+          for hit in re.finditer(r'call   ac_game_update\b', s):
               chunk = s[max(0,hit.start()-1200):hit.start()]
               if briefing_anchor in chunk and 'call   ac_swap_wscreen' in chunk:
                   briefing_candidates.append(hit.start())
@@ -210,7 +210,7 @@ jobs:
           p.write_text(s)
           print('30 Hz: company, world-map and briefing tactical map; all others 16 Hz')
           assert s.count('call   ac_game_update_menu') == 3
-          assert len(re.findall(r'call   ac_game_update\\b', s)) == 10
+          assert len(re.findall(r'call   ac_game_update\b', s)) == 10
           PY
       - name: Regenerate configure scripts
         run: autoreconf -ivf
