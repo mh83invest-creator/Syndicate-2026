@@ -1,0 +1,170 @@
+name: Syndicate 2026 v0.7 source build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['engine/**', '.github/workflows/windows-source-v0.7.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  windows-i686:
+    runs-on: windows-latest
+    name: Compile committed v0.7 source
+    defaults:
+      run:
+        shell: msys2 {0}
+        working-directory: engine
+    steps:
+      - name: Checkout Syndicate 2026 source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify tracked source exists
+        shell: bash
+        run: |
+          test -f engine/src/game.c
+          test -f engine/src/syndre.sx
+          grep -q 'ac_game_update_menu' engine/src/syndre.sx
+          grep -q 'camera_26_x_done' engine/src/syndre.sx
+      - name: Install current 32-bit packages
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          update: false
+          install: >-
+            git
+            unzip
+            wget
+            python
+            python-pip
+            autoconf
+            automake
+            libtool
+            make
+            cmake
+            ninja
+            mingw-w64-i686-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-i686-ninja
+            mingw-w64-i686-python-pip
+            mingw-w64-i686-libpng
+            mingw-w64-i686-SDL2
+            mingw-w64-i686-libvorbis
+            mingw-w64-i686-libogg
+      - name: Install Python helper for compiler-target interpreter
+        run: |
+          /mingw32/bin/python -m pip install --break-system-packages polib
+          /mingw32/bin/python -c 'import polib; print(polib.__file__)'
+      - name: Build 32-bit OpenAL Soft from source
+        run: |
+          git clone --depth 1 --branch 1.24.3 https://github.com/kcat/openal-soft.git openal-source
+          /mingw32/bin/cmake -S openal-source -B openal-build -G Ninja \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_C_COMPILER=/mingw32/bin/gcc.exe \
+            -DCMAKE_CXX_COMPILER=/mingw32/bin/g++.exe \
+            -DCMAKE_RC_COMPILER=/mingw32/bin/windres.exe \
+            -DCMAKE_INSTALL_PREFIX=/mingw32 \
+            -DCMAKE_CXX_STANDARD_LIBRARIES='-lole32 -luuid' \
+            -DALSOFT_EXAMPLES=OFF -DALSOFT_UTILS=OFF -DALSOFT_TESTS=OFF
+          /mingw32/bin/cmake --build openal-build
+          /mingw32/bin/cmake --install openal-build
+      - name: Build 32-bit WildMIDI from source
+        run: |
+          git clone --depth 1 --branch wildmidi-0.4.5 https://github.com/Mindwerks/wildmidi.git wildmidi-source
+          /mingw32/bin/cmake -S wildmidi-source -B wildmidi-build -G Ninja \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_C_COMPILER=/mingw32/bin/gcc.exe \
+            -DCMAKE_CXX_COMPILER=/mingw32/bin/g++.exe \
+            -DCMAKE_INSTALL_PREFIX=/mingw32 \
+            -DCMAKE_C_STANDARD_LIBRARIES='-lwinmm'
+          /mingw32/bin/cmake --build wildmidi-build
+          /mingw32/bin/cmake --install wildmidi-build
+      - name: Verify installed 32-bit dependencies
+        run: |
+          set -eux
+          test -f /mingw32/include/AL/al.h
+          test -f /mingw32/include/wildmidi_lib.h
+          test -f /mingw32/include/SDL2/SDL.h
+          file /mingw32/bin/OpenAL32.dll /mingw32/bin/libWildMidi.dll || true
+          pkg-config --modversion sdl2
+          echo 'Audio import-library DLL targets:'
+          dlltool -I /mingw32/lib/libOpenAL32.dll.a
+          dlltool -I /mingw32/lib/libWildMidi.dll.a
+          if dlltool -I /mingw32/lib/libOpenAL32.dll.a | grep -qi '^msys-'; then exit 1; fi
+          if dlltool -I /mingw32/lib/libWildMidi.dll.a | grep -qi '^msys-'; then exit 1; fi
+          echo 'Compiler target:'
+          gcc -dumpmachine
+          test "$(gcc -dumpmachine)" = 'i686-w64-mingw32'
+      - name: Save compiled dependency bundle for reuse
+        run: |
+          mkdir -p dependency-bundle/include dependency-bundle/lib dependency-bundle/bin
+          cp -a /mingw32/include/AL dependency-bundle/include/
+          cp /mingw32/include/wildmidi_lib.h dependency-bundle/include/
+          find /mingw32/lib -maxdepth 1 -iname '*openal*' -exec cp {} dependency-bundle/lib/ \;
+          find /mingw32/lib -maxdepth 1 -iname '*wildmidi*' -exec cp {} dependency-bundle/lib/ \;
+          find /mingw32/bin -maxdepth 1 \( -iname '*openal*.dll' -o -iname '*wildmidi*.dll' \) -exec cp {} dependency-bundle/bin/ \;
+      - name: Upload dependency bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: syndicate-2026-i686-dependencies
+          path: upstream/dependency-bundle/**
+          if-no-files-found: error
+          retention-days: 30
+      - name: Regenerate configure scripts
+        run: autoreconf -ivf
+      - name: Configure native 32-bit game
+        env:
+          CFLAGS: -m32
+          CXXFLAGS: -m32
+          LDFLAGS: -m32 -L/mingw32/lib
+        run: |
+          mkdir -p release
+          cd release
+          ../configure --prefix=/ --enable-lbs-structs-expand
+      - name: Pin native MinGW audio import libraries
+        run: |
+          set -eux
+          test -f /mingw32/lib/libOpenAL32.dll.a
+          test -f /mingw32/lib/libWildMidi.dll.a
+          test -f release/src/Makefile
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("release/src/Makefile")
+          s = p.read_text()
+          import re
+          s, audio_count = re.subn(r"(?<!\S)-lopenal(?:32)?(?=\s|$)", "/mingw32/lib/libOpenAL32.dll.a", s)
+          s, midi_count = re.subn(r"(?<!\S)-lWildMidi(?=\s|$)", "/mingw32/lib/libWildMidi.dll.a", s)
+          assert audio_count > 0 and midi_count > 0, (audio_count, midi_count)
+          p.write_text(s)
+          print("Pinned engine audio linkage to MinGW32 native import libraries")
+          PY
+      - name: Compile original engine
+        run: make -C release V=1
+      - name: Reject MSYS audio DLL imports
+        run: |
+          set -eu
+          objdump -p release/src/syndicatfx.exe | grep 'DLL Name:'
+          if objdump -p release/src/syndicatfx.exe | grep -Ei 'DLL Name:.*msys-(openal|wildmidi)'; then
+            echo 'ERROR: engine linked to POSIX MSYS sound DLLs instead of native MinGW runtime'
+            exit 1
+          fi
+      - name: Stage native Windows executable
+        run: |
+          cd release
+          make V=1 DESTDIR="$PWD/pkg" install
+      - name: Verify packaged Windows executable
+        run: |
+          set -eux
+          find release/pkg -type f | sort
+          find release/pkg -iname '*.exe' -type f | grep -q .
+          find release/pkg -iname '*.exe' -type f -exec file {} \;
+      - name: Upload 32-bit executable without retail data
+        uses: actions/upload-artifact@v4
+        with:
+          name: syndicate-2026-v0.7-verified-source
+          path: engine/release/pkg/**
+          if-no-files-found: error
+          retention-days: 14
