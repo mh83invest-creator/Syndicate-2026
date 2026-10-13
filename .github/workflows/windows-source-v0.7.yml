@@ -168,3 +168,5 @@ jobs:
           path: engine/release/pkg/**
           if-no-files-found: error
           retention-days: 14
+
+# Verify completed v0.7 source recovery commit on main.
