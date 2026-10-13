@@ -27,4 +27,6 @@ Syndicate_2026_v*.zip
 /dist/
 /release/
 /dependency-bundle/
+/.work/*
+!/.work/.gitkeep
 # Always inspect staged changes; ignore patterns do not guarantee safety.
