@@ -1,0 +1,244 @@
+/******************************************************************************/
+// Bullfrog Sound Library - for use to remake classic games like
+// Syndicate Wars, Magic Carpet, Genewars or Dungeon Keeper.
+/******************************************************************************/
+/** @file miscutil.c
+ *     OpenAL based reimplementation of MSS API.
+ * @par Purpose:
+ *     Miscelanous utility functions from MSS API.
+ * @par Comment:
+ *     None.
+ * @author   Tomasz Lis
+ * @date     12 Jun 2022 - 05 Sep 2022
+ * @par  Copying and copyrights:
+ *     This program is free software; you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation; either version 2 of the License, or
+ *     (at your option) any later version.
+ */
+/******************************************************************************/
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <assert.h>
+#include <errno.h>
+
+#if defined(WIN32)||defined(DOS)||defined(GO32)
+# include <share.h>
+#endif
+
+#include "miscutil.h"
+#include "mssal.h"
+#include "memfile.h"
+#include "aildebug.h"
+/******************************************************************************/
+int32_t disk_err = 0;
+
+/** Lowest value of SSIZE_MAX seen on real environments was 32767.
+ * Round it down to be multiplicity of 4, to ensure compatibility with other
+ * platforms.
+ */
+#define LOWEST_SSIZE_MAX 32764
+/******************************************************************************/
+
+int32_t XMI_message_size(int32_t status)
+{
+    switch (status & 0xf0)
+    {
+    case MDI_EV_NOTE_OFF:
+    case MDI_EV_NOTE_ON:
+    case MDI_EV_POLY_PRESS:
+    case MDI_EV_CONTROL:
+    case MDI_EV_PITCH:
+        return 3;
+
+    case MDI_EV_PROGRAM:
+    case MDI_EV_CHAN_PRESS:
+        return 2;
+    }
+
+   return 0;
+}
+
+const void *XMI_find_sequence(const uint8_t *image, int32_t sequence)
+{
+    uint32_t len;
+    const uint8_t *end;
+
+    len = 0;
+
+    do
+    {
+        // Skip previous block, if any
+        image += len;
+
+        // Exit if not FORM or CAT block
+        if ((strncasecmp((char *)image, "FORM", 4) != 0) &&
+          (strncasecmp((char *)image, "CAT ", 4) != 0))
+            return NULL;
+
+        // Continue searching if not FORM XMID or CAT XMID
+        //
+        // XMIDI files always have even FORM lengths; therefore, no
+        // odd-byte compensation is needed
+        len = 8 + XMI_swap32(*(uint32_t *)(image+4));
+    }
+    while (strncasecmp((char *)image+8, "XMID", 4) != 0);
+
+    // If outer header was a FORM, return successfully if first sequence
+    // requested
+    //
+    // If second or higher sequence requested, return NULL if
+    // single-sequence FORM encountered
+    if (strncasecmp((char *)image, "FORM", 4) == 0)
+    {
+        if (sequence != 0)
+            return NULL;
+        return image;
+    }
+
+    // Calculate ending address of image, and skip 'CAT_nnnnXMID'
+    // header to index first FORM chunk in CAT
+    end    = image + len;
+    image += 12;
+
+    // Find nth FORM XMID chunk in outer CAT XMID block
+    while (image < end)
+    {
+        if (strncasecmp((char *)image+8, "XMID", 4) == 0)
+        {
+            if (!sequence--)
+                return image;
+        }
+        image += 8 + XMI_swap32(*(uint32_t *)(image+4));
+    }
+    return NULL;
+}
+
+uint32_t XMI_whole_size(const uint8_t *image)
+{
+    uint32_t len;
+    const uint8_t *beg;
+
+    beg = image;
+    len = 0;
+
+    do
+    {
+        // Skip previous block, if any
+        beg += len;
+
+        // Exit if not FORM or CAT block
+        if ((strncasecmp((char *)beg, "FORM", 4) != 0) &&
+          (strncasecmp((char *)beg, "CAT ", 4) != 0))
+            return (uint32_t)(beg - image);
+
+        // Continue searching if not FORM XMID or CAT XMID
+        //
+        // XMIDI files always have even FORM lengths; therefore, no
+        // odd-byte compensation is needed
+        len = 8 + XMI_swap32(*(uint32_t *)(beg+4));
+    }
+    while (strncasecmp((char *)beg+8, "XMID", 4));
+
+    // Calculate ending address of image
+    return (uint32_t)(beg - image) + len;
+}
+
+uint32_t XMI_read_VLN(const uint8_t **ptr)
+{
+    uint32_t val,i,cnt;
+
+    val = 0;
+    cnt = 4;
+    do
+    {
+        i = (uint32_t)**ptr;
+        *ptr = (uint8_t *)AIL_ptr_add(*ptr, 1);
+        val = (val << 7) | (i & 0x7f);
+        if ((i & 0x80) == 0)
+            break;
+    } while (--cnt);
+
+    return val;
+}
+
+void *AIL_API_file_read(const char *fname, void *dest)
+{
+    int fh;
+    int32_t i;
+    uint32_t len;
+    uint32_t readamt;
+    uint8_t *buf, *mem;
+
+    disk_err = 0;
+
+    //TODO it would make sense to replace this with more independent fopen()/fread() API
+#if defined(WIN32)||defined(DOS)||defined(GO32)
+    fh = _sopen(fname, O_RDONLY|O_BINARY, SH_DENYNO);
+#else
+    fh = open(fname, O_RDONLY);
+#endif
+    if (fh == -1)
+    {
+        disk_err = AIL_FILE_NOT_FOUND;
+        AIL_set_error("Unable to open file.");
+        return NULL;
+    }
+
+    len = lseek(fh, 0, SEEK_END);
+    lseek(fh, 0, SEEK_SET);
+
+    if ((dest == NULL) || (dest == FILE_READ_WITH_SIZE))
+        buf = mem = (uint8_t*) AIL_MEM_alloc_lock(len + 4 + 64 + 128);
+    else
+        buf = mem = (uint8_t*) dest;
+
+    if (buf == NULL)
+    {
+        disk_err = AIL_OUT_OF_MEMORY;
+        AIL_set_error("Out of memory.");
+        close(fh);
+        return NULL;
+    }
+
+    if (dest == FILE_READ_WITH_SIZE)
+    {
+        *((int32_t*) buf) = len;
+        buf += 4;
+    }
+
+    while (len)
+    {
+        readamt = (uint16_t)((len >= LOWEST_SSIZE_MAX) ? LOWEST_SSIZE_MAX : len);
+
+        i = read(fh, buf, readamt);
+
+        // If reached EOF, `read()` will return 0; but some implementations
+        // also return 0 on error. Since EOF was not expected, treat as error.
+        if (i == 0)
+            i = -ESPIPE;
+
+        if (i < 0)
+        {
+            if (dest != mem)
+                AIL_MEM_free_lock(mem, len + 4 + 64 + 128);
+            close(fh);
+            disk_err = AIL_CANT_READ_FILE;
+
+            AIL_set_error("Unable to read file.");
+
+            return NULL;
+        }
+
+        len -= i;
+        buf = (uint8_t*) AIL_ptr_add(buf, i);
+    }
+
+    close(fh);
+    return mem;
+}
+/******************************************************************************/

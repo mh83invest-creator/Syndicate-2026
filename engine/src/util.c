@@ -1,0 +1,141 @@
+/******************************************************************************/
+// SyndicatFX, source port of the classic game from Bullfrog.
+/******************************************************************************/
+/** @file util.c
+ *     Routines implementing small utilities.
+ * @par Purpose:
+ *     Simple utilities for general use.
+ * @par Comment:
+ *     When keys are handled outside the event, it is possible that some
+ *     keypresses will not be registered, making typing text frustrating.
+ * @author   Tomasz Lis
+ * @date     10 Oct 2012 - 12 Oct 2025
+ * @par  Copying and copyrights:
+ *     This program is free software; you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation; either version 2 of the License, or
+ *     (at your option) any later version.
+ */
+/******************************************************************************/
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
+#include "util.h"
+
+#include "bffile.h"
+#include "bfutility.h"
+
+/******************************************************************************/
+
+void
+strtolower (char *string)
+{
+  while (*string != '\0')
+    {
+      *string = tolower (*string);
+      string++;
+    }
+}
+
+void
+strtocapwords(char *s)
+{
+    TbBool word_start = 1;
+
+    while (*s != '\0')
+    {
+      if (word_start) {
+        if (isalpha(*s)) {
+          *s = toupper(*s);
+          word_start = 0;
+        }
+      } else {
+          *s = tolower(*s);
+          if (*s == ' ')
+              word_start = 1;
+      }
+      s++;
+    }
+}
+
+void *
+xmalloc (size_t size)
+{
+  void *ret;
+
+  ret = malloc (size);
+  assert (ret != NULL);
+
+  return ret;
+}
+
+void *
+xcalloc (size_t size)
+{
+  void *ret;
+
+  ret = calloc (1, size);
+  assert (ret != NULL);
+
+  return ret;
+}
+
+void
+xfree (void *ptr)
+{
+  if (ptr == NULL)
+    return;
+
+  free (ptr);
+}
+
+char *
+xstrdup (const char *str)
+{
+  char *ret;
+  size_t size;
+
+  size = strlen (str) + 1;
+
+  ret = xmalloc (size);
+  memcpy (ret, str, size);
+
+  return ret;
+}
+
+const char *
+extract_path_segment (const char *path, char *buffer, size_t size)
+{
+  const char *sep;
+  int seg_len;
+
+  sep = strchr (path, FS_SEP);
+  if (sep == NULL)
+    {
+      snprintf (buffer, size, "%s", path);
+      return NULL;
+    }
+
+  if (sep == path)
+    {
+      snprintf (buffer, size, "%s", FS_SEP_STR);
+      return (path + 1);
+    }
+
+  seg_len = min(sep - path, (int) size);
+  snprintf (buffer, size, "%.*s", seg_len, path);
+
+  return sep;
+}
+
+/******************************************************************************/

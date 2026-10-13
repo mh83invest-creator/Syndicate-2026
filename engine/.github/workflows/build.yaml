@@ -1,0 +1,225 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      refToBuild:
+        description: 'Branch, tag or commit SHA1 to build'
+        required: true
+        type: string
+
+jobs:
+  ubuntu-gcc:
+    runs-on: ubuntu-22.04
+    name: "Linux Ubuntu"
+    container:
+      image: ubuntu:22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: Etc/UTC
+    steps:
+      - name: Install GIT
+        run: |
+          # install GIT, as without it checkout would use REST API
+          apt update
+          apt install -y \
+            git
+
+      - name: Checkout code at latest head
+        if: "${{ inputs.refToBuild == '' }}"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout code at requested ref
+        if: "${{ inputs.refToBuild != '' }}"
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.refToBuild }}
+          fetch-depth: 0
+
+      - name: Set ownership
+        run: |
+          # this is to fix GIT not liking owner of the checkout dir
+          chown -R $(id -u):$(id -g) $PWD
+
+      - name: Install dependencies
+        run: |
+          # add i386 dependencies
+          dpkg --add-architecture i386
+
+          apt update
+          apt install -y \
+            gcc-multilib g++-multilib lib32z1 python3 \
+            vorbis-tools cdparanoia \
+            libsdl2-dev:i386 libopenal-dev:i386 \
+            libvorbis-dev:i386 libvorbisfile3:i386 \
+            libogg-dev:i386 \
+            libwildmidi-dev:i386 \
+            libpng-dev:i386
+
+          apt install -y \
+            build-essential autoconf libtool make
+
+          apt install -y \
+            python3-polib
+
+      - name: Autoreconf
+        run: autoreconf -ivf
+
+      - name: Configure
+        env:
+          CFLAGS: "-m32"
+          CXXFLAGS: "-m32"
+          LDFLAGS: "-m32"
+          PKG_CONFIG_PATH: "/usr/lib/i386-linux-gnu/pkgconfig"
+        run: |
+          mkdir -p release; cd release
+          ../configure --prefix="/" --enable-lbs-structs-expand
+
+      - name: Build executable
+        run: |
+          cd release
+          make V=1
+
+      - name: Copy for package
+        run: |
+          cd release
+          # Get version marking from C header
+          PKG_VERSION=$(sed -n 's/^#define[ ]\+PACKAGE_VERSION "\([^"]\+\)"$/\1/p' src/config.h | head -n 1 | tr '.' '_')
+          make V=1 DESTDIR=$PWD/pkg install
+          echo "PKG_NAME=syndicatfx-$PKG_VERSION-ubuntu-patch" >> $GITHUB_ENV
+          echo "TST_NAME=syndicatfx-$PKG_VERSION-ubuntu-tests" >> $GITHUB_ENV
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PKG_NAME }}
+          path: release/pkg/**
+
+      - name: Execute unit tests
+        id: unittests
+        run: |
+          cd release
+          make V=1 clean
+          make V=1 check
+
+      - name: Gather unit tests logs
+        if: ${{ steps.unittests.conclusion != 'skipped' }}
+        run: |
+          cd release
+          tail -n +1 ./bflibrary/test-suite.log $(find ./bflibrary/ -name 'tst_*.log')
+
+      - name: Upload unit tests debug files
+        if: ${{ failure() && steps.unittests.conclusion == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.TST_NAME }}
+          path: |
+            release/bflibrary/**
+
+  windows-msys2:
+    name: "Windows MSYS2"
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Checkout code at latest head
+        if: "${{ inputs.refToBuild == '' }}"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout code at requested ref
+        if: "${{ inputs.refToBuild != '' }}"
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.refToBuild }}
+          fetch-depth: 0
+
+      - name: Install MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          update: true
+          install: >-
+              git
+              unzip
+              mingw-w64-i686-python-pip
+              mingw-w64-i686-toolchain
+              mingw-w64-i686-autotools
+              mingw-w64-i686-libpng
+              mingw-w64-i686-SDL2
+              mingw-w64-i686-openal
+              mingw-w64-i686-libvorbis
+              mingw-w64-i686-libogg
+
+      - name: Install python modules
+        run: |
+          python -m pip install polib
+
+      - name: Install WildMIDI
+        run: |
+          wget https://github.com/Mindwerks/wildmidi/releases/download/wildmidi-0.4.5/wildmidi-0.4.5-win32.zip
+          unzip wildmidi-0.4.5-win32.zip
+          cp wildmidi-0.4.5-win32/*.h /mingw32/include/
+          cp wildmidi-0.4.5-win32/*.a /mingw32/lib/
+          cp wildmidi-0.4.5-win32/*.dll /mingw32/bin/
+
+      - name: Autoreconf
+        run: autoreconf -ivf
+
+      - name: Configure
+        env:
+          CFLAGS: "-m32"
+          CXXFLAGS: "-m32"
+          LDFLAGS: "-m32"
+        run: |
+          mkdir -p release; cd release
+          ../configure --prefix="/" --enable-lbs-structs-expand
+
+      - name: Build executable
+        run: |
+          cd release
+          make V=1
+
+      - name: Copy for package
+        run: |
+          cd release
+          # Get version marking from C header
+          PKG_VERSION=$(sed -n 's/^#define[ ]\+PACKAGE_VERSION "\([^"]\+\)"$/\1/p' src/config.h | head -n 1 | tr '.' '_')
+          make V=1 DESTDIR=$PWD/pkg install
+          echo "PKG_NAME=syndicatfx-$PKG_VERSION-win32-patch" >> $GITHUB_ENV
+          echo "TST_NAME=syndicatfx-$PKG_VERSION-win32-tests" >> $GITHUB_ENV
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PKG_NAME }}
+          path: release/pkg/**
+
+      - name: Execute unit tests
+        id: unittests
+        run: |
+          cd release
+          make V=1 clean
+          make V=1 check
+
+      - name: Gather unit tests logs
+        if: ${{ steps.unittests.conclusion != 'skipped' }}
+        run: |
+          cd release
+          tail -n +1 ./bflibrary/test-suite.log $(find ./bflibrary/ -name 'tst_*.log')
+
+      - name: Upload unit tests debug files
+        if: ${{ failure() && steps.unittests.conclusion == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.TST_NAME }}
+          path: |
+            release/bflibrary/**

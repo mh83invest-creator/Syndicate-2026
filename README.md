@@ -1,20 +1,26 @@
-# Syndicate 2026
+# Syndicate 2026 — Working v0.7 source baseline
 
-This repository is for rebuilding and improving the open-source **SyndicatFX** engine.
+This repository tracks the **actual native source** of Syndicate 2026,
+derived from public GPL SyndicatFX tag `0.0.6.1022`, plus changes validated
+by Windows playtests through v0.7.
 
-## Build plan
-1. Reproduce the original SyndicatFX 0.0.6.1022 Windows build using GitHub Actions.
-2. Verify the downloadable Windows executable against an existing local Syndicate Plus installation.
-3. Address the mission camera edge-scrolling defect (SDL1 and SDL2 versions both reproduce it).
-4. Only then investigate rendering smoothness, frame timing, and explosion-heavy slowdowns.
+- `engine/`: complete imported source with camera edge scrolling fix,
+  native Windows engine and 30 FPS pacing on company configuration,
+  world-map selection and briefing tactical map.
+- Mission loop remains at original 16 FPS. Other menu loops unchanged.
+- `.github/workflows/windows-source-v0.7.yml` builds the committed source
+  on Windows i686 and rejects MSYS runtime audio dependencies.
+- `.github/workflows/restore-v0.7-source.yml` preserves the reproducible
+  baseline import recipe. Do not re-run casually after new development!
+- **No proprietary Syndicate retail game data is committed**. Users must
+  supply their legally obtained game data separately to run builds.
+- Development continues here in `main`; historical branches remain
+  available for recovery. Prior working v0.6/v0.7 test packages should
+  stay separate until subsequent builds pass gameplay tests.
 
-## Copyright and game data
-**Do not upload the Syndicate Plus CD image, retail data, compiled commercial assets, saves, or other licensed game content to this public repository.** Original game data stays on the user's Windows machine.
+## Provenance
 
-SyndicatFX upstream: https://github.com/swfans/syndicatfx
-
-The first Actions workflow retrieves the upstream source at the release tag, and compiles the *unmodified* engine. No game data is part of the build artifact.
-
-## Status
-Windows compilation: pending GitHub Actions verification.
-Native game runtime: original distributed executable launches, but in-mission scrolling is defective.
+Upstream: https://github.com/swfans/syndicatfx tag 0.0.6.1022.
+Validated assembly, camera and timing changes recreated from
+`diagnostics/camera-v0.4` workflow `menu-fps-v0.7.yml`.
+License and original author files are retained under `engine/`.
