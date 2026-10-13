@@ -1,0 +1,269 @@
+name: v0.7 Strategic briefing menu 30 FPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [diagnostics/camera-v0.4]
+    paths: ['.github/workflows/menu-fps-v0.7.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  windows-i686:
+    runs-on: windows-latest
+    name: Build three isolated strategic screens at 30 FPS
+    defaults:
+      run:
+        shell: msys2 {0}
+        working-directory: upstream
+    steps:
+      - name: Checkout exact unmodified SyndicatFX engine
+        uses: actions/checkout@v4
+        with:
+          repository: swfans/syndicatfx
+          ref: 0.0.6.1022
+          path: upstream
+          persist-credentials: false
+      - name: Install current 32-bit packages
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          update: false
+          install: >-
+            git
+            unzip
+            wget
+            python
+            python-pip
+            autoconf
+            automake
+            libtool
+            make
+            cmake
+            ninja
+            mingw-w64-i686-toolchain
+            mingw-w64-i686-cmake
+            mingw-w64-i686-ninja
+            mingw-w64-i686-python-pip
+            mingw-w64-i686-libpng
+            mingw-w64-i686-SDL2
+            mingw-w64-i686-libvorbis
+            mingw-w64-i686-libogg
+      - name: Install Python helper for compiler-target interpreter
+        run: |
+          /mingw32/bin/python -m pip install --break-system-packages polib
+          /mingw32/bin/python -c 'import polib; print(polib.__file__)'
+      - name: Build 32-bit OpenAL Soft from source
+        run: |
+          git clone --depth 1 --branch 1.24.3 https://github.com/kcat/openal-soft.git openal-source
+          /mingw32/bin/cmake -S openal-source -B openal-build -G Ninja \
+            -DCMAKE_SYSTEM_NAME=Windows \
+            -DCMAKE_C_COMPILER=/mingw32/bin/gcc.exe \
+            -DCMAKE_CXX_COMPILER=/mingw32/bin/g++.exe \
+            -DCMAKE_RC_COMPILER=/mingw32/bin/windres.exe \
+            -DCMAKE_INSTALL_PREFIX=/mingw32 \
+            -DCMAKE_CXX_STANDARD_LIBRARIES='-lole32 -luuid' \
+            -DALSOFT_EXAMPLES=OFF -DALSOFT_UTILS=OFF -DALSOFT_TESTS=OFF
+          /mingw32/bin/cmake --build openal-build
+          /mingw32/bin/cmake --install openal-build
+      - name: Build 32-bit WildMIDI from source
+        run: |
+          git clone --depth 1 --branch wildmidi-0.4.5 https://github.com/Mindwerks/wildmidi.git wildmidi-source
+          /mingw32/bin/cmake -S wildmidi-source -B wildmidi-build -G Ninja \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_C_COMPILER=/mingw32/bin/gcc.exe \
+            -DCMAKE_CXX_COMPILER=/mingw32/bin/g++.exe \
+            -DCMAKE_INSTALL_PREFIX=/mingw32 \
+            -DCMAKE_C_STANDARD_LIBRARIES='-lwinmm'
+          /mingw32/bin/cmake --build wildmidi-build
+          /mingw32/bin/cmake --install wildmidi-build
+      - name: Verify installed 32-bit dependencies
+        run: |
+          set -eux
+          test -f /mingw32/include/AL/al.h
+          test -f /mingw32/include/wildmidi_lib.h
+          test -f /mingw32/include/SDL2/SDL.h
+          file /mingw32/bin/OpenAL32.dll /mingw32/bin/libWildMidi.dll || true
+          pkg-config --modversion sdl2
+          echo 'Audio import-library DLL targets:'
+          dlltool -I /mingw32/lib/libOpenAL32.dll.a
+          dlltool -I /mingw32/lib/libWildMidi.dll.a
+          if dlltool -I /mingw32/lib/libOpenAL32.dll.a | grep -qi '^msys-'; then exit 1; fi
+          if dlltool -I /mingw32/lib/libWildMidi.dll.a | grep -qi '^msys-'; then exit 1; fi
+          echo 'Compiler target:'
+          gcc -dumpmachine
+          test "$(gcc -dumpmachine)" = 'i686-w64-mingw32'
+      - name: Save compiled dependency bundle for reuse
+        run: |
+          mkdir -p dependency-bundle/include dependency-bundle/lib dependency-bundle/bin
+          cp -a /mingw32/include/AL dependency-bundle/include/
+          cp /mingw32/include/wildmidi_lib.h dependency-bundle/include/
+          find /mingw32/lib -maxdepth 1 -iname '*openal*' -exec cp {} dependency-bundle/lib/ \;
+          find /mingw32/lib -maxdepth 1 -iname '*wildmidi*' -exec cp {} dependency-bundle/lib/ \;
+          find /mingw32/bin -maxdepth 1 \( -iname '*openal*.dll' -o -iname '*wildmidi*.dll' \) -exec cp {} dependency-bundle/bin/ \;
+      - name: Upload dependency bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: syndicate-2026-i686-dependencies
+          path: upstream/dependency-bundle/**
+          if-no-files-found: error
+          retention-days: 30
+      - name: Apply camera-edge experiment to assembly
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/syndre.sx')
+          src = p.read_text()
+          marker = "scroll_map:\t/* 0x1e400 */"
+          assert src.count(marker) == 1
+          pos = src.index(marker)
+          start = src.index("\t\tmov    0x4(%esp),%edx", pos)
+          anchor = "\t\tcmpb   $0x0,EXPORT_SYMBOL(lbKeyOn)+0x48"
+          stop = src.index(anchor, start)
+          assert "mov    0x8(%esp),%eax" in src[start:stop]
+          replacement = """\t\tmov    0x4(%esp),%edx
+          \t\tmov    0x8(%esp),%eax
+          #if !defined(DOS)
+          \t\tcmp    $8,%edx
+          \t\tja     camera_26_not_left
+          \t\txor    %edx,%edx
+          \t\tjmp    camera_26_x_done
+          camera_26_not_left:
+          \t\tcmp    $630,%edx
+          \t\tjb     camera_26_x_done
+          \t\tmov    $638,%edx
+          camera_26_x_done:
+          \t\tcmp    $8,%eax
+          \t\tja     camera_26_not_top
+          \t\txor    %eax,%eax
+          \t\tjmp    camera_26_y_done
+          camera_26_not_top:
+          \t\tcmp    $390,%eax
+          \t\tjb     camera_26_y_done
+          \t\tmov    $398,%eax
+          camera_26_y_done:
+          #endif
+          """
+          replacement = "\n".join(line.lstrip() for line in replacement.splitlines()) + "\n"
+          p.write_text(src[:start] + replacement + src[stop:])
+          assert p.read_text().count("camera_26_x_done") == 3
+          print("Applied release-specific camera edge experimental change")
+          PY
+      - name: Change only company configuration menu pacing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/game.c')
+          s = p.read_text()
+          assert s.count('game_update_full(bool wait)') == 1
+          assert s.count('const int max_fps = 16;') == 1
+          s = s.replace('game_update_full(bool wait)', 'game_update_full(bool wait, int max_fps)')
+          s = s.replace('    const int max_fps = 16;\n', '')
+          assert s.count('game_update_full(true);') == 1
+          s = s.replace('game_update_full(true);', 'game_update_full(true, 16);')
+          s += '\n/* Experimental menu-only cadence. Mission update remains 16 FPS. */\nvoid game_update_menu(void)\n{\n    game_update_full(true, 30);\n}\n'
+          p.write_text(s)
+          p = Path('src/game.h')
+          s = p.read_text()
+          assert 'void game_update (void);' in s
+          p.write_text(s.replace('void game_update (void);','void game_update (void);\nvoid game_update_menu (void);'))
+          p = Path('conf/wrappers_game.conf')
+          s = p.read_text()
+          assert s.count('game_update\t') == 1
+          s = s.replace('game_update\t', 'game_update_menu\t\t\tC\tv\ngame_update\t',1)
+          p.write_text(s)
+          p = Path('src/syndre.sx')
+          s = p.read_text()
+          marker = 'configure_company:\t/* 0x175c0 */'
+          assert s.count(marker) == 1
+          start = s.index(marker)
+          needle = 'call   ac_game_update'
+          idx = s.index(needle,start)
+          assert s[start:idx].count(needle) == 0
+          assert idx-start < 24000, 'menu call is outside expected function'
+          # Verify the next instructions correspond to configure_company menu input.
+          assert 'EXPORT_SYMBOL(lbKeyOn)+0x1c' in s[idx:idx+160]
+          s = s[:idx] + s[idx:].replace(needle, 'call   ac_game_update_menu',1)
+          # Independently identified map_selection screen. Patch only its update call.
+          map_marker = 'map_selection:\t/* 0x27e00 */'
+          assert s.count(map_marker) == 1
+          map_start = s.index(map_marker)
+          map_idx = s.index(needle, map_start)
+          assert 0 < map_idx - map_start < 14000
+          # Must be the map selection update at original source line 31916.
+          assert 'call   ac_swap_wscreen' in s[map_idx-700:map_idx], 'Expected map screen presentation immediately before update'
+          assert 'call   ac_game_update_menu' not in s[map_start:map_idx], 'Unexpected prior menu update'
+          s = s[:map_idx] + s[map_idx:].replace(needle, 'call   ac_game_update_menu', 1)
+          # Briefing tactical map: update follows draw_brief_tact_map, screen swap, mouse removal.
+          briefing_anchor = 'call   draw_brief_tact_map'
+          assert s.count(briefing_anchor) >= 1
+          briefing_candidates = []
+          import re
+          for hit in re.finditer(r'call   ac_game_update\\b', s):
+              chunk = s[max(0,hit.start()-1200):hit.start()]
+              if briefing_anchor in chunk and 'call   ac_swap_wscreen' in chunk:
+                  briefing_candidates.append(hit.start())
+          assert len(briefing_candidates) == 1, ('briefing candidates', len(briefing_candidates))
+          brief_idx = briefing_candidates[0]
+          s = s[:brief_idx] + s[brief_idx:].replace(needle, 'call   ac_game_update_menu', 1)
+          p.write_text(s)
+          print('30 Hz: company, world-map and briefing tactical map; all others 16 Hz')
+          assert s.count('call   ac_game_update_menu') == 3
+          assert len(re.findall(r'call   ac_game_update\\b', s)) == 10
+          PY
+      - name: Regenerate configure scripts
+        run: autoreconf -ivf
+      - name: Configure native 32-bit game
+        env:
+          CFLAGS: -m32
+          CXXFLAGS: -m32
+          LDFLAGS: -m32 -L/mingw32/lib
+        run: |
+          mkdir -p release
+          cd release
+          ../configure --prefix=/ --enable-lbs-structs-expand
+      - name: Pin native MinGW audio import libraries
+        run: |
+          set -eux
+          test -f /mingw32/lib/libOpenAL32.dll.a
+          test -f /mingw32/lib/libWildMidi.dll.a
+          test -f release/src/Makefile
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("release/src/Makefile")
+          s = p.read_text()
+          import re
+          s, audio_count = re.subn(r"(?<!\S)-lopenal(?:32)?(?=\s|$)", "/mingw32/lib/libOpenAL32.dll.a", s)
+          s, midi_count = re.subn(r"(?<!\S)-lWildMidi(?=\s|$)", "/mingw32/lib/libWildMidi.dll.a", s)
+          assert audio_count > 0 and midi_count > 0, (audio_count, midi_count)
+          p.write_text(s)
+          print("Pinned engine audio linkage to MinGW32 native import libraries")
+          PY
+      - name: Compile original engine
+        run: make -C release V=1
+      - name: Reject MSYS audio DLL imports
+        run: |
+          set -eu
+          objdump -p release/src/syndicatfx.exe | grep 'DLL Name:'
+          if objdump -p release/src/syndicatfx.exe | grep -Ei 'DLL Name:.*msys-(openal|wildmidi)'; then
+            echo 'ERROR: engine linked to POSIX MSYS sound DLLs instead of native MinGW runtime'
+            exit 1
+          fi
+      - name: Stage native Windows executable
+        run: |
+          cd release
+          make V=1 DESTDIR="$PWD/pkg" install
+      - name: Verify packaged Windows executable
+        run: |
+          set -eux
+          find release/pkg -type f | sort
+          find release/pkg -iname '*.exe' -type f | grep -q .
+          find release/pkg -iname '*.exe' -type f -exec file {} \;
+      - name: Upload 32-bit executable without retail data
+        uses: actions/upload-artifact@v4
+        with:
+          name: syndicatfx-v0.7-three-menus-30fps-experiment
+          path: upstream/release/pkg/**
+          if-no-files-found: error
+          retention-days: 14
