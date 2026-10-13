@@ -24,6 +24,7 @@ jobs:
           persist-credentials: false
       - name: Require version handover and source tree
         shell: bash
+        working-directory: .
         run: |
           set -eux
           test -s docs/HANDOVER_POLICY.md
