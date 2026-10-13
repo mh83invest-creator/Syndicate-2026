@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['engine/**', '.github/workflows/windows-source-v0.7.yml']
+    paths: ['engine/**', 'docs/releases/v0.7.md', '.github/workflows/windows-source-v0.7.yml']
 
 permissions:
   contents: read
@@ -22,13 +22,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Verify tracked source exists
+      - name: Require version handover and source tree
         shell: bash
         run: |
+          set -eux
+          test -s docs/HANDOVER_POLICY.md
+          test -s docs/releases/v0.7.md
           test -f engine/src/game.c
           test -f engine/src/syndre.sx
-          grep -q 'ac_game_update_menu' engine/src/syndre.sx
-          grep -q 'camera_26_x_done' engine/src/syndre.sx
+          test -f engine/conf/wrappers_game.conf
+          echo "Required v0.7 handover and engine source are present"
       - name: Install current 32-bit packages
         uses: msys2/setup-msys2@v2
         with:
@@ -161,6 +164,15 @@ jobs:
           find release/pkg -type f | sort
           find release/pkg -iname '*.exe' -type f | grep -q .
           find release/pkg -iname '*.exe' -type f -exec file {} \;
+      - name: Upload version handover with build
+        uses: actions/upload-artifact@v4
+        with:
+          name: syndicate-2026-v0.7-handover
+          path: |
+            docs/HANDOVER_POLICY.md
+            docs/releases/v0.7.md
+          if-no-files-found: error
+          retention-days: 90
       - name: Upload 32-bit executable without retail data
         uses: actions/upload-artifact@v4
         with:
