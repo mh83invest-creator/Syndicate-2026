@@ -1,0 +1,30 @@
+# Never commit licensed commercial game data or local installation files.
+/data/
+/maps/
+/sound/
+/sounds/
+/music/
+/intro/
+/videos/
+/cdrom/
+/game-install/
+/local-game/
+/local-tests/
+/game-data/
+Syndicate_2026_v*.zip
+**/game01.dat
+**/game02.dat
+*.iso
+*.cue
+*.bin
+*.img
+*.sav
+*.dmp
+*.log
+*.dll
+*.exe
+/build/
+/dist/
+/release/
+/dependency-bundle/
+# Always inspect staged changes; ignore patterns do not guarantee safety.
