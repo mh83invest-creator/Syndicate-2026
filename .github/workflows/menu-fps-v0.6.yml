@@ -192,7 +192,8 @@ jobs:
           map_idx = s.index(needle, map_start)
           assert 0 < map_idx - map_start < 14000
           # Must be the map selection update at original source line 31916.
-          assert s[:map_idx].count('\n') + 1 == 31916
+          assert 'call   ac_swap_wscreen' in s[map_idx-700:map_idx], 'Expected map screen presentation immediately before update'
+          assert 'call   ac_game_update_menu' not in s[map_start:map_idx], 'Unexpected prior menu update'
           s = s[:map_idx] + s[map_idx:].replace(needle, 'call   ac_game_update_menu', 1)
           p.write_text(s)
           print('Isolated company and map selection menus at 30 Hz; 11 calls remain at 16 Hz')
