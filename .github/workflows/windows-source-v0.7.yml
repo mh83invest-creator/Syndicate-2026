@@ -114,7 +114,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: syndicate-2026-i686-dependencies
-          path: upstream/dependency-bundle/**
+          path: engine/dependency-bundle/**
           if-no-files-found: error
           retention-days: 30
       - name: Regenerate configure scripts
