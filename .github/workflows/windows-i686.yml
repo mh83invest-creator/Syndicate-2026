@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['.github/workflows/windows-i686.yml']
+    paths: ['.github/workflows/windows-i686.yml', 'patches/**', 'scripts/apply-patches.sh']
+  pull_request:
+    paths: ['.github/workflows/windows-i686.yml', 'patches/**', 'scripts/apply-patches.sh']
 
 permissions:
   contents: read
@@ -18,7 +20,12 @@ jobs:
         shell: msys2 {0}
         working-directory: upstream
     steps:
-      - name: Checkout exact unmodified SyndicatFX engine
+      - name: Checkout Syndicate 2026 patch definitions
+        uses: actions/checkout@v4
+        with:
+          path: project
+          persist-credentials: false
+      - name: Checkout exact pinned SyndicatFX engine
         uses: actions/checkout@v4
         with:
           repository: swfans/syndicatfx
@@ -48,6 +55,9 @@ jobs:
             mingw-w64-i686-SDL2
             mingw-w64-i686-libvorbis
             mingw-w64-i686-libogg
+      - name: Apply reviewed Syndicate 2026 patches
+        run: |
+          bash ../project/scripts/apply-patches.sh "$PWD" ../project/patches
       - name: Install Python helper for compiler-target interpreter
         run: |
           /mingw32/bin/python -m pip install --break-system-packages polib
@@ -112,7 +122,7 @@ jobs:
           mkdir -p release
           cd release
           ../configure --prefix=/ --enable-lbs-structs-expand
-      - name: Compile original engine
+      - name: Compile pinned source with project patches
         run: make -C release V=1
       - name: Stage native Windows executable
         run: |
@@ -124,10 +134,17 @@ jobs:
           find release/pkg -type f | sort
           find release/pkg -iname '*.exe' -type f | grep -q .
           find release/pkg -iname '*.exe' -type f -exec file {} \;
+      - name: Record exact source provenance
+        run: |
+          mkdir -p release/pkg/source-provenance
+          git rev-parse HEAD > release/pkg/source-provenance/upstream-commit.txt
+          git -C ../project rev-parse HEAD > release/pkg/source-provenance/project-commit.txt
+          find ../project/patches -maxdepth 1 -type f -name '*.patch' -print | sort | sed 's|.*/||' > release/pkg/source-provenance/applied-patches.txt
+          git diff --stat > release/pkg/source-provenance/source-diff-stat.txt
       - name: Upload 32-bit executable without retail data
         uses: actions/upload-artifact@v4
         with:
-          name: syndicatfx-windows-i686-unmodified
+          name: syndicatfx-windows-i686-patch-workflow
           path: upstream/release/pkg/**
           if-no-files-found: error
           retention-days: 14

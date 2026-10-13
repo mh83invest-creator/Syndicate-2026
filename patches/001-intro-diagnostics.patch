@@ -1,0 +1,48 @@
+diff --git a/src/main.c b/src/main.c
+--- a/src/main.c
++++ b/src/main.c
+@@ -83,22 +83,28 @@
+ }
+ */
+ 
+-static void
+-run_intro (int argc, char **argv)
+-{
+-    char intro_cmdline[100];
+-    int i;
+-
+-    strcpy(intro_cmdline, "intro >nul:");
+-
+-    for (i = 1; i < argc; i++)
+-    {
+-        strcat(intro_cmdline, " ");
+-        strcat(intro_cmdline, argv[i]);
+-    }
+-
+-    system(intro_cmdline);
+-}
++static void
++run_intro (int argc, char **argv)
++{
++    FILE *intro_file;
++    int status;
++
++    /* The original engine expects a separate intro player. Game intro
++     * data alone is not executable; report its absence explicitly. */
++    (void)argc;
++    (void)argv;
++    intro_file = fopen("intro.exe", "rb");
++    if (intro_file == NULL)
++    {
++        fprintf(stderr, "Syndicate 2026: intro.exe not found in the working directory; skipping external intro player.\n");
++        return;
++    }
++    fclose(intro_file);
++
++    status = system("intro.exe");
++    if (status != 0)
++        fprintf(stderr, "Syndicate 2026: external intro player exited with status %d.\n", status);
++}
+ 
+ static TbBool setup_log(void)
+ {
