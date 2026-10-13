@@ -1,7 +1,10 @@
 diff --git a/src/main.c b/src/main.c
 --- a/src/main.c
 +++ b/src/main.c
-@@ -86,16 +86,22 @@
+@@ -83,22 +83,28 @@
+ }
+ */
+ 
 -static void
 -run_intro (int argc, char **argv)
 -{
@@ -40,3 +43,6 @@ diff --git a/src/main.c b/src/main.c
 +    if (status != 0)
 +        fprintf(stderr, "Syndicate 2026: external intro player exited with status %d.\n", status);
 +}
+ 
+ static TbBool setup_log(void)
+ {
