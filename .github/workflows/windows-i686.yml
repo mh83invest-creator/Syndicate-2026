@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['.github/workflows/windows-i686.yml']
+    paths: ['.github/workflows/windows-i686.yml', 'patches/**', 'scripts/apply-patches.sh']
+  pull_request:
+    paths: ['.github/workflows/windows-i686.yml', 'patches/**', 'scripts/apply-patches.sh']
 
 permissions:
   contents: read
@@ -18,7 +20,12 @@ jobs:
         shell: msys2 {0}
         working-directory: upstream
     steps:
-      - name: Checkout exact unmodified SyndicatFX engine
+      - name: Checkout Syndicate 2026 patch definitions
+        uses: actions/checkout@v4
+        with:
+          path: project
+          persist-credentials: false
+      - name: Checkout exact pinned SyndicatFX engine
         uses: actions/checkout@v4
         with:
           repository: swfans/syndicatfx
@@ -48,6 +55,9 @@ jobs:
             mingw-w64-i686-SDL2
             mingw-w64-i686-libvorbis
             mingw-w64-i686-libogg
+      - name: Apply reviewed Syndicate 2026 patches
+        run: |
+          bash ../project/scripts/apply-patches.sh "$PWD" ../project/patches
       - name: Install Python helper for compiler-target interpreter
         run: |
           /mingw32/bin/python -m pip install --break-system-packages polib
