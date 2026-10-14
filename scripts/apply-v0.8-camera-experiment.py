@@ -89,7 +89,7 @@ endanchor="vtable_1e4b0:"
 assert s.count(anchor)==1 and s.count(endanchor)==1
 a=s.index(anchor); b=s.index(endanchor,a)
 part=s[a:b]
-assert part.count("call   scroll")==7,part.count("call   scroll")
+assert part.count("call   scroll")==5,part.count("call   scroll")
 part=part.replace("call   scroll","call   camera_scroll_controlled")
 wrapper="""/* v0.8: helper controls number of *camera-only* scroll steps.
  * Default one step, exactly as v0.7. No change to engine update pacing.
@@ -113,7 +113,7 @@ camera_scroll_controlled_done:
 
 """
 s=s[:a]+part+wrapper+s[b:]
-assert s.count("call   camera_scroll_controlled")==7
+assert s.count("call   camera_scroll_controlled")==5
 assert s.count("camera_scroll_controlled_repeat:")==1
 p.write_text(s)
 print("Applied camera-only five-step controller prototype with v0.7 default")
