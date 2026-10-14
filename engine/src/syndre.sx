@@ -19410,12 +19410,12 @@ camera_26_y_done:
 		cmp    $0x27e,%dx
 		jne    jump_1e46f
 		push   $0x6
-		call   camera_scroll_controlled
+		call   scroll
 		add    $0x4,%esp
 		ret
 	jump_1e46f:
 		push   $0x4
-		call   camera_scroll_controlled
+		call   scroll
 		add    $0x4,%esp
 		ret
 	jump_1e47a:
@@ -19424,12 +19424,12 @@ camera_26_y_done:
 		cmp    $0x18e,%ax
 		jne    jump_1e492
 		push   $0xa
-		call   camera_scroll_controlled
+		call   scroll
 		add    $0x4,%esp
 		ret
 	jump_1e492:
 		push   $0x2
-		call   camera_scroll_controlled
+		call   scroll
 		add    $0x4,%esp
 		ret
 	jump_1e49d:
@@ -19437,29 +19437,9 @@ camera_26_y_done:
 		jne    jump_1e4ad
 		push   $0x8
 	jump_1e4a5:
-		call   camera_scroll_controlled
-		add    $0x4,%esp
-	jump_1e4ad:
-		ret
-
-/* v0.8: helper controls number of *camera-only* scroll steps.
- * Default one step, exactly as v0.7. No change to engine update pacing.
- */
-camera_scroll_controlled:
-		push   %ebx
-		call   ac_camera_scroll_steps
-		mov    %eax,%ebx
-		test   %ebx,%ebx
-		jle    camera_scroll_controlled_done
-camera_scroll_controlled_repeat:
-		mov    0x8(%esp),%eax
-		push   %eax
 		call   scroll
 		add    $0x4,%esp
-		dec    %ebx
-		jg     camera_scroll_controlled_repeat
-camera_scroll_controlled_done:
-		pop    %ebx
+	jump_1e4ad:
 		ret
 
 vtable_1e4b0:

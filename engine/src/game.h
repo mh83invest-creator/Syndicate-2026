@@ -43,6 +43,3 @@ const char *game_get_user_path (void);
 };
 #endif
 #endif // GAME_H
-
-/* v0.8 experimental camera-only steps; normal gameplay tick unchanged. */
-int camera_scroll_steps(void);
