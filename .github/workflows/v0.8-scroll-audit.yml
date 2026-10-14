@@ -1,0 +1,47 @@
+name: v0.8 Scroll Mechanics Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/v0.8-scroll-speed]
+    paths:
+      - '.github/workflows/v0.8-scroll-audit.yml'
+      - 'docs/releases/v0.8.md'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify mandatory release notes and v0.7 baseline
+        run: |
+          test -s docs/releases/v0.8.md
+          test -s engine/src/syndre.sx
+          test -s engine/src/game.c
+          grep -q 'camera_26_x_done' engine/src/syndre.sx
+      - name: Extract camera movement and options menu source context
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          src=Path('engine/src/syndre.sx').read_text(errors='replace').splitlines()
+          lines=[]
+          anchors=[r'^scroll_map:',r'\bcall\s+scroll_map\b',r'\bscroll_speed\b',r'\boptions\b',r'\bsettings\b',r'\bconfigure_company:',r'\bmap_selection:']
+          for pat in anchors:
+              matches=[i for i,l in enumerate(src) if re.search(pat,l,re.I)]
+              lines.append('=== '+pat+' : '+str(len(matches))+' matches ===')
+              for i in matches[:25]:
+                  width=240 if pat==r'^scroll_map:' else 20
+                  lines.append('\n'.join(f'{j+1}: {src[j]}' for j in range(max(0,i-30),min(len(src),i+width))))
+          Path('v0.8-scroll-audit.txt').write_text('\n\n'.join(lines))
+          print('Scroll contexts generated:',len(src),'source lines')
+          assert any(re.search(r'^scroll_map:',l) for l in src)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v0.8-scroll-and-options-source-audit
+          path: v0.8-scroll-audit.txt
+          retention-days: 60
