@@ -50,3 +50,24 @@ Related shared coordination document: docs/SHARED_DEVELOPMENT_HANDOVER.md (main 
 - Documentation: this handover created.
 - Outstanding: source inventory and feasibility assessment, integration design, proof-of-concept test.
 - Handover version: MB-AUDIT-0.1.
+
+## Audit 0.2 — Source architecture discovery (2026-11-01)
+Read from main repository source:
+- `engine/src/game.c`: `game_initialise()` asserts fixed offsets for `level__CPObjectives` relative to `level__Seed` (lines ~69–70). `game_update()` targets 16 FPS, and `game_update_menu()` targets 30 FPS. This confirms existing memory layout constraints, not an editable mission loader.
+- `engine/src/wrcountry.h`: packed `CountryState` contains `Happiness`, `OwningPlayer`, `Revenue`, `TaxPercent`, `Population`; `country_states[50]`. `wrcountry.c` contains no corresponding active gameplay logic in current source snapshot. Territory mutation code must be located elsewhere.
+- `engine/src/game_data.c`: `load_player(int slot)`, `save_player(char *,int)` operate on `save/%02d.gam`, using fixed binary arrays `players`, `country_states`, `weapons`, `cybmods`, `research`, `selected_team`. Hard `sizeof` assertions include players=8376 bytes, countries=500 bytes. `save_player` also changes credits under a threshold condition. Do not change original save format without explicit compatibility plan.
+- `engine/src/Makefile.am`: compiles `syndre.sx`, wrapper objects generated from `conf/wrappers_*.conf`, with native C files. Treat mission/campaign extension as native+assembly integration until further proved.
+- `engine/src/game_bstype.h`: `ThingIdx` and `MapCoord` types available for later review.
+- `engine/src/player.c` and `wrcountry.c` contain scaffolding, not yet substantive gameplay implementations in this snapshot.
+
+Engineering consequences:
+1. First prove how original assembly-linked mission selection/objectives work. Do not assume simple C hooks exist.
+2. Prefer separate versioned World Domination state or demonstrably compatible save extension; no changes to existing `.gam` layout until proven safe.
+3. Mission builder should initially emit a separate data model; actual in-engine execution is unverified.
+4. Preserve original territory state and mission update timing.
+5. Existing selectable mode design remains approved concept, not proven implementable yet.
+
+Next inspection: `engine/conf/wrappers_game.conf`, `engine/src/game_data.h`, `engine/src/player.h`, generated symbol relationships, source data inventory and `syndre.sx` treatment.
+Tests: static inspection only, no build/runtime test.
+Code modified: none.
+Handover version: MB-AUDIT-0.2.
