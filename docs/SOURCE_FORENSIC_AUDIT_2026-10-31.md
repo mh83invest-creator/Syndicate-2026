@@ -416,3 +416,13 @@ Two new static-audit reports were committed and must accompany this master audit
 **Methodology warning:** A lexical count of `call` tokens between two nearby address labels does **not** reconstruct full assembly routines. Many real handler labels lack original hex address comments; there are tail jumps, indirect switch tables and branch targets. Previous call-list counts are navigation aids only, not fully proven direct dynamic call graphs or profiler data. This audit has explicitly corrected a concrete case.
 
 **Tests and scope:** Static address/stride math and source occurrence checks passed. No Windows or gameplay execution, unit test, profiling instrumentation, source changes or FreeSynd merges. v0.7 preserved, v0.9 work remains held.
+
+## Startup/CLI safety addendum — 1 November 2026
+
+Additional asset-independent review now recorded in **`docs/SOURCE_AUDIT_STARTUP_AND_CLI_2026-11-01.md`**:
+
+1. `engine/src/main.c:87–103,263–269` **unconditionally calls** `run_intro`, even though the user previously observed no opening intro in their normal gameplay. It builds a command in a **100-byte char array** with unbounded `strcat` of every CLI argument and invokes `system`. The **unsafe source pattern is confirmed**, but actual Windows runtime behaviour, external executable presence and exploitability are untested. Do not change this startup behaviour without separate approval.
+2. `engine/src/main.c:155–215` declares **six long options with `has_arg=0`** despite their branches consuming `optarg`; the corresponding short options declare arguments correctly. This is a source-confirmed mismatch and a likely incorrect long-option path; no executable CLI test has run.
+3. A targeted scan of all **17** game `engine/src/*.c` files identified other unbounded string calls for further input-size/asset-contract review; these are *not* all classified as defects without examining their destination and source bounds.
+
+**Priority:** These findings deserve explicit consideration in a future controlled regression/security task, but **must not become unapproved v0.9 graphics-scope work**. No engine changes, builds, or tests were made by documenting them. The original game's known-good v0.7 source remains intact.
