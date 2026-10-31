@@ -63,3 +63,6 @@ Source inspection now completed for `engine/src/game_data.c`, `game_data.h`, `ga
 - Immediate cross-team rule: Do not independently change save path semantics, save slot selection, campaign mode, or `load_player/save_player` interfaces until a common campaign identity contract is agreed. Preserve legacy data.
 - Requirements remain: only own-campaign saves visible/loadable; wrong-campaign paths cannot load; old saves remain accessible; protect fixed payload structures.
 - No implementation or runtime testing. Detail in Mission Builder handover on `feature/mission-builder-audit`.
+
+## Cross-workstream integration finding — result flags (2026-11-01)
+Mission Builder source audit MB-AUDIT-1.2 established `level_complete` sets bit 0x2 and `level_failed` sets bit 0x4 of assembly game state `data_60afc`. A later post-mission routine at assembly lines ~55045–55079 checks completion and changes territory ownership/happiness/tax state. **Do not change these flags or the post-mission state transition in the mainline engine without reviewing Mission Builder requirements and tests.** Existing campaign rules must remain unchanged. Full source references: Mission Builder handover on `feature/mission-builder-audit`. Documentation only; untested in gameplay.
