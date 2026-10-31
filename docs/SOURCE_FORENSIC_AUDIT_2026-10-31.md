@@ -114,3 +114,68 @@ Stay on `feature/v0.9-visual-showcase`; protect `main` and user-tested v0.7 pack
 
 ## Changelog
 - Initial source survey established real build layout, legacy framebuffer/input/asset coupling, identified original assembly access as critical blocker, and froze feature development pending a complete audit.
+
+## Addendum — Assembly blocker resolved by Git blob retrieval
+
+**Correction to earlier findings:** The original source survey described `engine/src/syndre.sx` as inaccessible because regular GitHub contents reads returned empty strings. **This limitation has now been bypassed:** the GitHub blob-by-SHA endpoint returned the entire 1,848,334-character source text (85,803 lines), blob SHA `c35e22621a93d1e07c44d40de8867446ff7c64bf`. The earlier "unreadable" classifications above are historical, NOT the current status. A local Git checkout remains unavailable because the runtime cannot resolve github.com, so there has been no local compilation or full-tree clone.
+
+### Extracted assembly symbol inventory (source evidence)
+
+Simple lexical scan of original assembly discovered approximately **2,924 line-anchored named labels** (this count includes data labels and may not equal the number of procedures) and 73 `GLOBAL(...)`-style declarations including macro definitions. These counts are **not a semantic call graph**.
+
+| Key symbol | Assembly line (1-based) | Why it matters |
+| --- | ---: | --- |
+| `mission_briefing` | 1207 | Mission briefing processing |
+| `draw_brief_tact_map` | 2141 | Briefing tactical map presentation |
+| `draw_config_menu` | 10925 | Company/config menu presentation |
+| `draw_config_menu_box` | 11270 | Menu frame/panel candidate |
+| `draw_logo` | 11326 | Branding/logo presentation candidate |
+| `draw_tact_map` | 16259 | Tactical map drawing |
+| `draw_mapwho` | 18029 | Map actor/entity drawing |
+| `draw_element` | 19109 | Object rendering candidate |
+| `draw_agent_element` | 19173 | Agent element drawing |
+| `full_redraw` | 19285 | Redraw coordination |
+| `scroll_map` | 19352 | Input-to-camera direction |
+| `scroll` | 19459 | Camera movement implementation |
+| `init_map_data` | 25694 | Map initialization |
+| `load_map_level` | 27845 | Map/level loading |
+| `map_selection` | 31709 | Strategic world/map selection |
+| `_draw_map_area` | 32804 | Map area draw |
+| `draw_panel` | 39036 | In-game panel |
+| `draw_apanel` | 40659 | Additional panel |
+| `DisplayScreenTitle` | 55935 | Screen title function |
+| `DrawScreenGadget` | 55974 | UI control drawing |
+| `DrawMenuGadget` | 56074 | Menu gadget drawing |
+| `DoPalette` | 61958 | Palette operations |
+| `ASM_LbPaletteSet` | 75203 | Palette application |
+| `DrawASpriteHires16_A` | 76222 | High-resolution sprite drawing |
+| `DrawSpriteLores16` | 77185 | Low-resolution sprite path |
+| `mission_load_files` | 82620 | Mission resource list |
+| `level_palettes` | 82677 | Palette data |
+| `level__Vehicles` | 85726 | Vehicle state data |
+| `level__Worlds` | 85742 | World-state data |
+| `level__Objectives` | 85770 | Objective-state data |
+
+**Critical confirmation:** Three calls to `ac_game_update_menu` appear at lines **2065, 10533 and 31936**. These are the three special 30 FPS menu call sites described in the v0.7 handover. Leave their dispatch alone.
+
+The symbol-name scan did **not** find named labels specifically for streetlights, neon, illuminated windows, or dynamic light volumes. **Absence of matching label names does not establish absence of the feature**; unnamed `func_*` procedures, assets, palette handling and object rendering still require deeper analysis.
+
+### Updated feasibility and regression implications
+
+- Menu polish is now traceable to concrete assembly functions (`draw_config_menu`, `draw_logo`, `DrawMenuGadget`, `DisplayScreenTitle`, `draw_brief_tact_map`, `map_selection`), but changing these is not approved until actual draw buffer, hit boxes, palette changes and asset data references are mapped.
+- Night lighting is still technically **unproven**. There are identifiable candidate render/palette/map symbols, but no demonstrated per-object light system. Actual implementation must account for 8-bit indexed colour and asset compatibility.
+- Camera functions `scroll_map` and `scroll` and all three `ac_game_update_menu` sites are regression guardrails. The exact failed v0.8 wrapper code must remain excluded.
+- `engine/src/mouse.c` resolution-dependent coordinates and pointer initialization in `main.c` require cross-mode mouse hitbox tests if sprite or menu scaling changes.
+- The 85,803-line assembly source now makes comprehensive static inspection possible via the blob connector, **but a full semantic dissection of every block has not been completed**.
+
+### Remaining work after blocker removal
+
+1. Obtain full repository tree listing and byte-faithful local files for support libraries (`bflibrary`, `bfsoundlib`), assets/formats, translation, utilities and config. Git checkout failed from this environment (DNS resolution error); a GitHub connector file list/tree endpoint was not exposed.
+2. Conduct focused source slices for each assembly subsystem and create a call/dependency graph, including unnamed `func_*` routines and actual parameter/state dependencies.
+3. Determine how original retail assets encode map tiles, windows, signs, headlamps, palettes, selection visuals and sprites, without committing proprietary data.
+4. Produce feature-by-feature implementation feasibility and test plans only after verifying actual render and data paths.
+5. Keep v0.9A feature implementation paused; no additional game source changes were made during this audit.
+
+### Verification of this addendum
+
+GitHub original assembly blob retrieval: **PASS**. Symbol/label occurrence scan: **PASS (lexical only)**. Three menu-call-site check: **PASS**. Full semantic analysis: **NOT COMPLETE**. Full checkout: **BLOCKED**. Windows compile and gameplay: **NOT RUN**.
