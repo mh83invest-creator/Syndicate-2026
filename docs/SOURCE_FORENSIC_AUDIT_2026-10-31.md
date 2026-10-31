@@ -283,3 +283,60 @@ The supplied ZIP contains a FreeSynd source tree. Concrete functions inspected:
 - SyndicatFX graphics/data C source: **GitHub source reads passed** for the named paths.
 - This is a **static source cross-reference**; no matching retail map-data samples were analysed and no equivalence asserted.
 - No gameplay code changes; no Windows compile, new build, screenshots or playtests.
+
+## Addendum — Source audit synthesis: mission assets, rendering dependency gates, audio and test inventory
+
+**Scope:** This closes the **read-only architectural reconnaissance stage** and records current feature gates. It is **NOT** a complete proof of every function across all 386 files, a compiled verification of the branch, or a green light to implement night lighting. Source inspections cited here use the GitHub blob `c35e22621a93d1e07c44d40de8867446ff7c64bf` for original assembly; line numbers refer to that 85,803-line file.
+
+### Concrete assembly call chains and original data loading
+
+| Source and location | Direct evidence | Implication |
+| --- | --- | --- |
+| `engine/src/syndre.sx:27845–27935`, `load_map_level` | Calls `clear_savegame`, `LbFileReadRNC`, `ac_LbDataLoadAll`, `ac_sound_bank_setup`, `init_hires_blocks`, `init_level_data`; references `level__Seed`, `level__MapNumber`, `mission_load_files`, `WScreen`, `VScreen` | Mission/map load is coupled to original level state, compressed resource reading, sprite blocks and audio banks. A per-mission visual treatment must not corrupt these lifetimes. |
+| `engine/src/syndre.sx:82620–82673`, `mission_load_files` | Load table includes `data/map`, `map_buf`, `h_col`, `h_blocks`, `h_sprites_data`, `h_sprites`, `frames`, `elements_ani`, `starts_ani` | Rendering depends on original map, colour, block, sprite and animation resources; original asset formats require further field decoding. |
+| `engine/src/syndre.sx:19109–19172`, `draw_element` | References `h_sprites`, calls `DrawASpriteHires16_A` | Confirms a map-element sprite draw path; not evidence of emissive textures or lights. |
+| `engine/src/syndre.sx:18029–18715`, `draw_mapwho` | References map actor and people arrays, viewport coordinates; calls `LbScreenSetGraphicsWindow`, `DrawASpriteHires16_A`, `set_block_changes`, `__cover_sprite` | Entity draw order, screen clipping and occlusion must be audited before any per-object overlay. |
+| `engine/src/syndre.sx:19285–19350`, `full_redraw` | Calls `draw_horizontal`, `set_all_changes` and references map boundaries | Camera, tile redraw and change tracking are intertwined. No presentation change should affect these without precise testing. |
+| `engine/src/syndre.sx:39036–39215`, `draw_panel` | Calls `draw_apanel`, `draw_bars`, `draw_tact_map`, `change_mouse_pointer`, text and window helpers | Gameplay panel draws are coupled to cursor and map state. Maintain readability and input. |
+| `engine/src/syndre.sx:61958–62031`, `DoPalette` | References `PalMem`, calls `ac_LbPaletteSet` | Palette changes are original-game operations; effects could alter UI and scene simultaneously. |
+| `engine/src/syndre.sx:19352–19458`, `scroll_map` | Dispatches directly to `scroll` for camera directions | Preserve known-good v0.7 camera calling semantics. |
+| `engine/src/syndre.sx:19459+`, `scroll` | References `player_view_map_x/y`, calls `draw_horizontal`, `set_all_changes` | Camera speed and redraw are coupled; never import failed v0.8 step wrappers. |
+
+These are **local routine references**, not a fully resolved dynamic execution trace.
+
+### Palette and rendering conclusions
+
+- `engine/bflibrary/src/x86-win-sdl2/sscreen.c:878, 924, 976, 1050–1084` contains custom blit/scaling paths, `LbI_SDL_BlitScaled`, and `LbScreenSwap`; the swap blits a draw surface and calls `SDL_UpdateWindowSurface`. No native shader/lighting pipeline has been demonstrated.
+- `engine/bflibrary/src/x86-win-sdl2/spalette.c:50–99` applies indexed palette colour data to SDL screen/draw surfaces. This is useful for palette handling but **global palette edits alone cannot deliver distinct localized lights**.
+- `engine/bflibrary/src/general/gspr_map.c:198,286,390,418` exposes mapped-sprite drawing variants, which may provide visual colour transforms at sprite scale. They do not establish occlusion-safe streetlight pools, headlights or window glow.
+- **Technical risk ranking (preliminary):** text/panel resource styling = medium (assembly/UI coupling); font/sprite scaling = medium–high (mouse coordinate/hitbox coupling); palette-wide night tint = high for legibility/UI colours; per-source night lighting = high/unknown pending actual asset/draw-order and output testing. No item is approved for implementation by this rating.
+
+### Audio and timing evidence
+
+- `engine/bfsoundlib/src/drv_oal.c:102` opens an OpenAL device with `alcOpenDevice`; other visible paths manage OpenAL sound sources, buffers and playback.
+- `engine/bfsoundlib/src/init_mus.c:229` opens an XMIDI driver, while `init_snd.c:181` references `sound.dat`; `init_mus.c:84` references `music.dat`.
+- `engine/bfsoundlib/src/bfaudio.c:118+` performs audio initialization and configures paths/state. Legacy AIL, sound-bank and native audio-device functionality have dependencies across multiple libraries.
+- `engine/src/game.c:142–193` implements SDL tick/delay-based pacing; `game_update` at 205–207 invokes `game_update_full(true,16)`; `game_update_menu` at 224–226 uses 30. Three original-assembly menu call sites remain verified.
+- **Regression guardrail:** visual work must not change the event pump, tick pacing, library initialization, MIDI/audio processing or native DLL dependency packaging.
+
+### Repository test and build inventory
+
+- Recursive tracked tree returned `413` entries, `386` tracked blobs, `truncated=false`.
+- `engine/bflibrary/tests/` contains 74 files, including test sources for math, polygon/line/triangle and sprite drawing, test helpers/mocks, and reference PNG images. **Presence does not imply tests have run.**
+- Windows source build workflow: `.github/workflows/windows-source-v0.7.yml`; source restore workflow: `.github/workflows/restore-v0.7-source.yml`. Upstream engine has additional `engine/.github/workflows/build.yaml` and `build-sdl1.yaml` workflows. Existing Windows v0.7 CI is historical baseline proof, not v0.9 build evidence.
+- Public `engine/res/` provides small icons and Windows resource declarations, **not commercial mission art**. Original retail map/mission resources remain outside public GitHub.
+- No Windows test game data, current executable run, screenshots, benchmark or current v0.9 CI evidence has been inspected.
+
+### FreeSynd role and evidence limits
+
+The user-supplied FreeSynd ZIP is reference-only. Its `src/mapmanager.cpp` and `src/map.cpp` document `map%02d.dat` loading and 3D tile-layer indexing, and `src/menus/maprenderer.cpp` documents painter-style tile/object composition. This supports conceptual resource mapping, not byte-for-byte equivalence or drop-in code. No FreeSynd code is committed or approved for integration.
+
+### Completion classification and user dependency
+
+**Read-only reconnaissance completed:** full tracked-file inventory, original assembly retrieval and key symbol/call-site mapping, core C module identification, SDL2 indexed-palette/screen backend, reference asset decoding, audio/dependency scan and available test/workflow inventory.
+
+**Full forensic audit not complete:** no line-by-line semantic proof for every one of the 386 tracked files, no decompiled unnamed assembly call graph, no original retail map/sample bytes to verify exact formats and window/sign materials, no runtime frame captures, no build/CI on the v0.9 development branch, no performance measurements. Therefore definitive feasibility or safety of proposed lighting and UI features is **not established**.
+
+**User action required for next evidence tier:** provide a legally owned, nonpublic *local test environment* or representative original Syndicate mission/map/sprite/palette assets through an appropriate private channel; do **not** commit retail game files to public GitHub. Also a Windows playable test environment is required for end-to-end frame/interaction verification. Without these, only further static code inspection is possible.
+
+**Development decision:** do not begin v0.9A graphics or v0.9B lighting implementation. Preserve `main`, v0.7 camera, timing and audio. The preexisting v0.9A native title string edit remains unverified, and has not been expanded during the audit.
