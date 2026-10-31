@@ -345,3 +345,16 @@ The user-supplied FreeSynd ZIP is reference-only. Its `src/mapmanager.cpp` and `
 ## Continuation reference — 1 November 2026
 
 A separate, evidence-based static deep dive has been committed at **`docs/SOURCE_AUDIT_RENDERING_AND_TEST_GATES_2026-11-01.md`**. Read it alongside this original audit before further technical work. It records the distinct **16-index planar mission render path**, sprite/framebuffer ownership, menu/mouse/assembly ABI relations, original camera edge normalization, direct UI and mission render call sites, and a specific CI testing gap (**Automake declares seven executable tests through `TESTS = $(check_PROGRAMS)`, while current v0.7 Windows workflow compiles but does not invoke `make check`**). It also defines a preliminary feature-feasibility matrix and test prerequisites. No game or workflow source was changed for this read-only audit.
+
+## Continuation — Asset-free source audit advanced, 1 November 2026
+
+**New permanent companion reports on this branch:**
+
+- `docs/ASM_ADDRESS_LABEL_INDEX_2026-11-01.md` — machine-generated, **lexical** index of 1,617 original address-annotated assembly labels (code/data/unclear heuristics, source offsets, call-site counts). Does **not** certify 1,617 functions or a complete call graph.
+- `docs/SOURCE_AUDIT_ASSET_FREE_CONTINUATION_2026-11-01.md` — manually traced actual mission frame lifecycle, double `scroll_map` dispatch, 16-colour planar to SDL presentation, original per-level `hpalXX.dat` palette selection, original high/low resource tables and allocation pointers, title/UI asset route, SDL mouse/focus paths, save-data invariants, known-good branch file-hash comparison, and quantified converter iteration count.
+
+**Key preservation finding:** Git blob comparisons between current audit branch and `main` showed original assembly, camera/input source, display source, SDL2 screen and palette backends, save-data implementation and v0.7 Windows workflow **identical**. Only `engine/src/game.c:85` differed in the checked source set, reflecting the earlier, **unbuilt** `LbSetTitle("Syndicate 2026")` update. This is a selected-file comparison, not proof that every branch file is identical.
+
+**Important risk:** The mission loop performs `swap_screen_vres16` before scroll/copy-back/actor/HUD draws for the next visible cycle, and low-level palette allocation/aliases differ by screen phase. A universal scene-darkening hook or arbitrary sprite-remap insertion risks affecting HUD, cursor, colour transitions, and redraw order. The existing 8-bit sprite remapping API cannot simply be assumed compatible with the four-planar mission rendering path.
+
+**Audit status:** Static, read-only source reconnaissance has materially progressed. Nevertheless, **the full codebase audit is still not finished**, and no lighting/UI implementation is authorised. Original retail assets and actual Windows frame/playtest evidence will be needed for conclusive feasibility. Further code-only investigation remains possible without the user's immediate involvement.
