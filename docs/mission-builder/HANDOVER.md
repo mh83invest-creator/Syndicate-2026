@@ -71,3 +71,22 @@ Next inspection: `engine/conf/wrappers_game.conf`, `engine/src/game_data.h`, `en
 Tests: static inspection only, no build/runtime test.
 Code modified: none.
 Handover version: MB-AUDIT-0.2.
+
+## Audit 0.3 — Objective schema and execution boundary (2026-11-01)
+Additional inspected repository files:
+- `engine/src/game_data.h`: packed `CPObjective` (fields `Child`, `Parent`, `field_4`, `field_6`, `ActionType`, `Action`, `TargetOffs`, `field_B`, `field_D`); declared `level__CPObjectives[128]` and `level__Seed`. Semantics of objective action values are NOT yet known.
+- `engine/src/main.c`: declares `current_levno`, `level__MapNumber`; initialises both to 1; calls `syndicate()` after resource initialization. `syndicate()` is declared as assembly import. This is a critical runtime boundary requiring assembly/data examination.
+- `engine/src/Makefile.am`: includes `syndre.sx` as source and generated wrapper objects. `engine/conf/wrappers_game.conf` includes `game_update`, `game_update_menu`, `load_player`, `save_player`, etc. Wrapper presence does not imply editable mission functions.
+- `engine/src/guitext.c`: loads `language/<language>/guitext.dat` into GUI strings. This is menu text, NOT established mission briefing text support.
+- `engine/src/player.h`: `PlayerInfo players[8]`, selected agent team `selected_team[4]`; direct use in binary save routines reinforces ABI constraints.
+
+Implications:
+- An existing objective array provides a concrete target for identifying mission semantics, but its encoding and loading path must be verified.
+- `current_levno` and `level__MapNumber` must be traced into mission selection and any expansion switches.
+- Assembly imported `syndicate()` is the principal unknown. Do not promise adding selectable campaigns until the integration seam is demonstrated.
+- Need inspect stored form and provenance of `syndre.sx`: connector returned empty text, so cannot conclude it is a genuinely empty file or accessible textual assembly.
+- Need inspect actual original game mission resources separately if legally provided; none committed.
+
+Next audit: inspect workflow, assembly asset provenance, data directories and available symbols; produce risk-graded implementation strategy; no coding before validated integration seam.
+Tests: static code/document reading only. No compilation or runtime tests. Existing behaviour unchanged.
+Handover version: MB-AUDIT-0.3.
