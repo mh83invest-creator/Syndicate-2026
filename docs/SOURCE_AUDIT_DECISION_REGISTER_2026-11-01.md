@@ -118,3 +118,11 @@ No Windows executable build, native DLL/runtime check, performance counters, key
 - `docs/releases/v0.9.md`, `docs/releases/v0.9A.md` — approved scope/actual unbuilt implementation status.
 
 **Bottom line:** The source can now be traced to concrete animation, map, sprite, palette, framebuffer, menu, timing, audio and effects hooks; a path to **targeted testable experimentation** is identifiable. **The full forensic audit and proof of localized lighting remain incomplete without real assets, a build, and Windows gameplay evidence.** Source analysis is not a substitute for those checks.
+
+## 7. Map offset structure verified with original and reference source
+
+**Additional focused report:** `docs/SOURCE_AUDIT_MAP_FORMAT_AND_GEOMETRY_2026-11-01.md`.
+
+Original assembly `init_map_data` (`syndre.sx:25694–25716`) uses `map_buf+12`, then rebases **12,288 four-byte relative column offsets in place**, creating a 49,152-byte table. `draw_horizontal` (`71385+`) indexes columns with a **128-column stride** and parity-based draw dispatch. FreeSynd's external `src/map.cpp:47–70` independently reads three little-endian 32-bit dimensions followed by relative offsets also based at byte 12. **12,288/12,288 synthetic lookup comparisons** matched the shared base-plus-offset arithmetic. This is a cross-implementation source-format confirmation, **not actual retail map compatibility proof**. The original assembly assumes a fixed lookup count, while FreeSynd uses dimensions from the file; actual game bytes still need checking.
+
+**Lighting impact:** Building face/window/sign identification requires more than the map filename: actual block IDs, `h_blocks` structure, projection and occlusion require inspection. A screen-space glow overlay could wrongly light occluded surfaces. No geometry/classification/light source system is yet verified.
