@@ -231,3 +231,55 @@ The following paths exist in the actual branch and were read:
 3. Audit map/level file loading, tile/object/sprite composition, and separate game/GUI palette lifetimes; identify feasible per-mission atmosphere hooks without changing gameplay.
 4. Inventory and inspect automated tests and CI workflow configuration, then form a traceable test matrix. Record **which** checks can run without proprietary retail files and which need Windows user testing.
 5. Continue semantic assembly call-graph tracing (including unnamed `func_*` routines) before proposing v0.9A/B code edits.
+
+## Addendum — Mission map and sprite-rendering cross-reference (31 October 2026)
+
+**Working-engine decision unchanged:** SyndicatFX v0.7 remains the sole implementation. The user provided `freesynd-master.zip` as an external reference. The archive was successfully opened locally for read-only examination; **none of it was copied into Syndicate 2026 or committed to GitHub**. The FreeSynd snapshot is a separate project's code, not a verified substitute for the current engine.
+
+### FreeSynd original-resource reference: verified
+
+The supplied ZIP contains a FreeSynd source tree. Concrete functions inspected:
+
+| Reference source | Lines | Actual code evidence |
+| --- | --- | --- |
+| `freesynd/src/mapmanager.cpp` | 57–79 | `MapManager::loadMap` constructs `map%02d.dat`, calls `File::loadOriginalFile`, populates a `Map`, and caches by map ID. |
+| `freesynd/src/map.cpp` | 47–87 | `Map::loadMap` reads little-endian X/Y/Z dimensions at offsets 0/4/8, a column lookup table beginning at offset 12, and tile IDs by column and height. |
+| `freesynd/src/menus/maprenderer.cpp` | approx. 55–122 | `MapRenderer::render` traverses isometric tile positions and draws visible map tiles, then objects associated with each tile. |
+| `freesynd/src/menus/maprenderer.cpp` | 221 onwards | `drawObjectsOnTile` draws queued `MapObject` instances; `addObjectToDraw` accounts for vehicle elevation and orders same-tile objects front-to-back using relationship checks. |
+| `freesynd/src/gfx/tile.cpp` | 47 and 80 | Tile drawing methods `Tile::drawTo` and `Tile::drawToScreen`. |
+
+**Interpretation:** The original map format has independently documented layered tile structure in FreeSynd. Its renderer provides a useful conceptual reference for scene ordering and occlusion. **This is not yet a verified exact format/algorithm match to SyndicatFX**; original assembly/map loader and asset samples must be checked before transferring assumptions. The user-supplied archive was not built or run.
+
+### Current SyndicatFX graphics capabilities: additional verified references
+
+| Current engine source | Lines | Meaning and caution |
+| --- | --- | --- |
+| `engine/bflibrary/src/general/gspr_map.c` | 198, 286, 390, 418 | Contains `LbSpriteDrawTrRemap`, `LbSpriteDrawSlRemap`, `LbSpriteDrawFCRemap` and `LbSpriteDrawRemap`. These are colour-remapping sprite operations. Their existence suggests palette-index remapping can occur on individual sprites, but does **not** demonstrate lighting or correct map-object integration. |
+| `engine/bflibrary/src/general/gpalette.c` | 38, 180, 276–288 | Contains `LbPaletteFade` and palette-colour lookup functions. Global palette fading is distinct from localized light and could affect UI, agents or the entire scene. |
+| `engine/src/display.c` | 234–255 | `blit_wscreen_vres16`, `blit_wscreen_mcga` and `swap_wscreen` copy the original framebuffer and then call `LbScreenSwap`. Any proposed overlay has to choose an appropriate stage before/after blitting and respect buffer locks. |
+| `engine/src/game_data.c` | 95, 113 | Original file-name transformation and filename setup; map file loading inside original assembly still requires deeper inspection. |
+| `engine/src/game_data.c` | 141–190 | Player-save serialization writes/reads multiple existing state structures in a fixed sequence. Adding atmosphere settings into these structs would risk save compatibility; do not change their layout without separate format study. |
+
+### Feasibility update — still preliminary
+
+1. **Selective sprite colour remapping:** supported at the *library API level*. Unknown whether and where it can safely shade map objects independently in the original mission render loop.
+2. **Whole-palette day/night tint:** technically conceivable given palette APIs, but risky and does not satisfy required localized sources. Do not treat it as v0.9B complete.
+3. **Per-pixel streetlight pools / headlights / emissive windows / neon:** **not established**. Need original-map rendering order, sprite layering, palette-index semantics, possible mask/overlay draw functions and real asset representation.
+4. **Mission-specific atmosphere settings:** unknown; must inspect mission metadata and original level loading. Do not expand saved structures blindly.
+5. **Visual UI improvements:** still require cross-checking `DrawMenuGadget`, `draw_config_menu`, graphics resources and mouse hit boxes; no UI gameplay code changes were made.
+
+### Additional audit tasks and regression gates
+
+- Trace assembly `init_map_data`, `load_map_level`, `draw_element`, `draw_mapwho`, `draw_panel`, `full_redraw` and `DoPalette` call sites and data flows.
+- Establish the exact mapping between original `mapNN.dat` data and SyndicatFX level/map buffers; compare against FreeSynd only as reference.
+- Enumerate existing sprite-remap consumers to establish if the API is already used in mission rendering or only generic library code.
+- Test palette lifetime boundaries across mission, menus and briefings in source; identify safeguards for maintaining readable interface and actors.
+- Form minimal isolated tests for palette remapping and scene overlay drawing, then build them on a separate branch only after the forensic feasibility audit.
+- Keep `main`, the camera correction, 16 FPS mission update, three 30 FPS strategic menu calls, input/audio and original gameplay entirely unchanged.
+
+### Verification
+
+- User-provided FreeSynd ZIP: **read-only extraction and source inspection passed**.
+- SyndicatFX graphics/data C source: **GitHub source reads passed** for the named paths.
+- This is a **static source cross-reference**; no matching retail map-data samples were analysed and no equivalence asserted.
+- No gameplay code changes; no Windows compile, new build, screenshots or playtests.
