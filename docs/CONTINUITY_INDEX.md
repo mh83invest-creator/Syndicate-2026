@@ -90,3 +90,4 @@ Next: complete outstanding offline asset and source gates using existing files; 
 
 | Six-field block bounds | `docs/audits/2026-11-01_hblk_six_field_extent.md` | 256-record private sample passed; report 4a85157bf3ad8fc675321e41c9ff7983b510e3ae. |
 | All 59 map column extent scan | `docs/audits/2026-11-01_all_59_map_column_byte_scan.md` | 724992 columns pass 12-byte range checks. Report `8a6219f9d99f4c0a8b26d9dda3cf4251a40c569d`. |
+| Map positions 10/11 candidate block IDs | `docs/audits/2026-11-01_map_position_block_ids.md` | 125 candidate IDs, 642 nonzero component pointers pass 320-byte extent test. Commit `b4db3015128556c2815f0f91c7b59423efd4ec60`. |
