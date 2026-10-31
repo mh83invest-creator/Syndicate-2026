@@ -362,3 +362,15 @@ A separate, evidence-based static deep dive has been committed at **`docs/SOURCE
 ## Continuation — Gameplay, AI, effect and audio dependency audit, 1 November 2026
 
 The source-only mission/AI/audio investigation is documented in **`docs/SOURCE_AUDIT_GAMEPLAY_AI_AUDIO_2026-11-01.md`**. It verifies `move_it` dispatch order (`move_worlds`, `move_people`, `move_weapons`, `move_effects`, `move_objects`), identifies exact combat/effects/AI and network routines, and maps sound initialization and native import dependencies. It flags explosion-heavy performance as **unprofiled**; no asserted hotspot or claimed FPS improvement. No original gameplay, engine, build or third-party reference code was changed.
+
+## Continuation — Palette grouping / legacy render ownership / build feasibility (1 November 2026)
+
+**New focused report:** `docs/SOURCE_AUDIT_PALETTE_GROUPS_AND_BUILD_2026-11-01.md` (read this before selecting any graphics implementation).
+
+The original assembly palette table at `engine/src/syndre.sx:82677–82684` was directly decoded and checked: **five distinct palette resource IDs, each repeated 10 times across 50 nonzero entries, plus two zero bytes**. This establishes that overwriting a shared `hpalXX.dat` file would potentially recolour more than one level. Mission-specific night scenes require nonshared selection logic and must not be assumed to follow from five original palette IDs.
+
+Another important refinement: `DrawASpriteHires16_A` (`syndre.sx:76222–76246`) reads **`WScreen`** as the sprite destination for its `DrawSpriteLores16` helper, although a C header comment suggests sprites draw on `VScreen`. Screen buffers have *phase-dependent* roles; rely on exact assembly writes, not comments or names. The remapping sprite API in `gspr_map.c` exists in the Bullfrog **8-bit** rendering library, but lexical inspection found no direct remap symbol references in original `syndre.sx`; do not assume it can be used directly in the mission's four-planar drawing routines.
+
+The report also documents the SDL2 off-screen surface/blit APIs, upstream Autotools **SyndicatFX 0.0.6** version versus Syndicate 2026 roadmap labels, i386 and wrapper requirements, original title/menu `.dat` asset paths, and a **separate FreeSynd reference bug**: its 64x48 tile transparency scan uses 48 as row stride and misses later pixels. This FreeSynd defect was demonstrated synthetically from the user-provided ZIP and **does not imply the same defect exists in SyndicatFX**.
+
+**Scope/test status:** New documentation only. Source reads, palette-table decoding and the synthetic FreeSynd defect demonstration succeeded. Native build, sprite/palette runtime and Windows gameplay remain untested. Existing v0.7 code/behaviour untouched. The technical feasibility gate for night lighting is **not yet passed**.
