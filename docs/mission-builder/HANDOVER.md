@@ -188,3 +188,17 @@ Read complete assembly blob `c35e22621a93d1e07c44d40de8867446ff7c64bf`, with lin
 Risk: strategy simulator and tactical game share fixed-memory country/mission fields; any new mode needs stable identity and non-intrusive dispatch without changing clock/tactical timing in classic campaigns.
 Next: trace happiness/revolt trigger to mission selection, campaign Original/American mode decision, and mission result transitions. Define testable proof-of-concept only after source-confirmed dispatch routes.
 Tests: static reading only. No source modifications, compilation or gameplay testing. Handover version MB-AUDIT-1.0.
+
+## Audit 1.1 — Happiness calculation and tactical outcome presentation (2026-11-01)
+Source: complete `engine/src/syndre.sx` blob `c35e22621a93d1e07c44d40de8867446ff7c64bf`. Line numbers from that blob.
+
+Verified:
+- `AdjustStateHappiness` lines 11759–11850 operates on per-country state. It tests ownership/neighbour adjacency and increments a country-state short field by 2 in an observed branch (11775–11798). It then compares `data_5539f` to 30, adjusts the state value, and constrains the result to the range 0–255 (11803–11844). The mapping of `data_5539f` to an exact user-facing tax field is not independently proven, but prior `adjust_tax` updates `data_553a0` and the revenue routine reads `data_5539f`.
+- Periodic strategy update (11603–11640) calls `AdjustStateHappiness` for 50 country records before `GetRevenueFromCity` and `ComputerPlaysMap`. This establishes the update path, but **does not establish the revolt trigger**.
+- `set_mission_complete` (37914–37932) draws completion text; `set_mission_failed` (37936–37945) draws failure text. These alone are presentation routines, not proof of campaign-state mutation or mission unlock effects.
+- `reset_mission_info` (25849–25903) clears mission state and sets game_speed; important not to change timing when implementing new mode.
+- Current source still contains no implemented campaign save silo or new mission builder.
+
+Outstanding: locate branch where low happiness triggers rebellion and determines which mission to replay; trace caller(s) of mission-complete/failed routines to territorial progression. Trace American Revolt mode selection and campaign identity, then draft small, testable integration seam.
+
+Verification: full assembly blob inspection; **no executable built, no gameplay tests, no game-code changes**. Handover version MB-AUDIT-1.1.
