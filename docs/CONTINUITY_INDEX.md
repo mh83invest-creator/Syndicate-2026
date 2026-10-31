@@ -46,17 +46,12 @@ Protected gameplay baseline: `main` at `a22b0b9580a9710b4e693e88854351835ef1ee40
 ## Publication protocol
 For each completed stage: write handover → commit on active development branch → fetch it back from GitHub → update this index → fetch index back → report exact committed scope and verified/nonverified checks. If any step fails, report it without claiming completed publication.
 
-
 ## Completed audit stages — 1 November 2026
 
 | Stage | Handover | Verification and status |
 |---|---|---|
 | Display/palette ownership C-source audit | `docs/audits/2026-11-01_display_palette_ownership.md` | Source read and static checks completed; no compile or runtime tests. Report commit `8b718f3d77ee2a1a0299fa2873c56bf261996018`. Overall forensic audit remains incomplete. |
-
-**Next action:** Trace original assembly pointer assignments and Bullfrog SDL surface lifetimes as identified in the new report, while keeping `main` and existing gameplay code untouched.
-
 | SDL2 surface/focus lifecycle | `docs/audits/2026-11-01_sdl_surface_focus_lifecycle.md` | Focused source-only review complete; no compilation or Windows playback. Report commit `a86741c7bee62b1f13f763aa5c114168d525bd90`. |
-
 | SDL setup/Windows build configuration | `docs/audits/2026-11-01_sdl_setup_build_config.md` | Static screen setup and CI review complete; `LB_WSCREEN_CONTROL` effective definition remains unresolved. Report commit `7ec07024b79f9f72fa78dd221bdc69b07d79771a`. |
 | WScreen build flag/SDL draw surface ownership | `docs/audits/2026-11-01_wscreen_build_flag_ownership.md` | Source default resolved (`no`); generated Windows config not tested. Commit `212b074cd67d39599a524ff747de5dce4e43f05c`. |
 | Assembly screen-pointer phase transitions | `docs/audits/2026-11-01_assembly_screen_pointer_transitions.md` | Focused static audit completed, no build or runtime tests. Commit `857f5cc0c1f0534dd9ee2763b2a641ce9d7bb2bb`. Next: allocation boundaries and resource-loader aliasing. |
@@ -76,3 +71,5 @@ For each completed stage: write handover → commit on active development branch
 | Full original menu SS2 frame-sequence decoding | `docs/audits/2026-11-01_menu_ss2_full_frame_readonly_decode.md` | Six original 320x200 indexed animation sequences parsed/reconstructed offline; Windows visual equivalence untested. Commit `72793bf51b3b7f2672c25f2221d60e35f10210e5`. |
 | Private original menu first-frame visual review | `docs/audits/2026-11-01_private_menu_frame_visual_review.md` | Three reconstructed 320x200 first frames visually inspected; actual game UI and navigation not tested. Commit `085f532557efcddbda2653ca2d62a640e5e1fabf`. |
 | Asset-informed feasibility synthesis | `docs/audits/2026-11-01_asset_informed_feasibility_addendum.md` | Consolidates current source and private-resource checks, remaining decoder and Windows/runtime gates. Commit `f2f838cb08deac770e68b3971bf763c0ebeb7405`. |
+
+**Next action:** Trace original assembly pointer assignments and Bullfrog SDL surface lifetimes as identified in the new report, while keeping `main` and existing gameplay code untouched.
