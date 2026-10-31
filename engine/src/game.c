@@ -82,7 +82,7 @@ game_initialise (void)
 #endif
 
     LbSetUserResourceMapping(AppResourceMapping);
-    LbSetTitle(PACKAGE_NAME);
+    LbSetTitle("Syndicate 2026");
     LbSetIcon(1);
 
     // Make sure file names are properly converted before opening
