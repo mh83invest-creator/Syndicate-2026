@@ -44,3 +44,13 @@ Single cross-workstream coordination entry point for the existing Syndicate 2026
 - GitHub repository README was read on 2026-11-01.
 - No mission loader, save game, AI or menu source files have yet been inspected for this workstream.
 - No implementation, build or runtime tests of Mission Builder have occurred.
+
+## Approved cross-development requirement — campaign-isolated saves (2026-11-01)
+- Save files must be siloed by campaign/mode. Original Campaign, American Revolt, World Domination and any added Custom Campaign must each have their own save namespace.
+- From within any campaign, Save/Load screens must show and load ONLY saves belonging to that active campaign. No cross-campaign access, selection or accidental overwrite.
+- Campaign identity must be consistently propagated through campaign selection, save slot enumeration, load, save, delete (if available), and continue/resume pathways.
+- Preserve access to existing Original Campaign and American Revolt save files. Examine legacy `save/%02d.gam` behaviour and define a migration/compatibility approach before changing paths or file format. Do not silently migrate, delete, replace or reclassify existing saves.
+- Exact on-disk directory structure, metadata and migration rules are implementation decisions pending source audit; the isolation behaviour itself is an approved requirement.
+- Cross-workstream owners: the mainline audit owns compatibility with current game and original save paths; Mission Builder audit owns campaign identity integration and new mode isolation design. Document the interface and test together.
+- Required tests: separate saves per campaign, identical slot numbers without collision, Save/Load filtering, wrong-campaign rejection, resume/continue isolation, legacy save access, unaffected original gameplay and backward compatibility.
+- Status: REQUIREMENT DOCUMENTED ONLY; not implemented or runtime-tested.
