@@ -387,3 +387,15 @@ Unlike the earlier selected-file SHA spot comparison, this check compared **ever
 - **Every other tracked source, build, test, asset and workflow blob is byte-identical** in the branch snapshot versus known-good main. This confirms no unexpected historical camera-speed/mission-timing/rendering source changes were imported into the audited branch. It is a **Git object-equality check**, not a substitute for compiling or playing the game.
 
 This integrity check applies to the exact repository snapshots above; subsequent documentation additions increment the audit-branch file count without changing gameplay source. Continuing development remains frozen.
+
+## SDL2 robustness evidence and v0.9A handover correction — 1 November 2026
+
+Additional error-path inspection in `engine/bflibrary/src/x86-win-sdl2/sscreen.c` identified **unchecked failure returns**, documented in `docs/SOURCE_AUDIT_ASSET_FREE_CONTINUATION_2026-11-01.md` sections 11–12:
+
+- `LbScreenSwap` at lines 1057–1058 ignores the returned statuses of `LbIScreenSurfaceRestoreLost` and `LbIScreenDrawSurfaceCheck` before attempting display/cursor handling.
+- `LbI_SDL_BlitScaled` at lines 988–1005 reports SDL surface locking errors but continues processing rather than returning an error on that branch.
+- The window-focus handler at `swindows.c:104–113` triggers input reset and screen-surface restoration on focus transitions.
+
+**Classification:** Potential backend error-handling vulnerabilities, **not proven runtime defects or proven cause of historical v0.8 desktop-focus behaviour**. Preserve unchanged v0.7 backend until a controlled reproducible test supports a repair. No engine code modified.
+
+The `docs/releases/v0.9A.md` handover has also been amended to supersede its now-obsolete statement that the original assembly source cannot be retrieved, and to state precisely what remains unimplemented and untested. This change is **documentation only**.
