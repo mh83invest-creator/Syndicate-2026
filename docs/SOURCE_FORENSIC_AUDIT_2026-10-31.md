@@ -358,3 +358,7 @@ A separate, evidence-based static deep dive has been committed at **`docs/SOURCE
 **Important risk:** The mission loop performs `swap_screen_vres16` before scroll/copy-back/actor/HUD draws for the next visible cycle, and low-level palette allocation/aliases differ by screen phase. A universal scene-darkening hook or arbitrary sprite-remap insertion risks affecting HUD, cursor, colour transitions, and redraw order. The existing 8-bit sprite remapping API cannot simply be assumed compatible with the four-planar mission rendering path.
 
 **Audit status:** Static, read-only source reconnaissance has materially progressed. Nevertheless, **the full codebase audit is still not finished**, and no lighting/UI implementation is authorised. Original retail assets and actual Windows frame/playtest evidence will be needed for conclusive feasibility. Further code-only investigation remains possible without the user's immediate involvement.
+
+## Continuation — Gameplay, AI, effect and audio dependency audit, 1 November 2026
+
+The source-only mission/AI/audio investigation is documented in **`docs/SOURCE_AUDIT_GAMEPLAY_AI_AUDIO_2026-11-01.md`**. It verifies `move_it` dispatch order (`move_worlds`, `move_people`, `move_weapons`, `move_effects`, `move_objects`), identifies exact combat/effects/AI and network routines, and maps sound initialization and native import dependencies. It flags explosion-heavy performance as **unprofiled**; no asserted hotspot or claimed FPS improvement. No original gameplay, engine, build or third-party reference code was changed.
