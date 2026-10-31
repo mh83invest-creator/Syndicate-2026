@@ -123,3 +123,12 @@ Save isolation design investigation:
 5. Consider versioned per-campaign storage and additional mode state as *proposals*, not approved format.
 6. Test cross-campaign identical-slot isolation, wrong-campaign load denial, restore/continue and old files.
 Status: static audit, no code changes, no build or gameplay tests. Handover version MB-AUDIT-0.5.
+
+## Audit 0.6 — Assembly access assessment and integration contract (2026-11-01)
+- GitHub recursive tree lists `engine/src/syndre.sx` as a real tracked source blob, SHA `c35e22621a93d1e07c44d40de8867446ff7c64bf`, size 1,848,334 bytes.
+- The repository API provides the initial assembly excerpt, but full raw retrieval rejected the oversized file and line-ranged connector read returned empty; therefore campaign selection and mission-loader functions are not yet traced. No claims of located assembly hooks.
+- Cross-workstream contract recorded on main: `docs/CAMPAIGN_SAVE_INTEGRATION_CONTRACT.md` (commit `07770b24d4d5047ebcae442c33bec4386b31a0c2`). Read this alongside shared handover before implementing any save or mode changes.
+- Native code confirms `load_save_text()`, `load_player()`, `save_player()` use the common slots; `game_transform_path_full()` separately handles save prefix.
+- Need a locally available checkout or an endpoint capable of indexed assembly searching to finish tracing all callers. Do not bypass this by implementing a speculative hook.
+- Integration gates G0–G5 and design risks are in the shared contract.
+- Tests: static repository inspection and GitHub tree checks only. Source code unchanged. Handover version MB-AUDIT-0.6.
