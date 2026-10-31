@@ -87,3 +87,5 @@ Next: complete outstanding offline asset and source gates using existing files; 
 | Original map rebasing and multi-face block lookup | `docs/audits/2026-11-01_block_faces_and_map_rebase.md` | Source confirms column-pointer in-place rebase and +0/+4/+12/+16/+20 block components; no lighting semantics assigned. Commit `33b5bdf36c3c99e2e027bdbdd1b880d61f2a4055`. |
 | Fixed block-composition list and bitplane writes | `docs/audits/2026-11-01_block_composition_fixed_pool.md` | 36-entry pointer pool and AND/OR plane consumer verified in assembly; capacity risk conditional only. Commit `2922fa154230312c2a19727f3230f094a22e0fac`. |
 | Planar block component read extent | `docs/audits/2026-11-01_block_component_read_extent.md` | Assembly shows 4-byte component read through +0x13c; at least 320 bytes required on that path; asset reachability untested. Commit `99f3a177952082333d87dc3c9bc23ecc520ed0f7`. |
+
+| Six-field block bounds | `docs/audits/2026-11-01_hblk_six_field_extent.md` | 256-record private sample passed; report 4a85157bf3ad8fc675321e41c9ff7983b510e3ae. |
