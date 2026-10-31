@@ -27,7 +27,7 @@ The fixed 12,288 entries and `draw_horizontal`'s 128-column stride (below) are *
 
 ## 2. Actual isometric/block draw dependencies
 
-`syndre.sx:71385–71425`, `draw_horizontal`, derives the column index by shifting one tile coordinate right by one bit and the other by one bit, then multiplying the latter by **128 (`shl $0x7`)**. It multiplies the resulting index by **four** to access the rebased column table `data_55358`. Odd/even coordinate bits select one of **four jump-table drawing paths** (`jpt_488B7` at lines 71426–71430). The hi-resolution branch sets a destination row pitch of **`0x500 = 1,280` bytes** for its planar draw operation (line 71421).
+`syndre.sx:71385–71425`, `draw_horizontal`, derives the column index by shifting one tile coordinate right by one bit and the other by one bit, then multiplying the latter by **128 (`shl $0x7`)**. It multiplies the resulting index by **four** to access the rebased column table `data_55358`. Odd/even coordinate bits select one of **four jump-table drawing paths** (`jpt_488B7` at lines 71426–71430). The hi-resolution branch **multiplies one drawing argument by `0x500 = 1,280`** (line 71421). This resembles a row/stride-derived offset, but **its exact semantic role has not been resolved** from the adjacent helper routines; it must not be asserted to be the framebuffer's universal row pitch.
 
 The block draw helpers and their branches (`syndre.sx:71513–71544`, `71628–71675`) inspect block data and associated `h_blocks` records, and gather multiple referenced block parts before drawing. Later actor composition passes through `draw_mapwho` and `draw_element` (original lines 18029+ and 19109+).
 
