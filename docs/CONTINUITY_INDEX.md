@@ -45,3 +45,12 @@ Protected gameplay baseline: `main` at `a22b0b9580a9710b4e693e88854351835ef1ee40
 
 ## Publication protocol
 For each completed stage: write handover → commit on active development branch → fetch it back from GitHub → update this index → fetch index back → report exact committed scope and verified/nonverified checks. If any step fails, report it without claiming completed publication.
+
+
+## Completed audit stages — 1 November 2026
+
+| Stage | Handover | Verification and status |
+|---|---|---|
+| Display/palette ownership C-source audit | `docs/audits/2026-11-01_display_palette_ownership.md` | Source read and static checks completed; no compile or runtime tests. Report commit `8b718f3d77ee2a1a0299fa2873c56bf261996018`. Overall forensic audit remains incomplete. |
+
+**Next action:** Trace original assembly pointer assignments and Bullfrog SDL surface lifetimes as identified in the new report, while keeping `main` and existing gameplay code untouched.
