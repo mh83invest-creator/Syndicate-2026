@@ -47,3 +47,8 @@ Static inspection of repository files only. No changes to engine, no build or ga
 ## Addendum — second file access route (2026-11-01; MB-AUDIT-0.7)
 `engine/src/dos.c:dos_low_level_open()` calls `game_transform_path()` before `dos_open()`, while native `game_data.c` uses the `LbFile*` API for save slots. These are two relevant IO pathways; exact assembly callers are untraced.
 Implementation MUST account for every save list/read/write entry point (including DOS wrappers), not assume `game_data.c` catches everything. No implementation or build test. The detailed source review is recorded on the Mission Builder branch in `docs/mission-builder/HANDOVER.md`.
+
+## Addendum — verified save UI assembly callers (2026-11-01)
+Full `engine/src/syndre.sx` accessed with GitHub blob-by-SHA. Save UI `LoadSaveGame` (~line 30354) loops over 10 slots via `ac_load_save_text` (~30397), and calls `ac_load_player` (~30627) / `ac_save_player` (~30643). The main menu also enumerates save descriptions through `ac_load_save_text` (~54575–54582). These are two distinct UI-related enumeration points and need shared campaign identity before they run.
+
+Legacy assembly `ASM_load_player` / `ASM_save_player` and original `synd/save` string remain present but active wrappers use `ac_` native C functions; do not conflate historical embedded save path with current active storage. Static evidence only; execution must still be tested. Full assembly audit blocker resolved via GitHub `fetch_blob`. See Mission Builder handover MB-AUDIT-0.8.
