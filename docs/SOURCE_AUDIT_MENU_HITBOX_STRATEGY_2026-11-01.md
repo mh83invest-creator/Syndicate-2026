@@ -16,8 +16,8 @@
 | right x | `data_5b6d6`, line 84922 | `74 02` | 628 |
 | bottom y | `data_5b6d8`, line 84924 | `74 01` | 372 |
 
-The comparison at **lines 56078–56095** selects highlighted text colour index `0x166` when:
-**500 < logical mouse X < 628 and 346 < logical mouse Y < 372**, otherwise colour index `0x1ef`. The comparisons are strict; precisely-on-edge coordinates are not counted as inside. These indices are passed into `DrawScreenGadget` and are **original drawing codes, not RGB/HTML colours**.
+The comparison at **lines 56078–56095** selects drawing parameter `0x166` when:
+**500 < logical mouse X < 628 and 346 < logical mouse Y < 372**, otherwise parameter `0x1ef`. The comparisons are strict; precisely-on-edge coordinates are not counted as inside. These hexadecimal values are **not 8-bit palette colour indices** (both exceed 255). They are passed to `DrawScreenGadget`, and the exact interpretation as style/colour/font/sprite flags requires the downstream `new_show_text` contract to be verified; do not claim they are direct RGB colours or palette entries.
 
 **Scope caveat:** This is one specific shared menu-gadget *hover* routine, **not a complete click-action hitbox inventory for all UI screens**. Other menu click actions and pointer state checks must be traced separately before altering coordinates.
 
