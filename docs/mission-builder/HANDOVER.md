@@ -132,3 +132,17 @@ Status: static audit, no code changes, no build or gameplay tests. Handover vers
 - Need a locally available checkout or an endpoint capable of indexed assembly searching to finish tracing all callers. Do not bypass this by implementing a speculative hook.
 - Integration gates G0–G5 and design risks are in the shared contract.
 - Tests: static repository inspection and GitHub tree checks only. Source code unchanged. Handover version MB-AUDIT-0.6.
+
+## Audit 0.7 — File-access boundary and save-list constraints (2026-11-01)
+Inspected `engine/src/dos.c`, `engine/src/game.h`, `engine/src/guitext.h`, `engine/src/util.c`, `engine/conf/fnmap_windows.conf`, `engine/conf/fnmap_posix.conf`, `docs/HANDOVER_POLICY.md`.
+- `dos_low_level_open()` calls `game_transform_path()` and then `dos_open()`, providing another file-path interception seam for assembly-driven DOS-style accesses; `dos_open()` itself converts path with `dos_path_to_native()`. Which assembly save calls use each route is still unproven.
+- `dos_creat()` / `dos_sopen()` delegate to `dos_open()`; writer and reader access paths must be traced independently to avoid cross-mode save bleed.
+- `game.h` declares `game_transform_path()` and timing/event functions but no explicit campaign-selector API; no inferred ability to select campaigns from that header.
+- `guitext.h` has `GSTR_SLOT_EMPTY` and `STRINGS_MAX 800`; the existing GUI has an empty-slot text mapping, but this does not establish save enumeration semantics.
+- Name mapping configurations affect symbol/platform linkage, not mode selection.
+- Large `syndre.sx` (1.85MB) is accessible only in part through current GitHub connector; full source retrieval via raw endpoint was rejected for response size and line-ranged fetch_file returned empty. No assembly campaign, revolt or level loader function claims are established.
+- Repository checkout attempt in local analysis environment failed due unavailable github.com DNS. This was not a build or gameplay test.
+
+Assessment: There are at least two documented file-IO layers (LbFile family from native C and DOS low-level wrappers); save isolation cannot be implemented safely solely by changing a filename in `game_data.c` without examining all callers and screens. Campaign mode identity needs to be established prior to both listing and data IO. Recommend evidence-gated interface specification, not speculative edits.
+
+Next steps: obtain indexed assembly access via supported GitHub capabilities or a usable local checkout, inventory all save path references and campaign-selection logic, then document exact hook points and compatibility policy. No changes to engine. No tests. Handover version: MB-AUDIT-0.7.
