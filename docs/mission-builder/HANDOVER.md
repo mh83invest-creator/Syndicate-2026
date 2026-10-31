@@ -164,3 +164,14 @@ Verified gameplay hooks (line numbers on the current main blob SHA `c35e22621a93
 
 Integration significance: confirmed concrete seam from map selection -> mission ID -> briefing text -> mission loading, and from menu save list -> native save wrappers. This is an evidence-backed starting point, **not proof of custom-mission compatibility**. Continue tracing exact file layout, objective semantics and mode switching before any code change.
 Status: full static assembly indexing and targeted reading; no engine code modified; no build/runtime testing. Version MB-AUDIT-0.8.
+
+## Audit 0.9 — Mission resource filenames and territory AI (2026-11-01)
+Static source inspection of complete assembly blob SHA `c35e226...`, line references:
+- `load_text` at lines 55249-55285 chooses English `data/miss%02.2d.dat` or language-prefixed `data/miss%01d%02.2d.dat`, then calls `LbFileReadRNC`; these are concrete mission briefing resource paths. Do not assume string format/editor grammar without examining original assets.
+- `mission_load_files` at lines 82620-82663 holds a dynamically formed map filename `data/map??.dat` plus fixed `data/col01.dat`, `data/hblk01.dat`, sprites, animation resources. `load_map_level` changes the map-number characters at 27881-27904. Map reference and mission ID are distinct inputs.
+- `map_selection` resolves a selected territory into `current_levno` via `data_5b071` at 32017-32022 / 32062-32066.
+- `ComputerPlaysMap` at 11896-11997 chooses territory targets with `random` and writes `next_mission_countries`. This is evidence of existing dynamic strategic opponent logic, NOT evidence of random mission objective generation or revolt mission logic.
+- Assembly `LoadSaveGame` calls native save wrappers for ten UI slots. Historical `ASM_*save*` functions and `synd/save` string remain in assembly but active wrappers are the confirmed call sites; verify runtime before assuming older paths are used.
+- Feasible first experiment is a fixture that changes only a single test mission briefing/data asset in an isolated runtime data directory, with checksum protection and original legal assets supplied locally. This is a PROPOSAL, NOT implemented or approved as a gameplay change.
+- Risk assessment: fixed mission ID resource patterns and 2-digit filename formation suggest possible indexing constraints; confirm actual valid ranges and handling of campaign expansion before assigning new IDs.
+No code changed, compiled, or executed. Version MB-AUDIT-0.9.
