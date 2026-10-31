@@ -73,3 +73,10 @@ For each completed stage: write handover → commit on active development branch
 | Asset-informed feasibility synthesis | `docs/audits/2026-11-01_asset_informed_feasibility_addendum.md` | Consolidates current source and private-resource checks, remaining decoder and Windows/runtime gates. Commit `f2f838cb08deac770e68b3971bf763c0ebeb7405`. |
 
 **Next action:** Trace original assembly pointer assignments and Bullfrog SDL surface lifetimes as identified in the new report, while keeping `main` and existing gameplay code untouched.
+
+
+## Baseline package availability clarification — 2026-11-01
+
+The user confirms that no historical v0.7 playable installation/ZIP can be located; only the previously uploaded v0.6 and v0.8 packages are available. **Do not request v0.7 again as a prerequisite for continuing the source or offline-asset audit.** The protected v0.7 source remains on main at a22b0b9580a9710b4e693e88854351835ef1ee40 and the Windows i686 CI workflow is .github/workflows/windows-source-v0.7.yml. A previously successful source build does NOT mean a currently downloadable executable, surviving Actions artifact, or playable v0.7 installation has been verified.
+
+Next: complete outstanding offline asset and source gates using existing files; check for a surviving historical v0.7 Actions artifact or regenerate an executable through the documented main-branch CI workflow when appropriate, then assemble a **private** playable installation using legitimately supplied game data. A new Windows game test will establish a **reconstructed baseline**, not retroactively prove equivalence to the missing user-tested v0.7 executable. No v0.8 camera changes may be imported and no commercial data should enter public GitHub.
