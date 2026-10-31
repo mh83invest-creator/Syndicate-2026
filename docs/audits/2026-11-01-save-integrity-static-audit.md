@@ -44,3 +44,7 @@ Not performed: full assembly caller trace, compilation, test suite, instrumentat
 
 ## Handover
 This note is self-contained and read-only with respect to gameplay. It does not constitute a verified release. Retain the known-good v0.7 package as rollback baseline; no rollback action is required for this docs-only commit.
+
+## Binary-layout reconstruction — source-derived, not runtime verified
+Further inspected game_data.h, player.h, weapon.h, wrcountry.h and research.h. GAME_DESC_TEXT_MAX_LEN=20. Packed Research is derived as 489 bytes (3 one-byte fields + 4-byte int + 10*(2+22*2+2) + 2). On the intended 32-bit ABI, the legacy serializer's expected payload is: description 20 + players 8376 + country states 500 + equipment 10020 + cybmods 8838 + research 489 + selected team 4 = **28247 bytes**. This is not an actual .gam file-size measurement and must be confirmed with compiled sizeof checks and sample saves. Note that equipment and cybmod arrays are declared with an additional element but saved using COUNT, matching the existing code. Do not change the format.
+Suggested synthetic boundary test lengths: 0, 19, 20, 28246, 28247 and 28248 bytes; include simulated partial write and read failures. No tests have yet been performed.
