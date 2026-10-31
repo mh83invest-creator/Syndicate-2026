@@ -202,3 +202,14 @@ Verified:
 Outstanding: locate branch where low happiness triggers rebellion and determines which mission to replay; trace caller(s) of mission-complete/failed routines to territorial progression. Trace American Revolt mode selection and campaign identity, then draft small, testable integration seam.
 
 Verification: full assembly blob inspection; **no executable built, no gameplay tests, no game-code changes**. Handover version MB-AUDIT-1.1.
+
+## Audit 1.2 — Mission outcome flags and campaign state mutation (2026-11-01)
+Inspected full assembly source blob `c35e22621a93d1e07c44d40de8867446ff7c64bf`, line numbers refer to this exact blob.
+- `level_failed` (451–469) sets failure bit 0x4 of `data_60afc` unless terminal state bits already set, plus audio/status bookkeeping.
+- `level_complete` (473–489) calls `set_mission_complete`, sets completion bit 0x2 of `data_60afc`, and sets status/audio bookkeeping. Existing mission resolution uses flag bits, not simply a UI label.
+- A menu/post-mission routine checks the same completion bit 0x2 at line 55045. It conditionally changes `country_states` and ownership array `data_5539e`, resets two per-country values `data_5539f` and `data_553a0` to 0x1e (30) at 55077–55079. Therefore campaign-state mutation DOES occur after completion, outside the display-only text helpers. The precise branching between capture/revolt or special states remains to be mapped.
+- `set_mission_complete` (37914–37932) remains display text routine; `level_complete` is the true trigger for flag changes.
+- `set_default_player` (26165, 26191–26194) initialises per-country values; `data_5539f` and `data_553a0` start at 30, and country happiness starts at zero before subsequent updates.
+- Mission result integration for a custom scenario should initially observe these terminal flags and the existing campaign handler, not overwrite the original campaign logic. Actual extension implementation deferred pending comprehensive branch tracing.
+- No direct isolated rebel-mission selector proven yet; continue examining special `country_states` values, selection and mission ID mapping.
+Verification: static assembly reading only; no engine code changes, Windows build, or runtime tests. Handover MB-AUDIT-1.2.
