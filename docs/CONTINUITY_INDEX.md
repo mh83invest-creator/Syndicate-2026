@@ -94,3 +94,4 @@ Next: complete outstanding offline asset and source gates using existing files; 
 | Empty-block flags | `docs/audits/2026-11-01_hires_block_flags_meaning.md` | Static source audit, commit `939784154113ba57158560d741095f9d4a518b36`. |
 | Block flag sample predicate and loader return | `docs/audits/2026-11-01_flag_samples_and_loader_return.md` | Verified static interpretation of sixteen sampled words; conditional unchecked load return. Commit `9a9a38e7eba8534161eb3d8a0c7596fb959db0cd`. |
 | Exact block flag sampling and bounds | `docs/audits/2026-11-01_block_flag_sampling_exact_bounds.md` | 16 sampled words through byte 303, distinct from 320-byte compositor bounds. Commit `4a9e35f697956668e8d1e0301f0233a981ccdda4`. |
+| Private block-flag reconstruction | `docs/audits/2026-11-01_private_block_flag_reconstruction.md` | 256 descriptors; flags 0/18/16/2 counted; offline CRC-based test. Commit `86fa4e96054f42e5b8e74d9bd0aca2ef62b3c495`. |
