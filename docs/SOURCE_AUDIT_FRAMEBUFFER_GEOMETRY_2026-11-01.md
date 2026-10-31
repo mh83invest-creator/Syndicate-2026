@@ -66,3 +66,13 @@ Executed independent integer checks (not a Windows build):
 5. Do not add graphics overlays, window scaling or camera-speed changes until pixel differences and mouse/control regressions are independently testable.
 
 **Scope integrity:** The source and CI workflow remain unchanged. This report is a navigation aid for future proofs and a precise, asset-independent constraint on the requested v0.9 night lighting.
+
+## E. Source-algorithm bit-plane parity check (synthetic)
+
+A reference **JavaScript** implementation of the bit order documented in `display.c:149–231` was checked against 228 source-image patterns:
+
+- **128** patterns: one pixel in each of eight bit positions set to each of the sixteen possible four-plane indices.
+- **100** deterministic eight-pixel patterns with mixed indices.
+- Encode 8×4 bit-plane source bytes (bit 7 for leftmost pixel, bit 0 for rightmost), then reconstruct each pixel index by OR-ing the corresponding bit from planes 0–3.
+
+**Result:** **228/228 patterns matched their original eight-pixel values**. This independently confirms the **intended source bit-plane order and sixteen-index data model**. It **does not** execute or verify the actual C function, 400-row memory loop, buffer alignment, SDL presentation or in-game image quality.
