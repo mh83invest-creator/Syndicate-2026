@@ -179,3 +179,55 @@ The symbol-name scan did **not** find named labels specifically for streetlights
 ### Verification of this addendum
 
 GitHub original assembly blob retrieval: **PASS**. Symbol/label occurrence scan: **PASS (lexical only)**. Three menu-call-site check: **PASS**. Full semantic analysis: **NOT COMPLETE**. Full checkout: **BLOCKED**. Windows compile and gameplay: **NOT RUN**.
+
+## Addendum — Complete GitHub tree enumeration and SDL2 backend tracing (31 October 2026)
+
+**Decision:** Retain the SyndicatFX-derived engine as the sole Syndicate 2026 implementation. FreeSynd (`CeRiAl/freesynd`) may be downloaded by the user and consulted as a **reference only**. Do not migrate engines, copy its source, merge its history, or assume gameplay equivalence. No gameplay code changes authorised during the audit.
+
+### Repository inventory: previous tree-listing blocker resolved
+
+GitHub's approved `git/trees/feature/v0.9-visual-showcase?recursive=1` endpoint returned `truncated=false`, **413 tree entries / 386 tracked blobs** for the audited branch. The main code groups include:
+
+| Tree prefix | Tracked blobs | Coverage this pass |
+| --- | ---: | --- |
+| `engine/bflibrary/src/` | 99 | Selected graphics backends and generic graphics inspected |
+| `engine/bflibrary/tests/` | 74 | Enumerated, individual tests not reviewed or run |
+| `engine/bflibrary/include/` | 53 | `bfscreen.h` examined |
+| `engine/src/` | 38 | All identified C source modules previously read; assembly symbol survey |
+| `engine/bfsoundlib/src/` | 33 | Enumerated, detailed audit pending |
+| `engine/bfsoundlib/include/` | 29 | Enumerated, detailed audit pending |
+| `engine/conf/` | 8 | Wrappers game config previously examined |
+| `engine/lang/`, `engine/util/`, `engine/res/` | 7 / 7 / 5 | Enumerated, detailed audit pending |
+
+Counts are computed from tracked blob paths in the returned tree, not independent validation of file contents or runtime dependencies. The earlier document's claim that full tree enumeration was unavailable is now superseded. Local compilation and runtime inspection remain unavailable/not performed.
+
+### Windows SDL2 screen and palette — verified code paths
+
+The following paths exist in the actual branch and were read:
+
+- `engine/bflibrary/src/x86-win-sdl2/sscreen.c` (~40,994 characters): at lines **497–499**, an SDL window is created using `SDL_CreateWindow(lbDrawAreaTitle,...)`. At **1050 onwards**, `LbScreenSwap` drives surface swapping with `LbMouseOnBeginSwap` / `LbMouseOnEndSwap`. At **1170–1172**, an update path calls `SDL_UpdateWindowSurface`. It is a **software surface / screen-update path**, not evidence of a GPU shader or modern programmable lighting pipeline.
+- `engine/bflibrary/src/x86-win-sdl2/spalette.c` (~3,492 characters): `LbPaletteSet` at **50** converts palette data to `SDL_Color`, and at **82–94** calls `SDL_SetPaletteColors` for screen/draw surfaces when appropriate. This confirms an **indexed palette system**, important for lighting feasibility and risk of globally recolouring UI, sprites and missions.
+- `engine/bflibrary/src/general/gpalette.c` (~9,579 characters): shared palette operations; `engine/bflibrary/src/general/gspr_map.c` (~12,337 characters): mapped sprite drawing paths; `engine/bflibrary/src/general/gfont.c` (~4,774 characters): shared font operations; `engine/bflibrary/include/bfscreen.h` (~20,590 characters): public screen API. These have been read and relevant function names located; complete contracts/call graphs remain to be established.
+- Engine display integration remains in `engine/src/display.c` and original assembly. A new lighting subsystem is **not** established merely because the SDL2 backend can show colours.
+
+**Practical implication for v0.9A:** The direct sprite/font/palette draw paths are observable. Redrawing controls or selecting a new rendering mode without testing mouse coordinates, palette state and native surface swaps risks regressions. Avoid speculative changes.
+
+**Practical implication for v0.9B:** Palette-based atmospheric darkening may be a technical exploration candidate, but a *global* palette shift would also change other content and is not approved as a finished solution. Individually localised pools of light, headlights, bright windows and neon must be demonstrated with verified map rendering and layering data. There is still no evidence of native per-pixel dynamic lighting.
+
+### Audit test evidence for this addendum
+
+- GitHub recursive tree retrieval: **PASS**, non-truncated, 386 file entries.
+- SDL2 backend/palette source reads: **PASS** for named paths and line locations.
+- Indexed palette and SDL software-surface code paths: **CONFIRMED** from source.
+- Whole-codebase semantic review: **NOT COMPLETE**.
+- FreeSynd files downloaded or incorporated: **NO**.
+- Native Windows build, SDL runtime surface behaviour, screenshots and gameplay regression tests: **NOT RUN**.
+- Game source changes: **NONE**.
+
+### Updated next forensic tasks
+
+1. Audit `engine/bflibrary/src/x86-win-sdl2/sscreen.c` draw/copy paths fully and cross-reference generic palette, sprite and font APIs to assembly UI calls.
+2. Inspect `engine/bfsoundlib` dependencies, runtime audio call paths and startup/shutdown transitions.
+3. Audit map/level file loading, tile/object/sprite composition, and separate game/GUI palette lifetimes; identify feasible per-mission atmosphere hooks without changing gameplay.
+4. Inventory and inspect automated tests and CI workflow configuration, then form a traceable test matrix. Record **which** checks can run without proprietary retail files and which need Windows user testing.
+5. Continue semantic assembly call-graph tracing (including unnamed `func_*` routines) before proposing v0.9A/B code edits.
