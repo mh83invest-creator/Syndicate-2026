@@ -54,3 +54,12 @@ Single cross-workstream coordination entry point for the existing Syndicate 2026
 - Cross-workstream owners: the mainline audit owns compatibility with current game and original save paths; Mission Builder audit owns campaign identity integration and new mode isolation design. Document the interface and test together.
 - Required tests: separate saves per campaign, identical slot numbers without collision, Save/Load filtering, wrong-campaign rejection, resume/continue isolation, legacy save access, unaffected original gameplay and backward compatibility.
 - Status: REQUIREMENT DOCUMENTED ONLY; not implemented or runtime-tested.
+
+## Cross-workstream finding — save and mission integration (2026-11-01)
+Source inspection now completed for `engine/src/game_data.c`, `game_data.h`, `game.c`, `main.c`, `wrcountry.h`, `player.h`, `engine/src/Makefile.am`, `conf/wrappers_game.conf` and the assembly file's initial content. Earlier note that no save source was inspected is superseded.
+- Save slots currently use `save/%02d.gam` in `load_save_text()`, `load_player()`, `save_player()`. No campaign argument exists in these native C functions.
+- `game_transform_path_full()` intercepts `save/` paths for the user directory. Isolated namespaces must account for both this path resolution and direct `save/%02d.gam` references.
+- Original gameplay is called via assembly-imported `syndicate()`. The assembly source is substantive (its contents were confirmed via GitHub contents API), and its selection/loading logic remains to be traced.
+- Immediate cross-team rule: Do not independently change save path semantics, save slot selection, campaign mode, or `load_player/save_player` interfaces until a common campaign identity contract is agreed. Preserve legacy data.
+- Requirements remain: only own-campaign saves visible/loadable; wrong-campaign paths cannot load; old saves remain accessible; protect fixed payload structures.
+- No implementation or runtime testing. Detail in Mission Builder handover on `feature/mission-builder-audit`.
