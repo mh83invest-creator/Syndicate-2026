@@ -43,3 +43,7 @@ G5: Cross-workstream review and pull request; include versioned docs/releases ha
 
 ## Verification
 Static inspection of repository files only. No changes to engine, no build or gameplay tests. 
+
+## Addendum — second file access route (2026-11-01; MB-AUDIT-0.7)
+`engine/src/dos.c:dos_low_level_open()` calls `game_transform_path()` before `dos_open()`, while native `game_data.c` uses the `LbFile*` API for save slots. These are two relevant IO pathways; exact assembly callers are untraced.
+Implementation MUST account for every save list/read/write entry point (including DOS wrappers), not assume `game_data.c` catches everything. No implementation or build test. The detailed source review is recorded on the Mission Builder branch in `docs/mission-builder/HANDOVER.md`.
