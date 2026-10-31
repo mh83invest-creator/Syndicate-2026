@@ -132,3 +132,19 @@ A separate generated **lexical** source index `docs/ASM_ADDRESS_LABEL_INDEX_2026
 3. Continue the missing buffer alias and original asset-format investigations. Use FreeSynd only for independent documentation of original data semantics.
 4. When retail assets become available later, reproduce the known-good v0.7 Windows build and capture baseline mission/menu rendering and mouse/scroll behaviour before testing effects.
 5. Record each verified discovery with exact path, line/symbol and evidence. Separate source reads, compilation, automated tests and actual gameplay.
+
+## 10. Additional buffer and palette allocation evidence (continuation, same audit)
+
+Original assembly `engine/src/syndre.sx:83626–83676` defines separate initial resource-load tables:
+
+- `load_files_vres16` allocates a `WScreen` work buffer (declared size `256048`), loads `data/hpal01.dat` through the separately declared `GraphicsPalette` pointer, and loads `hpointer.tab`, `hpointer.dat`, `hreq.dat`.
+- `load_files_mcga` also has a `WScreen` allocation, loads `data/lpal01.dat` through `GraphicsPalette`, and separate low-resolution pointer and other assets. This establishes **distinct high/low mode palette and pointer resources**, not just scaling of the same title art.
+- `engine/src/syndre.sx:83901–83910` declares **separate pointer slots** for `WScreen`, `VScreen`, `GraphicsPalette`. `PalMem` is another separate pointer slot at line 85440. Their runtime values and intended contents are not interchangeable merely because they are pointer slots.
+- `engine/src/syndre.sx:27768–27793` reads per-level `hpal` data into `GraphicsPalette`, yet the next `ac_LbPaletteSet` receives `WScreen` after a clear operation. The main mission loop conditionally calls `ac_LbPaletteSet(GraphicsPalette)` later at lines 244–249. This **may** serve a screen/palette transition (e.g. black then restored), but no runtime proof was made. **Do not "fix" this apparent mismatch without establishing exact buffers and startup appearance.**
+- `engine/src/syndre.sx:54253–54261` shows a different title/menu phase assigning `PalMem` from a calculated offset of `WScreen`. This demonstrates that allocation lifetime/aliasing may vary by screen phase. A generic palette pointer hook is not safe without checking current mode and allocation.
+
+**Cost of the existing converter (static count, not benchmark):** `engine/src/display.c:149–231` iterates 400 rows × 80 bytes for each of 4 bit planes, performing 8 indexed byte operations for each input byte. That is **128,000 source bytes and about 1,024,000 pixel-index update operations per full unpack call**, before copy/scaling/presentation. Actual CPU time, rate and bottleneck impact are **not measured**; heavy explosions may be dominated by other logic/drawing. A lookup-table or SIMD proposal would require exact output equivalence tests and separate approval.
+
+### Review implication
+
+This direct pointer/resource evidence strengthens the recommendation to **avoid palette injection at the general SDL screen-swap function** as a first v0.9B change. Source-level candidates can be investigated, but the first safe decision point is understanding actual data aliases and exactly which pixels belong to a mission versus menu/HUD/cursor at each stage. No original asset samples or Windows render traces are available yet.
