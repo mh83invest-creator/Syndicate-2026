@@ -104,3 +104,22 @@ Cross-development contract to establish before implementation:
 - Co-ordinate this requirement with mainline handover at `docs/SHARED_DEVELOPMENT_HANDOVER.md` (main). Both workstreams must review save-related changes.
 Status: documented and approved requirement, NOT implemented or tested.
 Handover version: MB-AUDIT-0.4 (documentation-only).
+ 
+## Audit 0.5 — Gameplay assembly and save isolation integration (2026-11-01)
+Verified:
+- GitHub contents API returned substantive `engine/src/syndre.sx` assembly text (begins with symbol export macros and game routines). Prior connector empty response was incomplete; the assembly is NOT an empty stub. Its menu/mission internals remain to be traced.
+- `engine/src/main.c` calls imported `syndicate()` (actual gameplay entry) and sets `current_levno=1` and `level__MapNumber=1` before start.
+- `engine/conf/wrappers_game.conf` generates native-to-original wrappers for `load_save_text`, `load_player`, `save_player` and timing/update routines. This establishes a C-to-assembly calling seam for saves, not yet a campaign-selection seam.
+- `engine/src/game.c:game_transform_path_full()` detects `save/` and redirects to user directory; `game_data.c` hardcodes `save/%02d.gam` for slot operations. Save isolation must cover both direct references and path resolution.
+- `engine/src/game_data.h` defines packed `CPObjective` with 128 elements; semantics of each action and target are not yet established.
+- `docs/HANDOVER_POLICY.md` mandates versioned release handovers for v0.8+ builds. Any future build must obey it, even experimental or failed builds.
+- Source archive tree has 411 Git objects in main and includes no proprietary retail mission data.
+
+Save isolation design investigation:
+1. Locate campaign selector in original assembly, establish stable campaign identity before any save/load UI or wrapper call.
+2. Decide explicit stable ID for each built-in and custom campaign; do not infer from slot position.
+3. Save list must enumerate only active namespace, and all save/load entry points must enforce it, not just UI filtering.
+4. Check how old shared `save/%02d.gam` slots identify campaign, if at all. Unidentifiable legacy files require a non-destructive compatibility policy for user approval.
+5. Consider versioned per-campaign storage and additional mode state as *proposals*, not approved format.
+6. Test cross-campaign identical-slot isolation, wrong-campaign load denial, restore/continue and old files.
+Status: static audit, no code changes, no build or gameplay tests. Handover version MB-AUDIT-0.5.
