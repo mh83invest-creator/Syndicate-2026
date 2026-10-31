@@ -93,3 +93,4 @@ Next: complete outstanding offline asset and source gates using existing files; 
 | Map positions 10/11 candidate block IDs | `docs/audits/2026-11-01_map_position_block_ids.md` | 125 candidate IDs, 642 nonzero component pointers pass 320-byte extent test. Commit `b4db3015128556c2815f0f91c7b59423efd4ec60`. |
 | Empty-block flags | `docs/audits/2026-11-01_hires_block_flags_meaning.md` | Static source audit, commit `939784154113ba57158560d741095f9d4a518b36`. |
 | Block flag sample predicate and loader return | `docs/audits/2026-11-01_flag_samples_and_loader_return.md` | Verified static interpretation of sixteen sampled words; conditional unchecked load return. Commit `9a9a38e7eba8534161eb3d8a0c7596fb959db0cd`. |
+| Exact block flag sampling and bounds | `docs/audits/2026-11-01_block_flag_sampling_exact_bounds.md` | 16 sampled words through byte 303, distinct from 320-byte compositor bounds. Commit `4a9e35f697956668e8d1e0301f0233a981ccdda4`. |
