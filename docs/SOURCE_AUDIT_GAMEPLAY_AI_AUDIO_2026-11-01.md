@@ -8,13 +8,16 @@
 
 Original `syndicate` game loop at `engine/src/syndre.sx:198–303` runs input/player/network/AI, movement, end-of-level, frame swapping and camera/redraw before its C `ac_game_update` tick. `engine/src/game.c:205–207` invokes the 16 FPS-paced path. **Changing this order affects gameplay, frame latency and camera; it is excluded from v0.9.**
 
-At `engine/src/syndre.sx:33330–33339`, `move_it` explicitly calls the five simulation subsystems below in this order:
+At `engine/src/syndre.sx:33330–33337`, `move_it` invokes **six** simulation subsystems, in this exact sequence (five direct calls followed by a tail jump):
 
-1. `move_worlds`
-2. `move_people`
-3. `move_weapons`
-4. `move_effects`
-5. `move_objects`
+1. `move_worlds` — `call`
+2. `move_people` — `call`
+3. `move_weapons` — `call`
+4. `move_effects` — `call`
+5. `move_objects` — `call`
+6. `move_vehicles` — `jmp` (tail dispatch; target at assembly line 57242)
+
+**Correction dated 2026-11-01:** The previous wording missed the sixth subsystem because it searched only for `call` instructions. The detailed evidence and 256-record effects investigation are in `docs/SOURCE_AUDIT_EFFECT_POOL_AND_PROFILING_2026-11-01.md`.
 
 This is an exact observed call sequence, not a measured per-subsystem time budget. Even graphics-only changes that alter simulation timing can cause a different gameplay feel.
 
