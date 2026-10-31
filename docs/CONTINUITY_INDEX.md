@@ -58,3 +58,4 @@ For each completed stage: write handover → commit on active development branch
 | SDL2 surface/focus lifecycle | `docs/audits/2026-11-01_sdl_surface_focus_lifecycle.md` | Focused source-only review complete; no compilation or Windows playback. Report commit `a86741c7bee62b1f13f763aa5c114168d525bd90`. |
 
 | SDL setup/Windows build configuration | `docs/audits/2026-11-01_sdl_setup_build_config.md` | Static screen setup and CI review complete; `LB_WSCREEN_CONTROL` effective definition remains unresolved. Report commit `7ec07024b79f9f72fa78dd221bdc69b07d79771a`. |
+| WScreen build flag/SDL draw surface ownership | `docs/audits/2026-11-01_wscreen_build_flag_ownership.md` | Source default resolved (`no`); generated Windows config not tested. Commit `212b074cd67d39599a524ff747de5dce4e43f05c`. |
