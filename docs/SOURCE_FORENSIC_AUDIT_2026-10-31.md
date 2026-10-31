@@ -426,3 +426,13 @@ Additional asset-independent review now recorded in **`docs/SOURCE_AUDIT_STARTUP
 3. A targeted scan of all **17** game `engine/src/*.c` files identified other unbounded string calls for further input-size/asset-contract review; these are *not* all classified as defects without examining their destination and source bounds.
 
 **Priority:** These findings deserve explicit consideration in a future controlled regression/security task, but **must not become unapproved v0.9 graphics-scope work**. No engine changes, builds, or tests were made by documenting them. The original game's known-good v0.7 source remains intact.
+
+## Source-only audit continuation — Verified display, GUI bounds and consolidated decisions (1 November 2026)
+
+Three new audit documents expand the analysis and provide a central go/no-go register:
+
+1. **`docs/SOURCE_AUDIT_FRAMEBUFFER_GEOMETRY_2026-11-01.md`**: source proves Vres16 `VScreen = VGABuffer + 0x6400` = **40 output rows** of vertical offset. Converted 640×400 mission occupies rows **40–439** in a 640×480 presentation buffer, matching the 40-pixel mouse-coordinate adjustment. Also documents the converter clear overlapping into the separate nominal staging region **within the allocated memory**, and the **228/228 synthetic planar-bit-position parity test** (not compiled-C equivalence).
+2. **`docs/SOURCE_AUDIT_RENDER_SCALER_GUI_BOUNDS_2026-11-01.md`**: source-confirmed **conditional** memory-safety risks in the preexisting backend. SDL scaler stores 4-byte `long` pixels despite accepting 2/3-byte destination formats, ignoring surface pitch; GUI string index table allows 267th input to write index 800 of 800 pointers, and dereferences allocation before NULL-check. These are **source/static arithmetic findings, not observed Windows crashes**. Both files are identical to v0.7; do not misattribute to current visual development. No repairs made.
+3. **`docs/SOURCE_AUDIT_DECISION_REGISTER_2026-11-01.md`**: consolidated approved feature requirements, concrete source hooks, technical feasibility classifications, preexisting risk triage, evidence gained and remaining asset/runtime gates. Use this as the principal concise technical starting point before proposing a code edit. No v0.9 lighting/menu feature was added or authorised by writing it.
+
+**This round did not compile or run the game or alter any source or CI.** The user needs to provide legally held original game resources and native Windows playtest evidence later for definitive night effects, FPS and regression results. Continue asset-independent analysis without changing the protected gameplay baseline.
