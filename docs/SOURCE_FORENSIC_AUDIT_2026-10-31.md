@@ -374,3 +374,16 @@ Another important refinement: `DrawASpriteHires16_A` (`syndre.sx:76222–76246`)
 The report also documents the SDL2 off-screen surface/blit APIs, upstream Autotools **SyndicatFX 0.0.6** version versus Syndicate 2026 roadmap labels, i386 and wrapper requirements, original title/menu `.dat` asset paths, and a **separate FreeSynd reference bug**: its 64x48 tile transparency scan uses 48 as row stride and misses later pixels. This FreeSynd defect was demonstrated synthetically from the user-provided ZIP and **does not imply the same defect exists in SyndicatFX**.
 
 **Scope/test status:** New documentation only. Source reads, palette-table decoding and the synthetic FreeSynd defect demonstration succeeded. Native build, sprite/palette runtime and Windows gameplay remain untested. Existing v0.7 code/behaviour untouched. The technical feasibility gate for night lighting is **not yet passed**.
+
+## Full branch-diff integrity check — 1 November 2026
+
+Unlike the earlier selected-file SHA spot comparison, this check compared **every tracked blob path and Git blob SHA** in the untruncated recursive trees for `main` and `feature/v0.9-visual-showcase`:
+
+- `main` tree at `a22b0b9580a9710b4e693e88854351835ef1ee40`: **383 tracked files**.
+- Audit branch at `c09ec618ceea02bcfa4a776cf8a57ac5d2af1701` (snapshot before this documentation update): **391 tracked files**.
+- **Exactly one existing file modified:** `engine/src/game.c`. Earlier complete line-by-line comparison showed the **only textual difference** is line 85: `LbSetTitle(PACKAGE_NAME)` on `main` vs `LbSetTitle("Syndicate 2026")` on the feature branch.
+- **Eight additional files**, all documentation: `docs/releases/v0.9.md`, `docs/releases/v0.9A.md`, `docs/SOURCE_FORENSIC_AUDIT_2026-10-31.md`, `docs/SOURCE_AUDIT_RENDERING_AND_TEST_GATES_2026-11-01.md`, `docs/SOURCE_AUDIT_ASSET_FREE_CONTINUATION_2026-11-01.md`, `docs/ASM_ADDRESS_LABEL_INDEX_2026-11-01.md`, `docs/SOURCE_AUDIT_GAMEPLAY_AI_AUDIO_2026-11-01.md`, and `docs/SOURCE_AUDIT_PALETTE_GROUPS_AND_BUILD_2026-11-01.md`.
+- **Zero removed tracked files.**
+- **Every other tracked source, build, test, asset and workflow blob is byte-identical** in the branch snapshot versus known-good main. This confirms no unexpected historical camera-speed/mission-timing/rendering source changes were imported into the audited branch. It is a **Git object-equality check**, not a substitute for compiling or playing the game.
+
+This integrity check applies to the exact repository snapshots above; subsequent documentation additions increment the audit-branch file count without changing gameplay source. Continuing development remains frozen.
