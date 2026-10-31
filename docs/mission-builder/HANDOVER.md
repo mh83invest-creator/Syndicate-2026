@@ -146,3 +146,21 @@ Inspected `engine/src/dos.c`, `engine/src/game.h`, `engine/src/guitext.h`, `engi
 Assessment: There are at least two documented file-IO layers (LbFile family from native C and DOS low-level wrappers); save isolation cannot be implemented safely solely by changing a filename in `game_data.c` without examining all callers and screens. Campaign mode identity needs to be established prior to both listing and data IO. Recommend evidence-gated interface specification, not speculative edits.
 
 Next steps: obtain indexed assembly access via supported GitHub capabilities or a usable local checkout, inventory all save path references and campaign-selection logic, then document exact hook points and compatibility policy. No changes to engine. No tests. Handover version: MB-AUDIT-0.7.
+
+## Audit 0.8 — FULL ASSEMBLY SEARCH ACCESS RESTORED (2026-11-01)
+**Major correction:** `mcp__GitHub__fetch_blob` by SHA successfully returned all 1,848,334 bytes of `engine/src/syndre.sx`, 85,803 lines. Prior blocker about unavailable indexed assembly is RESOLVED. Inspected exact assembly lines. No compilation or runtime tests.
+
+Verified gameplay hooks (line numbers on the current main blob SHA `c35e22621a93d1e07c44d40de8867446ff7c64bf`):
+- `mission_briefing` line 1207; caller line 54661 uses `brief_text`. The menu handler calls `load_text` with `current_levno` at lines 54622-54625.
+- `map_selection` line 31709; world map selection puts mission ID from `data_5b071` into `current_levno` around lines 32017-32022 and 32062-32066.
+- `load_map_level` line 27845 updates `current_levno`, reads an RNC level block and loads `mission_load_files` (lines 27873-27904). Mission resource descriptor `mission_load_files` at 82620 includes `data/map??.dat` dynamically patched via map number.
+- `load_text` line 55249 and path patterns around 82526 include `data/miss%02.2d.dat` and `data/miss%01d%02.2d.dat`. Need inspect language/variant branching and validate actual game assets.
+- `LoadSaveGame` line 30354 uses `ac_load_save_text` at 30397 and `ac_load_player` / `ac_save_player` at 30627 / 30643 for 10 slots.
+- Main menu also requests `ac_load_save_text` repeatedly at 54575-54582. These provide **two verified save-list callers**.
+- Legacy assembly implementations of `ASM_load_player`, `ASM_save_player`, `ASM_load_save_text` remain in assembly around 55293–55448 and use `aCSyndSave` string `synd/save` at 85010, while native C save functions use `save/%02d.gam`. The active `ac_` wrappers call C versions; do not assume old assembly path string is live.
+- `next_mission_countries` symbol at 85318, but revolt logic and campaign selection not fully traced.
+- `current_levno` appears in 13 assembly lines; `level__MapNumber` in 8. Further inspect mission ID resolution and mode variation before implementing new selectable modes.
+- IMPORTANT: normal GitHub `fetch_file` returned empty for huge assembly, but `fetch_blob` succeeded. Future sessions should use the SHA recorded here or refresh it from Git tree.
+
+Integration significance: confirmed concrete seam from map selection -> mission ID -> briefing text -> mission loading, and from menu save list -> native save wrappers. This is an evidence-backed starting point, **not proof of custom-mission compatibility**. Continue tracing exact file layout, objective semantics and mode switching before any code change.
+Status: full static assembly indexing and targeted reading; no engine code modified; no build/runtime testing. Version MB-AUDIT-0.8.
