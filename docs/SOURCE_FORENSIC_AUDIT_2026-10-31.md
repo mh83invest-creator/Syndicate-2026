@@ -436,3 +436,11 @@ Three new audit documents expand the analysis and provide a central go/no-go reg
 3. **`docs/SOURCE_AUDIT_DECISION_REGISTER_2026-11-01.md`**: consolidated approved feature requirements, concrete source hooks, technical feasibility classifications, preexisting risk triage, evidence gained and remaining asset/runtime gates. Use this as the principal concise technical starting point before proposing a code edit. No v0.9 lighting/menu feature was added or authorised by writing it.
 
 **This round did not compile or run the game or alter any source or CI.** The user needs to provide legally held original game resources and native Windows playtest evidence later for definitive night effects, FPS and regression results. Continue asset-independent analysis without changing the protected gameplay baseline.
+
+## Read-only map data-format audit — 1 November 2026
+
+**New report:** `docs/SOURCE_AUDIT_MAP_FORMAT_AND_GEOMETRY_2026-11-01.md`.
+
+The original assembly's `init_map_data` (lines 25694–25716) treats original `map_buf+12` as **12,288 four-byte relative column offsets** and rebases them in place. FreeSynd's separate `src/map.cpp:47–70` also interprets the first 12 bytes as dimensions and resolves each map column relative to the first byte after that header. **12,288/12,288 arithmetic comparisons** matched on a synthetic buffer. This independently corroborates one important original map-format convention without any retail files, but **does not establish actual map dimension values, all map variants, or complete render equivalence**. `draw_horizontal` uses a 128-column stride and parity-selected block drawing; exact `0x500` argument scale semantics remain to be determined.
+
+This source evidence further confirms the need to inspect original map blocks, visibility/occlusion and sign/window geometry before claiming a localized streetlight or neon design. No new engine code or FreeSynd code integrated; no game/build/GUI tests.
