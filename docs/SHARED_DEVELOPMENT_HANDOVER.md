@@ -1,0 +1,46 @@
+# Syndicate 2026 — Shared Development Handover
+Updated: 2026-11-01 (Australia/Brisbane)
+
+## Purpose
+Single cross-workstream coordination entry point for the existing Syndicate 2026 engine audit and the Mission Builder / World Domination audit. Read this before new development. This file describes agreed scope and links, not completed implementation.
+
+## Protected baseline
+- Repository: mh83invest-creator/Syndicate-2026
+- Main branch: main
+- README identifies the source baseline as SyndicatFX 0.0.6.1022, with Windows playtesting through v0.7.
+- Source under engine/. The README says mission gameplay remains at 16 FPS; some company configuration pacing changed to 30 FPS.
+- Preserve all validated current functionality, original campaign, American Revolt, gameplay speed, mouse/keyboard support, assets and existing Windows builds.
+- No proprietary original game data is stored in this repository.
+- Existing mainline engine audit continues independently; do not replace its findings or claim it is complete.
+
+## Agreed mode selection
+- Keep Original Campaign and American Revolt available and unchanged in behaviour.
+- Investigate adding selectable World Domination and Custom Campaign modes using the same tactical engine, not a separately implemented game.
+- Expose Mission Builder separately in the main menu (design preference agreed by user).
+- Mission Builder scope: complete mission definitions, briefing, equipment/agents flow, tactical execution, results, integration into campaign.
+- Random mission framework: pre-authored pools for territory revolts first; procedural mission parameters only after validation.
+- World Domination: optional persistent strategic campaign with overall objective, territory states, rebellions, dynamic missions and consequences.
+- Existing original campaigns must remain operational and must not be silently modified; any optional random revolt behaviour in classic campaign needs separate explicit approval.
+
+## Workstreams
+1. Existing engine audit / modernisation: main and its established development practices.
+2. Mission Builder integration audit: feature/mission-builder-audit. See `docs/mission-builder/HANDOVER.md` on that branch for investigation log, decisions, and outstanding questions.
+
+## Collaboration protocol
+- Mission Builder changes happen on its own branch. Do not alter mainline engine code during audit.
+- Mainline developers should read this shared file plus the mission branch handover before changing campaign selection, mission loading, objective logic, map data, save/load, AI/spawns or briefings.
+- Mission Builder developers should check mainline commits and engine audit handovers before proposing interfaces.
+- Integration contract must be documented (formats, functions, ownership, state transitions, test coverage) before code changes that touch shared components.
+- Merge via reviewable pull request after cross-workstream check; never auto-merge or overwrite main.
+- Update handover with date, branch, commit, exact files, verified behaviour, untested items, integration dependencies and next steps after each development change.
+
+## Immediate next steps
+- Mission audit: enumerate and inspect actual engine files controlling mode selection, briefings, objectives, mission loading, revolt triggers, maps/spawns, mission results and saves.
+- Produce evidence-backed feasibility matrix with file/function references; note unknowns.
+- Define first end-to-end proof of concept using an original-map custom mission, without disrupting the baselines.
+- Coordinate any proposed shared engine changes with mainline audit before implementation.
+
+## Current verification
+- GitHub repository README was read on 2026-11-01.
+- No mission loader, save game, AI or menu source files have yet been inspected for this workstream.
+- No implementation, build or runtime tests of Mission Builder have occurred.
