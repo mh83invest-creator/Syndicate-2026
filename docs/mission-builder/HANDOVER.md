@@ -90,3 +90,17 @@ Implications:
 Next audit: inspect workflow, assembly asset provenance, data directories and available symbols; produce risk-graded implementation strategy; no coding before validated integration seam.
 Tests: static code/document reading only. No compilation or runtime tests. Existing behaviour unchanged.
 Handover version: MB-AUDIT-0.3.
+
+## Approved requirement — siloed saves by campaign (2026-11-01)
+User explicitly requires Original Campaign, American Revolt and each added mode (including World Domination and Custom Campaigns) to have separate save collections. A campaign's save/load interface must ONLY display/access its own saves; saving in one campaign must not overwrite another campaign's identically numbered slot.
+
+Cross-development contract to establish before implementation:
+- Campaign identity selection and propagation into save/load/continue (and deletion if offered).
+- Storage namespace and validation against incorrect campaign loads.
+- Preserve compatibility with existing legacy `save/%02d.gam` fixed-format saves; identify what old slots represent before proposing migration.
+- Determine treatment of multiple user-made Custom Campaigns (individual campaign IDs versus one shared Custom Campaign namespace) during design; no silent assumption.
+- Avoid changing original binary payload layout without a tested migration or versioned extension.
+- Test independent slot numbering, save-list filtering, wrong-campaign rejection, legacy compatibility and uninterrupted original campaign behaviour.
+- Co-ordinate this requirement with mainline handover at `docs/SHARED_DEVELOPMENT_HANDOVER.md` (main). Both workstreams must review save-related changes.
+Status: documented and approved requirement, NOT implemented or tested.
+Handover version: MB-AUDIT-0.4 (documentation-only).
