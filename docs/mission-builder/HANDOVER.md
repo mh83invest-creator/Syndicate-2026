@@ -175,3 +175,16 @@ Static source inspection of complete assembly blob SHA `c35e226...`, line refere
 - Feasible first experiment is a fixture that changes only a single test mission briefing/data asset in an isolated runtime data directory, with checksum protection and original legal assets supplied locally. This is a PROPOSAL, NOT implemented or approved as a gameplay change.
 - Risk assessment: fixed mission ID resource patterns and 2-digit filename formation suggest possible indexing constraints; confirm actual valid ranges and handling of campaign expansion before assigning new IDs.
 No code changed, compiled, or executed. Version MB-AUDIT-0.9.
+
+## Audit 1.0 — Tactical mission dispatch, strategic clock and objective array (2026-11-01)
+Read complete assembly blob `c35e22621a93d1e07c44d40de8867446ff7c64bf`, with line numbers specific to that blob.
+- Single-player `process_action` path around lines 28531-28542 pushes `current_levno` and `level_fname`, calls `load_map_level`, then `init_players_people`. This completes the source-level trace from world-map selection to tactical level initialization.
+- `load_map_level` at 27845 chooses RNC mission data and map resources as documented in Audit 0.8/0.9. No data-editing or alternate mission loader exists in inspected path.
+- Periodic strategy update at 11603–11640 iterates 50 states, calls `AdjustStateHappiness` and `GetRevenueFromCity`, adds credits, then calls `ComputerPlaysMap`. These are concrete future World Domination investigation points. The exact revolt condition/dispatch is not yet proven.
+- `adjust_tax` at 33082–33106 clamps a per-country tax value to 0–100 in `data_553a0`. The exact connection to territory rebellion is still being audited.
+- `init_computer_players` at 7052–7080 walks `level__CPObjectives` with 0xF (15-byte) stride for up to 0x80 (128) entries; code at 9279–9289 traverses linked objective children with equivalent 15-byte stride. This independently corroborates the packed `CPObjective` layout. Treat 128 as an existing array capacity, not an approved custom-editor limit or safe extension capacity.
+- No user-provided game retail resource files were analysed. Binary data grammar and new mission ID ranges remain unverified.
+
+Risk: strategy simulator and tactical game share fixed-memory country/mission fields; any new mode needs stable identity and non-intrusive dispatch without changing clock/tactical timing in classic campaigns.
+Next: trace happiness/revolt trigger to mission selection, campaign Original/American mode decision, and mission result transitions. Define testable proof-of-concept only after source-confirmed dispatch routes.
+Tests: static reading only. No source modifications, compilation or gameplay testing. Handover version MB-AUDIT-1.0.
