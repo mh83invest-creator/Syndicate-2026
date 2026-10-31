@@ -148,3 +148,19 @@ Original assembly `engine/src/syndre.sx:83626–83676` defines separate initial 
 ### Review implication
 
 This direct pointer/resource evidence strengthens the recommendation to **avoid palette injection at the general SDL screen-swap function** as a first v0.9B change. Source-level candidates can be investigated, but the first safe decision point is understanding actual data aliases and exactly which pixels belong to a mission versus menu/HUD/cursor at each stage. No original asset samples or Windows render traces are available yet.
+
+## 11. SDL2 error-path audit: potential focus and scaling fragility
+
+A **source-level error-handling concern**, not a confirmed user-visible regression, has been identified in the SDL2 backend:
+
+- `engine/bflibrary/src/x86-win-sdl2/sscreen.c:728–744`: `LbIScreenSurfaceRestoreLost` asks SDL for a fresh window surface after events such as Alt-Tab; it returns `Lb_FAIL` if `SDL_GetWindowSurface` returns NULL.
+- `sscreen.c:1014–1047`: `LbIScreenDrawSurfaceCheck` may return `Lb_FAIL` when recreating the draw surface fails.
+- **But** `sscreen.c:1050–1085`: `LbScreenSwap` invokes both functions **without checking their returned results** and proceeds to mouse handling, blitting and `SDL_UpdateWindowSurface`.
+- `sscreen.c:976–1007`: `LbI_SDL_BlitScaled` logs a failed `SDL_LockSurface` for source or destination but still continues to use `pixels`, and returns success (`0`) after its manual conversion path rather than propagating lock failure.
+- `engine/bflibrary/src/x86-win-sdl2/swindows.c:104–113` processes focus gained/lost via `LbInputRestate` and calls the screen-surface restore routine.
+
+**Risk:** Under rare surface-loss/lock-failure conditions the error may not be safely propagated to the caller. This is a **plausible resilience weakness**, not proof that it caused the failed v0.8 experiment; the working v0.7 branch has the same backend, and no failure was reproduced. Do not make an unsolicited fix or change camera timing as part of this audit. If/when branch testing is authorised, specifically exercise Alt-Tab, window resize/fullscreen transitions, SDL surface recreation, and software scaling error cases, logging return values and screen/pointer state.
+
+## 12. Performance audit refinement: avoid guessing from conversion-loop counts
+
+The four-plane to indexed converter in `engine/src/display.c` is a visible fixed-cost presentation step, and the SDL2 backend has a separate software format-conversion/scaling loop. This supports **distinct prospective measurement probes**: original mission simulation (AI/effects/collision), planar unpack, copy/scale/present, and audio. However no timestamps around each stage or representative Windows measurements exist. The cause of explosion-heavy slowdown is **not established**. Any proposed optimization needs image-equivalence and game-timing regression proof; no such change is made in this audit.
