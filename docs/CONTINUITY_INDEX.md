@@ -59,3 +59,4 @@ For each completed stage: write handover → commit on active development branch
 
 | SDL setup/Windows build configuration | `docs/audits/2026-11-01_sdl_setup_build_config.md` | Static screen setup and CI review complete; `LB_WSCREEN_CONTROL` effective definition remains unresolved. Report commit `7ec07024b79f9f72fa78dd221bdc69b07d79771a`. |
 | WScreen build flag/SDL draw surface ownership | `docs/audits/2026-11-01_wscreen_build_flag_ownership.md` | Source default resolved (`no`); generated Windows config not tested. Commit `212b074cd67d39599a524ff747de5dce4e43f05c`. |
+| Assembly screen-pointer phase transitions | `docs/audits/2026-11-01_assembly_screen_pointer_transitions.md` | Focused static audit completed, no build or runtime tests. Commit `857f5cc0c1f0534dd9ee2763b2a641ce9d7bb2bb`. Next: allocation boundaries and resource-loader aliasing. |
