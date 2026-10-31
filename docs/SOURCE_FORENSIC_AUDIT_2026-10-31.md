@@ -340,3 +340,8 @@ The user-supplied FreeSynd ZIP is reference-only. Its `src/mapmanager.cpp` and `
 **User action required for next evidence tier:** provide a legally owned, nonpublic *local test environment* or representative original Syndicate mission/map/sprite/palette assets through an appropriate private channel; do **not** commit retail game files to public GitHub. Also a Windows playable test environment is required for end-to-end frame/interaction verification. Without these, only further static code inspection is possible.
 
 **Development decision:** do not begin v0.9A graphics or v0.9B lighting implementation. Preserve `main`, v0.7 camera, timing and audio. The preexisting v0.9A native title string edit remains unverified, and has not been expanded during the audit.
+
+
+## Continuation reference — 1 November 2026
+
+A separate, evidence-based static deep dive has been committed at **`docs/SOURCE_AUDIT_RENDERING_AND_TEST_GATES_2026-11-01.md`**. Read it alongside this original audit before further technical work. It records the distinct **16-index planar mission render path**, sprite/framebuffer ownership, menu/mouse/assembly ABI relations, original camera edge normalization, direct UI and mission render call sites, and a specific CI testing gap (**Automake declares seven executable tests through `TESTS = $(check_PROGRAMS)`, while current v0.7 Windows workflow compiles but does not invoke `make check`**). It also defines a preliminary feature-feasibility matrix and test prerequisites. No game or workflow source was changed for this read-only audit.
