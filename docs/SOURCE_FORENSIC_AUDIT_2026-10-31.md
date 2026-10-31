@@ -399,3 +399,20 @@ Additional error-path inspection in `engine/bflibrary/src/x86-win-sdl2/sscreen.c
 **Classification:** Potential backend error-handling vulnerabilities, **not proven runtime defects or proven cause of historical v0.8 desktop-focus behaviour**. Preserve unchanged v0.7 backend until a controlled reproducible test supports a repair. No engine code modified.
 
 The `docs/releases/v0.9A.md` handover has also been amended to supersede its now-obsolete statement that the original assembly source cannot be retrieved, and to state precisely what remains unimplemented and untested. This change is **documentation only**.
+
+## Critical call-graph correction, quantified effects, and UI hitbox evidence — 1 November 2026
+
+Two new static-audit reports were committed and must accompany this master audit:
+
+- **`docs/SOURCE_AUDIT_EFFECT_POOL_AND_PROFILING_2026-11-01.md`** — actual `move_it` dispatch, effect allocator/iteration capacity, 53-entry effect handler jump table, explosion/collision/effect-spawn dependencies, and proposed measurement boundaries.
+- **`docs/SOURCE_AUDIT_MENU_HITBOX_STRATEGY_2026-11-01.md`** — source-decoded shared menu-hover rectangle, typography positioning, eight gadget call sites, and strategic screen's `process_day` campaign coupling.
+
+**Correction:** `move_it` at assembly lines 33330–33337 has **five `call` instructions then a `jmp move_vehicles`**. A prior report listing five simulation subsystems was incomplete; the full sequence has **six** stages. The new detailed report and `docs/SOURCE_AUDIT_GAMEPLAY_AI_AUDIO_2026-11-01.md` now correctly identify the tail jump.
+
+**Explosion performance hypothesis, not a measurement:** `level__Effects` spans from source address `0x95e70` to `level__Commands` at `0x97c70`, with 30-byte records, giving **256 effect slots**. The `init_fireball` allocator searches the **first 128 slots** and general `init_effect` searches all 256. `move_effects` visits pool slots and dispatches through **53 entries** indexed by effect type. Several handlers repeatedly check collisions and create more effects. This makes effect-pool iteration, collision and allocation **candidate** bottlenecks in overlapping explosions, but no component has been profiled. Do not optimize or drop effects without measurement and preservation testing.
+
+**Menu regression guardrail:** `DrawMenuGadget` reads static little-endian bounds in `data_5b6d2/4/6/8` that decode to original 640×400 logical rectangle **x 500–628 and y 346–372**, with **strict interior comparisons** for hover; its text depends on language selection. `map_selection` calls `process_day`, so even some apparently visual-only menu-loop changes could influence strategic campaign state. No hitbox or game loop edits made.
+
+**Methodology warning:** A lexical count of `call` tokens between two nearby address labels does **not** reconstruct full assembly routines. Many real handler labels lack original hex address comments; there are tail jumps, indirect switch tables and branch targets. Previous call-list counts are navigation aids only, not fully proven direct dynamic call graphs or profiler data. This audit has explicitly corrected a concrete case.
+
+**Tests and scope:** Static address/stride math and source occurrence checks passed. No Windows or gameplay execution, unit test, profiling instrumentation, source changes or FreeSynd merges. v0.7 preserved, v0.9 work remains held.
