@@ -367,3 +367,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_fade_caller_all_general_sources_complete.md`; commit `83b1ac6bb64b8a4d58a62695bd5fd1dbedab423d`.
 - All **59** C/C++ files under `engine/bflibrary/src/general` scanned using graphics-branch file contents: only `gpalette.c:38` defines `LbPaletteFade`, no direct call. Along with previous all **17** `engine/src` C files, **76 files** checked, zero direct callers in those directories. Fade division by zero remains source-level potential only: no demonstrated zero-valued caller or gameplay reachability. Platform-specific and indirect usages untested.
 - Next prioritise Windows SDL surface/format testability and higher-evidence scaler issues. No engine or other branch edits.
+
+## SDL2 scaler format-dispatch reachability — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl2_scaler_reachability_format_dispatch.md`; commit `c6e54c2eef9b48122e5906609367c9bf39981e14`.
+- Source-verified SDL2 dispatch: equal dimensions -> `SDL_BlitSurface`; unequal dimensions and source BPP>1 -> `SDL_BlitScaled`; unequal dimensions and source BPP=1 -> custom indexed-indexed for dest BPP=1, custom indexed-to-truecolour for dest BPP>1. Setup obtains real SDL window surface and can wrap an app 8-bit draw buffer, with SDL potentially providing a true-colour window surface. **Conditional path only**; actual Windows surface formats, pitch, dimensions, backend and runtime reproduction remain unverified.
+- No engine edits, protected baseline or parallel branch changes. Next native Windows surface format/pitch diagnostics and backend identification.
