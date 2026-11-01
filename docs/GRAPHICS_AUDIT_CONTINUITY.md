@@ -98,3 +98,9 @@ A third documentation-only workstream has been established:
 - Inspected original assembly confirms zero-index element chaining terminates at the animation-elements base pointer, while positive element indices continue without a visible end-bound check or visited-node limit in the inspected loops. This identifies a conditional risk only, NOT corrupted source assets or a reproduced runtime failure.
 - Frame progression may take frame+6 or reset from starts_ani depending on state; no universal end-frame convention has been proven.
 - Next: private CRC-checked hfra/hele graph traversal with bounds, cycle checks and comparison to Windows playback. No code or gameplay changes; no runtime validation.
+
+## Agent-specific animation sprite selection — 2026-11-01
+- Report: `docs/audits/2026-11-01_agent_animation_sprite_selection.md`, commit `f35f1a0ac59a69897b869738c267912b7fcccdb2`.
+- The original `draw_agent_element` path may replace an element's sprite offset using agent state and an alternate descriptor selection before calling `DrawASpriteHires16_A`. An offline viewer cannot assume the raw element +0 sprite is always the displayed agent sprite.
+- Inspected links and descriptor selections only test against their respective *base* pointers, not observed end bounds. Conditional risk only; no malformed asset or crash established.
+- Verification: source-only assembly inspection, no new asset decoding, build, Windows testing or gameplay modifications. Next trace alternate selection state and validate private sprite/animation record references.
