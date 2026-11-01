@@ -87,3 +87,6 @@ Strategic tick calls AdjustStateHappiness before GetRevenueFromCity. Revenue rou
 
 ## Cross-workstream — mission files are number-based (MB-AUDIT-1.9, 2026-11-01)
 Assembly mission loader builds `data/gameNN.dat` filenames using `current_levno`; briefing loader similarly uses language-specific `data/miss...dat`, and map resources use `level__MapNumber`. No campaign-identity dimension is visible in these inspected paths; do not globally reassign those paths or assume higher mission IDs work without isolated validation. `engine/src/wrcountry.h` declares 50 packed 10-byte territory records. American Revolt routing remains unconfirmed. No engine code change or runtime tests; detailed source audit on Mission Builder branch.
+
+## Cross-workstream update: CLI campaign switch absent (MB-AUDIT-2.0, 2026-11-01)
+C entry engine/src/main.c process_options currently has no campaign/American Revolt CLI selection switch. The observed assembly mission asset path also has no campaign identity component. This does not rule out expansion resources elsewhere. Any future selector and mode-specific resource resolution must be separately designed and tested without changing Original Campaign defaults. Mission Builder handover 2.0 contains details. Static inspection only.
