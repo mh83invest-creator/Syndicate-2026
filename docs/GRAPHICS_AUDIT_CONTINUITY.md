@@ -81,3 +81,9 @@ A third documentation-only workstream has been established:
 - Source confirmed: frame lookup uses 8-byte stride; frame +0 references ten-byte animation elements; frame +4 participates in sound control; element +0 addresses a sprite by table-relative byte offset, +2/+4 position, +6 drawing parameter and +8 next element reference.
 - Decoded file sizes imply **candidate**, not verified active, capacities: hfra-0.ani 8,948 frame slots; hele-0.ani 10,486 element slots; hspr-0.tab 1,802 sprite entries. hsta-0.ani semantics remain open.
 - Tests: original assembly blob inspection and divisibility calculations only; no private data record validation, Windows rendering or game code changes. Next trace starts_ani and validate private animation link chains.
+
+## Animation starts table audit — 2026-11-01
+- Report: `docs/audits/2026-11-01_animation_starts_source_trace.md`; commit `9bc60d769ee93f2a7d437ed1e6855d8d06616d4e`.
+- Source confirms `starts_ani` is addressed with 16-bit word entries. Ordinary scaled indices and fixed offsets, including 0x4b0 and 0xf3e, are used in distinct animation and drawing paths.
+- Existing 3,940-byte decoded hsta-0.ani length is compatible with 1,970 candidate word entries, not 1,970 validated active sequences. Some offsets serve separate logical groups; their semantics and bounds require private asset validation.
+- Tests: original assembly source read and size arithmetic only. No game-code modifications, private asset decode, build or Windows runtime tests. Next: inspect starts/frame/element cross-reference and termination rules.
