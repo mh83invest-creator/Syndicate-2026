@@ -90,3 +90,6 @@ Assembly mission loader builds `data/gameNN.dat` filenames using `current_levno`
 
 ## Cross-workstream update: CLI campaign switch absent (MB-AUDIT-2.0, 2026-11-01)
 C entry engine/src/main.c process_options currently has no campaign/American Revolt CLI selection switch. The observed assembly mission asset path also has no campaign identity component. This does not rule out expansion resources elsewhere. Any future selector and mode-specific resource resolution must be separately designed and tested without changing Original Campaign defaults. Mission Builder handover 2.0 contains details. Static inspection only.
+
+## MB-AUDIT-2.1 — Asset and save directory isolation risk (2026-11-01)
+Current `game_data.c` uses `GetDirectoryHdd`/`SyndFXFileNameTransform` for relative game resources and uses fixed `save/%02d.gam` names for all C save listing/read/write paths. `dos.c` has additional path translation entry points. Campaign-specific resource and save routing must inspect these independently and preserve existing `save/NN.gam` files; do not change the global transform casually. Detailed source evidence in Mission Builder handover Audit 2.1. No build or gameplay testing.
