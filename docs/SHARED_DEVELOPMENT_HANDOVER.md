@@ -126,3 +126,6 @@ engine/util/install enumerates imported gameNN.dat, mapNN.dat, missNN.dat and ot
 
 ## MB-AUDIT-3.2 (2026-11-01)
 Installer validates source directory and filenames, not American Revolt compatibility. Requires empty target. See campaign save integration contract commit b119686. No code modification or runtime testing.
+
+## MB-AUDIT-3.3 — Mission identifiers are not mode selectors (2026-11-01)
+World-map selection yields a numeric current_levno; loader reads corresponding data/gameNN.dat and uses embedded level__MapNumber for map assets; mission text uses numbered data/miss...dat. No verified campaign identity is passed in this path. Do not infer American Revolt solely from filename ranges. Resource routing and save isolation are distinct requirements. See Mission Builder Audit 3.3; static source inspection only.
