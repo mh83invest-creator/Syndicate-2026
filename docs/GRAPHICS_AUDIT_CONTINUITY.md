@@ -286,3 +286,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_source_derived_scaler_asan_lp64.md`; commit `56518021e7f7f304bd028625eeefddd97906274d`.
 - Isolated, transcribed original scaler routine (no game assets), Clang 17 on Linux x86_64 with ASan: 2/3/4 destination BPP all raised `heap-buffer-overflow` and 8-byte stores, reflecting 8-byte `long` on LP64; all exited 1. Separate Windows-sized four-byte synthetic model had 2/3 BPP overflow and 4 BPP passed. Native `-m32` compile could not run: missing 32-bit C development headers.
 - NOT an integrated SDL/Syndicate or Windows runtime test. Next establish real Windows build SDL formats, pitch and scaler activation. No game code/other branch edits.
+
+## Synthetic scaler destination pitch test — 2026-11-01
+- Report: `docs/audits/2026-11-01_scaler_padded_pitch_standalone_test.md`; commit `fa386edf7f9a1ae3e14e4f116e7a20ca0271b01a`.
+- Source-derived scaler control flow tested with 4-byte `uint32_t` stores (deliberate model substitution to isolate pitch on Linux LP64), synthetic 3x3 4-BPP destination with pitch 16 (4 padding bytes per row). Padding marker check found **8 altered padding bytes**, exit 3 by test design; no ASan overflow was reported. Confirms width-based addressing cannot honour a padded destination row pitch in this standalone test; does **not** prove actual SDL/Windows corruption.
+- Original scaler source not changed. Pending real SDL surface format/pitch and compiled Windows build evidence. Protected v0.7 baseline and parallel branches untouched.
