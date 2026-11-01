@@ -331,3 +331,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_palette_set_late_failure_reset_order.md`; commit `0ce7625296d9e989c11142715da3c6dfd033f059`.
 - `AppScreenSetup` supplies non-null `GraphicsPalette`; SDL2 setup creates secondary surface with `set_palette=false`, marks screen initialized, then applies `LbPaletteSet`. On palette failure, reset guard now permits cleanup, freeing the secondary surface where present and clearing handles and flags. Distinct from earlier synthetic pre-initialization palette failure. Internal `LbPaletteSet` partial-failure semantics and actual Windows SDL behaviour remain unverified.
 - Static source-only audit. No game code or sibling branch changes; next inspect palette propagation implementation and live SDL recovery.
+
+## SDL1/SDL2 palette propagation boundary — 2026-11-01
+- Report: `docs/audits/2026-11-01_palette_propagation_implementation_boundary.md`; commit `1ca01036799e63cd2c0262de6ff018cb354d7ea1`.
+- Both backends expose `lbPaletteColors[256]`, copy it to indexed draw surfaces with different SDL APIs (SDL2 `SDL_SetPaletteColors`, SDL1 `SDL_SetColors`), and feed source-surface palette colours into indexed-to-true-colour scaler. Normal screen setup calls `LbPaletteSet`; its implementation and partial-update/rollback semantics **not yet found/verified**. Candidate paths failed and default-branch GitHub code search returned no results, which does not establish absence.
+- Further work requires repository tree/checkout palette implementation lookup and native SDL tests. No engine or parallel branch changes.
