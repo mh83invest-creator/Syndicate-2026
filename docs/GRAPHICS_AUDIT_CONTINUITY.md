@@ -69,3 +69,9 @@ A third documentation-only workstream has been established:
 - Direct drawing routines read sprite descriptor 32-bit pointer at +0, dimensions at +4/+5; 10,812-byte decoded sprite table therefore has a 1,802-entry *candidate* six-byte interpretation, pending private data checking.
 - Selected animation loops use 10-byte element indexing and sprite-table byte offsets. Exact valid element and sprite counts, rendering equivalence and lighting compatibility are unverified.
 - Tests: assembly source read and arithmetic only; no new private decoding, compilation or Windows gameplay. Next: CRC-checked private 6-byte/10-byte record validation.
+
+## Packed sprite descriptor ABI and asset validation gate — 2026-11-01
+- Report: `docs/audits/2026-11-01_sprite_descriptor_abi_validation_gate.md` (commit `2b347433b42b194edceeb09bc255e93586693608`).
+- Source cross-check: packed `TbSprite` in `engine/bflibrary/include/bfsprite.h` with pointer at +0 and, when `SPRITE_FORMAT_V2` is not selected, byte dimensions at +4/+5; direct assembly draw fields and `ac_LbSpriteSetup` align with this layout.
+- 10,812 bytes / 6 = 1,802 potential entries. Asset-level record count, pointer ranges, empty entries and animation reference integrity remain **unverified** because private retail archives are not available in this session.
+- Verification: GitHub header and assembly source read; no new data decode, build or Windows game test. Next: private archive availability and actual six-byte descriptor bounds validation.
