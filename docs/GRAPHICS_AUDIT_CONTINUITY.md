@@ -110,3 +110,8 @@ A third documentation-only workstream has been established:
 - Assembly demonstrates six-byte sprite-offset division, an eight-value special range after subtracting 0x29, and state-derived variant selection using a byte from `data_5e4ab` with base index 0x461. The fallback preserves the raw element sprite reference.
 - State byte's meaning remains unknown; do not infer outfit, weapon, direction or other labels without corroboration. Additional source path corroborates variant substitution.
 - Source-only, no private asset-byte test, Windows rendering, compile or gameplay changes. Next: trace state-byte provenance and numeric bounds.
+
+## Agent sprite player-state provenance — 2026-11-01
+- Report: `docs/audits/2026-11-01_agent_variant_player_state_provenance.md`; report commit `8b42c0145e01fb6219b85ff43348b2455b562996`.
+- `data_5e4ab` is written in player/network slot initialisation and menu state paths; independently, its byte indexes `player_colour_for_map` and contributes to agent sprite variant selection. This is stronger evidence of player-side graphical identity, but **does not yet prove exact semantic labels or colours**.
+- Source-only inspection; no private art inspection, native build or Windows runtime. Next: trace `player_colour_for_map` and bounds/mode behaviour. Other branches untouched.
