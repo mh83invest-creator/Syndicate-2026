@@ -74,3 +74,10 @@ There are **real guards** in `sound_bank_setup` (NULL game table + sound-able st
 **Code changed:** none. **Saved game files changed:** none. **Concurrent workstreams changed:** none. **Protected v0.7 baseline:** untouched.
 
 No runtime vulnerability or gameplay defect is claimed as reproduced.
+
+## Later checkpoint: original assembly retrieval and table lifecycle (2026-11-01)
+The oversized `syndre.sx` assembly was **successfully recovered in full via GitHub fetch_blob** (SHA `c35e22621a93d1e07c44d40de8867446ff7c64bf`, 85,803 lines). The next source stages are complete and read-back verified on `main`:
+- `docs/audits/2026-11-01-main-game-sample-table-assembly-lifecycle.md` — commit `6cba1e776b1d8072f4b4f16448a8b62aa801c343`; confirms separate sound-0/game and sound-1/menu banks sharing three pointer slots, direct assembly callsites, and original ASM SetBFSampleStatus null guard missing from native C replacement.
+- `docs/audits/2026-11-01-main-audio-partial-load-state-matrix.md` — commit `87ab48b2d374fea7a77111fcf2a5f4f7fd3a06a6`; source-only outcomes for DAT/TAB success/failure combinations, including conditional menu DAT-only skip logic.
+- `docs/audits/2026-11-01-main-audio-phase-ordering-and-state-writes.md` — commit `22c5c99800a0cb95a98fbb9727835a7108bb7669`; direct assembly read of main tactical/menu/free sequence, queued sound-status update and SoundActive toggles.
+The original 'full assembly unavailable' limitation in this predecessor is therefore **superseded for these inspected callsites**; it remains true that no Windows build, test harness, sound resource inventory or actual playback/fault reproduction has been performed. No engine code, saved game, protected v0.7, Graphics Audit or Mission Builder branch was changed.
