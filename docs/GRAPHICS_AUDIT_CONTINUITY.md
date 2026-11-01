@@ -301,3 +301,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_sdl2_swap_rebind_failure_propagation.md`; commit `3b2cc9e7623aa129022ba8367528f7d378fbfde2`.
 - Source confirms **both** `LbScreenSwap` and `LbScreenSwapClear` ignore restore-lost and draw-surface-check returns. The draw-surface-check function logs SDL lock failure without early return; `SwapClear` invokes `SDL_FillRect` without inspecting its result after presentation. Blit and window-update errors are checked. These are static conditional error-path risks, not verified Windows runtime defects.
 - Documentation only; no gameplay, engine or sibling-branch edits. Next trace reset and free lifetime before any corrective proposal.
+
+## SDL2 surface reset/mode/rebind lifetime — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl2_surface_reset_mode_change_rebind_lifetime.md`; commit `86f115ebd91f24d5fa60d8df45f7c09a5e74e320`.
+- SDL2 reset and mode changes free only secondary draw surfaces; SDL retains management of the window surface. Rebind after WScreen pointer change creates a replacement and frees the old draw surface only on successful recreation. The create helper mutates global draw pointer/secondary flag before palette setup; error-path consistency under failed creation remains a conditional risk, not a reproduced bug.
+- Next inspect failure cleanups/flags, then controlled fault injection. No game code changes, Windows runtime tests or cross-branch edits.
