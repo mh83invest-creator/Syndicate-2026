@@ -321,3 +321,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report `docs/audits/2026-11-01_surface_failure_fault_injection_model.md`; commit `966657db3b60df5c45691c1aede4f5d9329d0ec7`.
 - Compiled and ran isolated C state-transition model under ASan/UBSan. Setup allocation failure: null draw, flag false. Setup palette failure: null draw, flag true (inconsistent). Rebind allocation and palette failures from a valid old surface: old draw restored, flag true. No sanitizer diagnostics. This is a **stubbed model**, NOT real SDL or a Windows runtime result; narrows prior rebind-flag concern.
 - Next: real SDL failure injection, cleanup/retry behaviour, and active Windows graphics backend. No engine, protected baseline, or parallel branch edits.
+
+## Important correction: normal setup palette-failure reachability — 2026-11-01
+- Report: `docs/audits/2026-11-01_surface_palette_failure_reachability_correction.md`; commit `12e79d6637ffb7ec12559b30fa4b43905aceea1f`.
+- `AppScreenSetup` passes `GraphicsPalette` (when non-null) to `LbScreenSetup`, whose draw-surface creation passes `set_palette=(palette==NULL)`, so prior stubbed **initial draw-creation palette failure** does NOT match normal application setup with non-null palette. Later `LbPaletteSet` happens **after** `lbScreenInitialised=true` and has a distinct reset path. Rebind continues to request palette copy `true`; failure handling remains relevant there.
+- Local SDL2 runtime library detected, but pkg-config SDL2 metadata and standard dev header absent. No real SDL test/build conducted. Previous model remains a synthetic conditional result only; its normal-startup applicability is expressly superseded here.
