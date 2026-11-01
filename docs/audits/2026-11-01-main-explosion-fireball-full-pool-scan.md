@@ -59,3 +59,6 @@ A subsequent exact line read adds an important reachability qualification. The d
 **Not performed:** compiler, CI, Windows launch, profiler, memory instrumentation, sound/visual tests, retail data inspection, gameplay regression, synthetic runtime harness, source change or branch merge.
 
 **Baseline:** v0.7 protected. 16 FPS tactical simulation, mouse/keyboard-only controls, original campaigns and between-mission-only isolated campaign saving are unchanged; Mission Builder and Graphics Audit remain separate.
+
+## Successor: same-pass subtype-41 cascade (2026-11-01)
+The next core source checkpoint confirms the **conditional same-pass dispatch** of newly allocated fireballs whose slot index lies *after* the currently processed effect record; see `docs/audits/2026-11-01-main-fireball-same-tick-cascade.md`, commit `919218c7d495833bf982a8d5196fae165c03d70e`. `init_fireball` writes active marker `+0x18=3` and subtype `+0x19=0x29`; `move_effects` scans effect records in ascending order and routes subtype 41 through `func_1f48a` into wind/collision/movement processing. This further supports profiling a possible same-tick burst of effect work; **not** a measured slowdown, a crash or permission to change the original effect scheduling. Original source and separate branches remain untouched.
