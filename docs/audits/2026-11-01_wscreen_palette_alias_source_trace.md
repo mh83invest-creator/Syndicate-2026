@@ -17,3 +17,7 @@ PASS: full assembly blob read, mission-load and screen-pointer arithmetic, tempo
 NOT RUN: live pointer tracing, compiled game, Windows screenshots, original asset palette decode or actual visual testing.
 Changes: documentation only; protected baseline, main, other workstreams and retail assets untouched.
 Next: track exact WScreen allocation and mission-load phase transitions; test palette RGB values and screen appearance on native Windows.
+
+## Later source resolution — 2026-11-01
+See `docs/audits/2026-11-01_palette_blackout_restore_source_trace.md`.
+The original assembly at `syndre.sx:75307-75340` contains `LbScreenSurfaceClear`: in DrawFlags bit-0x2 mode it calls `LbMemorySet(WScreen, 0, 0x1f400)`. The next `ac_LbPaletteSet(WScreen)` therefore receives a zeroed 768-byte palette prefix. The main mission loop at `syndre.sx:199-248,274-279` later reapplies `GraphicsPalette` when its startup counter reaches two. This source behaviour is consistent with a temporary blackout/reveal rather than an unexplained palette alias or proven bug. The clear routine does **not** zero this buffer in non-bit-0x2 modes. Actual Windows visuals remain untested.
