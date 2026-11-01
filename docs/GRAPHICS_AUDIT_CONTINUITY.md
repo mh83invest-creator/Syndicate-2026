@@ -352,3 +352,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report `docs/audits/2026-11-01_sdl1_focus_palette_restore_event_chain.md`; commit `a176e85334d6a39fc10e602a3fd9572102144453`.
 - SDL1 `swindows.c:98-119,131-151` routes activation events to `WEvent`, which invokes `LbIPaletteRestoreLost` when active with palette. `WEvent` ignores restoration return and reports event success; restore helper itself checks `SDL_SetColors`. Source-connected path, not actual failure evidence. Fade zero-input caller reachability and Windows backend unverified.
 - Graphics documentation only; no engine, protected baseline or parallel branch changes. Next expand fade caller trace and verify active Windows backend.
+
+## SDL backend selection and bounded fade caller tracing — 2026-11-01
+- Report: `docs/audits/2026-11-01_fade_callsite_search_limit_backend_selector.md`; commit `7c25746261f955efdf112e675e313dc34fde15aa`.
+- `engine/bflibrary/Makefile.am` selects SDL2 source branch with `USE_SDL2`; `configure.ac` probes SDL2 with SDL1 fallback. This does not identify the actual Windows executable backend. Repository-wide `LbPaletteFade` caller enumeration was attempted but hit tool-call cap, so caller inventory and zero-divisor reachability are NOT VERIFIED; no claim either way. Previously inspected main.c/game.c lacked direct calls.
+- Static graphics audit only; no runtime tests, code changes or other branch edits. Continue with rate-limited full caller search.
