@@ -555,6 +555,16 @@ TbResult LbScreenSetupAnyMode(TbScreenMode mode, TbScreenCoord width,
     lbDisplay.GraphicsWindowPtr = NULL;
 #endif
 
+#if defined(SYNDICATE_GRAPHICS_DIAGNOSTICS)
+    if (lbDrawSurface != NULL && lbScreenSurface != NULL) {
+        SDL_Surface *ds = to_SDLSurf(lbDrawSurface);
+        SDL_Surface *ws = to_SDLSurf(lbScreenSurface);
+        LOGSYNC("graphics diagnostics: draw %dx%d bpp=%d bytes=%d pitch=%d; window %dx%d bpp=%d bytes=%d pitch=%d; second=%d",
+          ds->w, ds->h, ds->format->BitsPerPixel, ds->format->BytesPerPixel, ds->pitch,
+          ws->w, ws->h, ws->format->BitsPerPixel, ws->format->BytesPerPixel, ws->pitch,
+          (int)lbHasSecondSurface);
+    }
+#endif
     lbScreenInitialised = true;
     LOGSYNC("mode %dx%dx%d setup succeeded", (int)to_SDLSurf(lbScreenSurface)->w,
       (int)to_SDLSurf(lbScreenSurface)->h,
