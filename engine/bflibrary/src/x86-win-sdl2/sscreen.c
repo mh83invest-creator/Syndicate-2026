@@ -990,6 +990,22 @@ int LbI_SDL_BlitScaled(SDL_Surface *src, SDL_Surface *dst)
 {
     long dst_bpp;
 
+#if defined(SYNDICATE_GRAPHICS_DIAGNOSTICS)
+    {
+        static unsigned int logged_routes = 0;
+        const int same_size = src->w == dst->w && src->h == dst->h;
+        const unsigned int route = same_size ? 0u :
+          (src->format->BytesPerPixel != 1 ? 1u :
+           (dst->format->BytesPerPixel == 1 ? 2u : 3u));
+        if ((logged_routes & (1u << route)) == 0) {
+            LOGSYNC("graphics diagnostics: blit route=%u source %dx%d bytes=%d pitch=%d destination %dx%d bytes=%d pitch=%d",
+              route, src->w, src->h, src->format->BytesPerPixel, src->pitch,
+              dst->w, dst->h, dst->format->BytesPerPixel, dst->pitch);
+            logged_routes |= 1u << route;
+        }
+    }
+#endif
+
     // shortcircuit for 1:1
     if (src->w == dst->w && src->h == dst->h)
         return SDL_BlitSurface(src, NULL, dst, NULL);
