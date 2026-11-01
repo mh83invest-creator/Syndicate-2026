@@ -342,3 +342,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Correct files: SDL2 `engine/bflibrary/src/x86-win-sdl2/spalette.c`, SDL1 `engine/bflibrary/src/x86-win-sdl/spalette.c`. Earlier candidate file paths were incorrect; now verified via GitHub tree and direct graphics-branch reads.
 - SDL2 `LbPaletteSet` updates internal six-bit and converted SDL palettes **before** surface API calls. Screen and draw palette SDL updates are attempted separately, and failures set return `Lb_FAIL` **without rollback**. A partial/divergent state is therefore possible on SDL errors; actual SDL failure behaviour untested. Normal setup invokes reset on failure after initialization; fade and other caller propagation pending.
 - No engine code, protected v0.7 or other branches changed.
+
+## Palette fade failures and SDL1 focus palette restore — 2026-11-01
+- Report: `docs/audits/2026-11-01_palette_fade_error_handling.md`; commit `727a9c2dc5ee9e7f04285d5e01cbf5420332f767`.
+- Generic `LbPaletteFade` timed and stepped modes ignore `LbPaletteSet` and `LbPaletteGet` failures; timed mode also ignores `LbScreenSwap` failure. Returns fade counter, not API success. Both interpolation branches divide by `fade_to` with no local zero guard; actual zero-input reachability not established. SDL1 palette set similarly allows nontransactional partial updates; SDL1 has distinct `LbIPaletteRestoreLost` after focus changes.
+- Source audit only, no runtime test or code edits. Next inspect fade callers, zero inputs and focus restoration invocation.
