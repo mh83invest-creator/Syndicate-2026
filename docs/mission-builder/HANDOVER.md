@@ -287,3 +287,6 @@ Source checked in main: engine/bflibrary/include/bffile.h line 38 explicitly def
 
 ## MB-AUDIT-2.6 (2026-11-01)
 Main save contract updated at commit 30331d4 with test gates for campaign save isolation, legacy preservation, and both file path resolvers. No code changes or tests performed.
+
+## MB-AUDIT-2.7 — Save API integration seam (2026-11-01)
+Assembly LoadSaveGame calls ac_load_save_text for 10 slots (30390–30400) and calls ac_load_player/ac_save_player for slot operations (30621–30646); separate main-menu listing calls ac_load_save_text (54566–54582). wrappers_game.conf exposes those three native C functions. Strong candidate to introduce campaign-aware save routing is a shared service behind these three C operations, not a global resource path transform. Must initialise mode identity before any listing and audit Continue separately. Contract updated on main; source audit only, no implementation or runtime tests. Audit 2.7.
