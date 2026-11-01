@@ -235,3 +235,15 @@ Static source: `engine/src/syndre.sx` main blob SHA `c35e22621a93d1e07c44d40de88
 
 Integration guidance: campaign mode extension must coordinate map selectable-city presentation, actual tactical mission dispatch, and loss/terminal state routing. New-mode custom scenarios should use their own validated identity while preserving classic eligibility and endgame semantics.
 Tests: static assembly analysis only. No game code modified, compiled or run. Handover MB-AUDIT-1.4.
+
+## Audit 1.5 — Revolt replay candidate and campaign selection limitations (2026-11-01)
+Inspected full assembly blob SHA `c35e22621a93d1e07c44d40de8867446ff7c64bf` (line references below).
+- `can_i_play_this_city` (32871–32972) has a distinct branch for territories owned by the current player when `country_states` equals 0xFF; normal owned/non-0xFF entries are rejected. This is a **strong source-level candidate** for a rebellion/replay eligibility marker. It is not sufficient to assert the event is definitively a tax-triggered revolt: no writer of 0xFF due to low happiness was established in the inspected logic.
+- The same routine special-cases `data_5b071 == 1` (~32900), and uses neighbours `data_5b069` to permit attack based on ownership adjacency (~32924–32965). The source therefore already distinguishes re-playable owned territory from ordinary conquered/owned territory.
+- `level_finished` (~55045–55079) treats a successful mission in a state-0xFF territory owned by active player differently: replaces value 0xFF with 0xAA (170), instead of the other path resetting happiness/state and ownership. This is a strong counterpart consistent with a re-secured territory, but the label 'rebellion' remains to be validated by tracing the actual state-to-0xFF writer.
+- `AdjustStateHappiness` (11759–11850) clamps values to 0–255 and adjusts happiness based on `data_5539f` relative to 30. No explicit comparison that promotes a low-happiness country to 0xFF found in that function.
+- `map_countries`, `data_5b069` and `data_5b071` have inline assembly data tables (~84528+) that encode mission selection and geographic adjacency. Treat the original map table as protected; changing assignment globally would change classic missions.
+- Exact American Revolt campaign selector / expansion switch NOT located in this stage. Do not claim expansion selection exists in the same runtime in this specific source. Check upstream version and retail data integration in subsequent work.
+
+Proposed (not implemented) next audit: enumerate all assignments to country-state 0xFF (including indirect register writes) and map init tables, identify all state transitions and actual campaign branching. New rebellion mission pool should be mode-gated and triggered only after verified event semantics.
+Tests: full static assembly source inspection, no build or game execution. Game code unchanged. Handover version MB-AUDIT-1.5.
