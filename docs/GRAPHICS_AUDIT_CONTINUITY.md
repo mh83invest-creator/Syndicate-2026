@@ -92,3 +92,9 @@ A third documentation-only workstream has been established:
 - Report: `docs/audits/2026-11-01_animation_advancement_termination.md`; report commit `e7b60c330e21b0f9613d46617455fa2e8ab0ff75`.
 - Original assembly source shows `frames[current]+6` as a next-frame state in examined routines, with `starts_ani` reset/default values. Element +8 provides subsequent ten-byte element index. Both types of transitions need private data validation for end bounds, loops, invalid links and sentinel behaviour.
 - Verification: original assembly read. No new data decoding, compilation or Windows tests. No game files or other workstreams changed.
+
+## Animation chain bounds / cycle audit — 2026-11-01
+- Report: `docs/audits/2026-11-01_animation_link_bounds_cycle_audit.md`, commit `35e623072f3b80b8b28e286457f9914e5b05c6f7`.
+- Inspected original assembly confirms zero-index element chaining terminates at the animation-elements base pointer, while positive element indices continue without a visible end-bound check or visited-node limit in the inspected loops. This identifies a conditional risk only, NOT corrupted source assets or a reproduced runtime failure.
+- Frame progression may take frame+6 or reset from starts_ani depending on state; no universal end-frame convention has been proven.
+- Next: private CRC-checked hfra/hele graph traversal with bounds, cycle checks and comparison to Windows playback. No code or gameplay changes; no runtime validation.
