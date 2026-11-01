@@ -205,3 +205,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Original assembly directly assigns `VScreen = VGABuffer + 0x6400` (25,600) in the high-resolution mission initialisation branch at lines 27868-27879, and `VScreen = VGABuffer` in a separate title/display setup path at lines 54253-54261. Thus the pointer relationship is established, but equality is phase-dependent, not global.
 - Existing `display.c` conversion writes to `VScreen` while the high-res presentation blit reads from `VGABuffer`; the active positioning and SDL surface effects remain unverified. No bug concluded and no lighting change authorised.
 - Static assembly/C source inspection only. No build, runtime pointer log, screenshot, game code change, copyrighted asset publication or changes to parallel branches. Next trace `LbScreenSwap` SDL backends and runtime buffer layout.
+
+## SDL1/SDL2 screen swap backend trace — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl1_sdl2_screen_swap_backend.md`; commit `e457864f8a54b08873155aaa26fe2916cde8972b`.
+- SDL2 `LbScreenSwap` optionally calls `LbI_SDL_BlitScaled` when `lbHasSecondSurface` then presents via `SDL_UpdateWindowSurface(lbWindow)`; SDL1 analogue presents using `SDL_Flip(lbScreenSurface)`. Both bracket the operation with mouse cursor begin/end hooks and propagate errors.
+- Current source evidence does not establish active backend per Windows build, final surface pitch/palette mapping, or live graphical equivalence. No GPU texture pipeline is implied by this SDL2 window-surface path.
+- Static C source inspection only; no original assets, implementation change, compilation or Windows test. Next review scaling, pixel format and platform build selection.
