@@ -100,3 +100,16 @@ Next: complete outstanding offline asset and source gates using existing files; 
 | Objectives/save slots/country state (Mission Builder cross-check) | `docs/audits/2026-11-01_mission_saves_objectives_country_crosscheck.md` | Original assembly source audit, not implementation. Commit `38b7717ef7c4165b85c937d7b361225a45d63e7f`. |
 | Objective 15-byte links and AI mission dispatch | `docs/audits/2026-11-01_objective_index_ai_dispatch.md` | Objective 15-byte stride, linked indices and action-type dispatch verified in assembly; no runtime claim. Commit `10ca788370d166fdab81969c8ac224fad1dba34a`. |
 | Dual objective structure and execution dispatch | `docs/audits/2026-11-01_objective_dual_layout_execution.md` | Source identifies CPObjectives 15-byte links and separate level__Objectives 14-byte indexing; runtime untested. Commit `8a044275fe7a4b97b8d843d9817f25402e3b215b`. |
+
+## Parallel graphics audit coordination — 2026-11-01
+
+A third documentation-only workstream has been established:
+- Branch: `audit/graphics-assets-2026-11-01`, forked from `feature/v0.9-visual-showcase` at commit `d42db5258f2786ea26a8e6e3ee235e09fa404cf6`.
+- Continuity: `docs/GRAPHICS_AUDIT_CONTINUITY.md` on the graphics branch (commit `82c0b4c4e54c05ddf5a99f666b1ba1a1523a766d`).
+- Stage-1 evidence handover: `docs/audits/2026-11-01_graphics_asset_parallel_audit.md` on the graphics branch (commit `a012ee8e32b8c68c62a9c0fa6d5ae6fd63026880`).
+- Scope: inventory and source-to-asset correlation of original tiles, building faces, sprites, animations, effects, palettes, menu art and constraints relevant to proposed night lighting. Stage 1 reconciled existing evidence only; it is **not** a new pixel-level audit, renderer patch, CI build or Windows test.
+- Ownership: core source and v0.9 graphics implementation remain with `feature/v0.9-visual-showcase`; mission definitions and save-mode interfaces remain with `feature/mission-builder-audit`; graphics workstream records read-only asset findings and proposals, with no gameplay edits.
+- Integration contract: any proposed modifications to tile indices, palette selection, sprites, mission resource filenames, asset loaders, render buffers, map/object representation or screen overlays must be reviewed across all three workstreams before implementation. Keep the original and American Revolt modes, campaign-siloed save requirements, and protected v0.7 reference intact.
+- Confidentiality: original retail assets and reconstructed copyrighted frames must not be committed publicly.
+- Synchronisation: each branch is independent; the presence of this link does not mean another branch has received or merged its commits. Updates are not automatic; new findings need an explicit dated cross-branch handover.
+- Verification: GitHub documentation changes only. No source build, Windows gameplay test, image equivalence test or new graphics feature.
