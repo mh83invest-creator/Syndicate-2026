@@ -299,3 +299,6 @@ The only literal assembly caller of LoadSaveGame is main-menu func_37b93 at line
 
 ## MB-AUDIT-3.0 — Build-readiness assessment (2026-11-01)
 Decision: NOT READY for production save-routing changes. The shared campaign save contract on main now records evidence and gates (commit 59c8a7f). Verified C save integration seam exists, but legacy location, retail resource inventory, startup identity, and runtime tests are unresolved. Do not touch main game behaviour. No code modification, compilation or gameplay tests this session.
+
+## MB-AUDIT-3.1 — Installer asset manifest (2026-11-01)
+In engine/util/install lines 183-269, verified installer enumerates game01-50 plus game90-99.dat, a selected list of mapNN.dat, miss01-50 plus language-numbered 101-150,201-250,301-350,401-450, and game UI, graphics and audio assets. These lists describe expected import names, not American Revolt campaign identification. Installer comments say save and screenshots directories are created on demand by game. Actual installed file presence and American Revolt support remain unverified; no source edits, build or gameplay tests. Shared integration contract also updated. MB-AUDIT-3.1.
