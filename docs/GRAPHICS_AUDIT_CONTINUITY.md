@@ -199,3 +199,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - `engine/src/display.c` converts four planar 400×80-byte inputs from original `WScreen` into 640×400 indexed pixels at `VScreen` inside a 640×480 cleared target; high-resolution presentation copies 640×480 bytes from `VGABuffer` into the separate `lbDisplay.WScreen`, while MCGA copies 320×200 from original `WScreen`. `LbScreenSwap` follows.
 - Critical open alias question: the read of `VGABuffer` versus conversion write to `VScreen` requires source trace of pointer assignments/ownership before treating these as equivalent. SDL back-end surface pitch, palette and actual display behaviour remain unverified.
 - Verified GitHub C source inspection only; no engine edits, compilations, Windows screenshots or private data. Next: `VScreen` provenance and SDL1/SDL2 swap implementation.
+
+## VScreen / VGABuffer phase-dependent alias trace — 2026-11-01
+- Report: `docs/audits/2026-11-01_vscreen_vgabuffer_phase_alias.md`; commit `5121b8ad129d020d848b9a49bcf4c3170ab71cbd`.
+- Original assembly directly assigns `VScreen = VGABuffer + 0x6400` (25,600) in the high-resolution mission initialisation branch at lines 27868-27879, and `VScreen = VGABuffer` in a separate title/display setup path at lines 54253-54261. Thus the pointer relationship is established, but equality is phase-dependent, not global.
+- Existing `display.c` conversion writes to `VScreen` while the high-res presentation blit reads from `VGABuffer`; the active positioning and SDL surface effects remain unverified. No bug concluded and no lighting change authorised.
+- Static assembly/C source inspection only. No build, runtime pointer log, screenshot, game code change, copyrighted asset publication or changes to parallel branches. Next trace `LbScreenSwap` SDL backends and runtime buffer layout.
