@@ -145,3 +145,8 @@ Graphics audit must remain independent of the `feature/v0.9-visual-showcase` gra
 Integration gates: no changes to palette tables, sprite indices, mission resources, map graphics, asset loaders or render buffers without coordinating with mainline and Mission Builder. Retain v0.7 gameplay baseline, original and American Revolt campaigns, 16 FPS tactical loop, siloed saves between missions only, and no mid-mission saving. Do not commit retail copyrighted art. Each branch must publish source-verified documentation and explicitly differentiate static audit from compiled/gameplay tests.
 
 This is a documentation-only synchronization note; no cross-branch merge or gameplay verification is implied.
+
+## SDL palette ABI versus original WScreen call — 2026-11-01
+- Report: `docs/audits/2026-11-01_palette_set_abi_wscreen.md`; report commit `7a4cf6becf073492e711a886fd73cbf57be29289`.
+- Both SDL1 and SDL2 LbPaletteSet implementations treat their argument as RGB triplets (six-bit source channels). Original mission loader passes WScreen after loading GraphicsPalette, which remains an unresolved buffer/alias discrepancy, **not a confirmed bug**.
+- No source change, builds, private palette decoding or Windows tests. Next trace WScreen buffer alias and palette state at mission loading.
