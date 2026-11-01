@@ -138,3 +138,6 @@ Assembly mission_load_files mixes dynamic mapNN with fixed fonts, sprites, anima
 
 ## MB-AUDIT-3.6 — Briefing resource loader (2026-11-01)
 The alternate direct game/map loader belongs to mission_briefing, called from the main menu. Both briefing and tactical resource reads need coherent campaign selection; briefing returns status 2 on missing RNC data and does not visibly use the tactical loader's map-number zero fallback. See Mission Builder Audit 3.6; documentation only.
+
+## MB-AUDIT-3.7 — Briefing return status (2026-11-01)
+Briefing returns status 2 for missing mission/map RNC reads, and the menu propagates its return as screen state. This does not establish a helpful error display. Campaign-specific resource routing must retain this control-flow contract; test failure-to-tactical transitions. Source audit only. See Mission Builder Audit 3.7.
