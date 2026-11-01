@@ -120,3 +120,6 @@ Assembly main-menu calls LoadSaveGame; that screen uses native C load/save wrapp
 
 ## MB-AUDIT-3.0 — Build readiness gate (2026-11-01)
 Save integration assessment: not ready for a production code patch. Source seam known; legacy save location, original/expansion assets, mode identity and Windows execution still need verification. Updated CAMPAIGN_SAVE_INTEGRATION_CONTRACT.md at 59c8a7f. No engine code or build affected.
+
+## MB-AUDIT-3.1 — Installer inventory (2026-11-01)
+engine/util/install enumerates imported gameNN.dat, mapNN.dat, missNN.dat and other required assets from original Syndicate Plus data. This is a filename manifest, NOT proof of American Revolt mode or runtime availability. Save/screenshot directory setup is commented as game-managed. Do not modify resource routing before examining actual retail-data inventory in a disposable installation. See Mission Builder Audit 3.1. Documentation only.
