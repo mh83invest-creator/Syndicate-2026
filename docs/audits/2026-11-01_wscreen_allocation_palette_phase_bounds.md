@@ -47,3 +47,6 @@ Do not fix or reorder the mission palette calls or write a night-lighting hook o
 **NOT RUN:** game compilation, actual loader allocations, WScreen clear-function test, Windows screenshot comparison, gameplay/performance tests, original palette RGB resource parsing.
 
 **Changed:** this document plus graphics audit continuity index only; no engine code, commercial assets, protected main or parallel audit branches changed.
+
+## Subsequent clearing-behaviour resolution — 2026-11-01
+The previously open `LbScreenSurfaceClear` source question is resolved by `docs/audits/2026-11-01_palette_blackout_restore_source_trace.md`. Original assembly at `syndre.sx:75307-75340` zeros 0x1f400 bytes (128,000) only when DrawFlags bit 0x2 is set, making the subsequent `LbPaletteSet(WScreen)` input an all-zero palette prefix in that mode. `GraphicsPalette` is separately restored on the third active mission-loop iteration under the traced counter sequence. Non-high-resolution branches have no such zero-fill in this routine; no Windows runtime validation exists.
