@@ -12,3 +12,6 @@ The central `docs/SHARED_DEVELOPMENT_HANDOVER.md` update was attempted but block
 
 ## SDL recovery follow-on — 2026-11-01
 The main audit traced the `LbScreenSwap` return contract and identified unchecked returns from window-surface restoration and draw-surface consistency checks. `LbScreenLock` has a direct failure return, while non-WSCREEN_CONTROL consistency checking can continue after SDL lock failure. Static source-only risks; no reproduced crash or performance diagnosis. Report: `docs/audits/2026-11-01-main-sdl-surface-recovery-return-contracts.md` (commit `9bdc249566bf1c2d166b3e26af3eceb7e1150e00`). No code, save or parallel-branch changes. Central shared handover remains unchanged by this follow-on.
+
+## Audio scheduling checkpoint — 2026-11-01
+Main audit inspected `engine/src/sound.c`, `engine/bfsoundlib/src/bfaudio.c`, `drv_oal.c`, `ssampply.c`, and build library manifest. Audio idle timer `sound_update()` calls `AIL_API_timer()` when initialized and can be registered through `LbRegisterIdleHandler`; native sound library includes OpenAL output. Thread/dispatcher call reachability and runtime performance not yet verified. Report: `docs/audits/2026-11-01-main-audio-idle-timer-openal-boundary.md`, commit `5f3f0d432053a87cd086b31c1d7233dbdee06259`. No production code changes or tests; graphics/mission branches untouched.
