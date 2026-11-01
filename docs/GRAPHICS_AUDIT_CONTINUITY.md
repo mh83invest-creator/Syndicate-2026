@@ -377,3 +377,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report `docs/audits/2026-11-01_windows_v07_workflow_sdl2_toolchain.md`; commit `8b361a10f8bbcf169c5d51d4cb9b41590d446578`.
 - Located **root** `.github/workflows/windows-source-v0.7.yml` (previous workflow discovery limitation resolved via recursive GitHub tree). Windows MSYS2 MINGW32 i686 job explicitly installs SDL2, validates SDL2 header and compiler target, and runs `autoreconf` + configure without opting out of SDL2, then compiles and uploads the 32-bit `syndicatfx.exe`. Together with SDL2-first configure, this strongly supports SDL2 backend use by a successful protected v0.7 workflow. NOT direct proof of actual binary imports or window formats. Separate `engine/.github/workflows/build-sdl1.yaml` is distinct and does not override root build configuration.
 - No game or protected baseline modifications. Next build artifact/DLL inspection and real SDL surface pitch test.
+
+## Windows v0.7 executable artifact and CI retrieval boundary — 2026-11-01
+- Report `docs/audits/2026-11-01_windows_v07_artifact_verification_boundary.md`; commit `3ce142403125872166774c7b69d00de5061952ab`.
+- Confirmed root Windows workflow installs/probes SDL2 and configure defaults SDL2-first; workflow's `objdump` prints imports but rejection test covers MSYS audio DLLs only, not SDL identity. Workflow push trigger is `main` and selected paths, not graphics audit docs commits. Connected GitHub fetch rejected Actions run listing and repository artifact listing URLs, so **no actual CI status, executable or SDL DLL import table was verified**.
+- Next need known run ID/artifact or other accessible build evidence and live SDL surface dimensions/BPP/pitch. No engine or cross-branch changes.
