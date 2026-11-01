@@ -41,6 +41,10 @@ The prior forensic report identified 256 total 30-byte effect records, a 53-case
 
 **Still unverified:** frequency of effect types 11/14 with retail mission data, total active effect counts, collision/redraw/audio overhead, time spent in `init_fireball` vs `move_effects`, real 16 FPS frame-time misses, and whether speeding allocation without changing state is possible. No engine optimization, simulation skipping, effect-count limit, random-sequence change or animation removal is authorised by this audit.
 
+
+## CORE-FIRE-04 — Adjacent effect handlers can fall through into burst loops
+A subsequent exact line read adds an important reachability qualification. The dispatch table at `syndre.sx:19922–19938` maps zero-based type 10 to `func_1ed0d`, type 11 to `func_1edb7`, type 13 to `func_1ee2f`, and type 14 to `func_1eecb`. In the source, `func_1ed0d` at `20119–20168` **falls through** (no intervening unconditional jump/return) into `func_1edb7` at `20172` after its collision/status work. Likewise, `func_1ee2f` at `20215–20260` falls through into `func_1eecb` at `20264`. Thus the two-iteration and ten-iteration `init_fireball` loops can be reached by **more than the two direct jump-table indices 11 and 14**; types 10 and 13 also have source paths through them. Exact effect-type frequencies and conditional exits are not demonstrated. This refines handler reachability without implying all four types trigger every frame.
+
 ## Next performance checkpoint
 
 1. Inspect effect handler 11/14 entry conditions and life-cycle/collision linkages in source to determine exactly which transitions reach the two loops. Do not infer dynamic frequencies from static dispatch-table entries.
