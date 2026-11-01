@@ -233,3 +233,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Source confirms Autoconf defines `WSCREEN_CONTROL` while both SDL backend sources test `LB_WSCREEN_CONTROL`. Header alias, generated configuration and actual Windows compile definitions remain unknown; this is NOT a confirmed bug.
 - Four candidate workflow file paths were not found; no complete workflow tree listing obtained, so the active Windows CI backend is still unverified. Search results do not establish absence.
 - Static source and path checks only. No gameplay, engine edits, builds, runtime graphics or other branch changes. Next obtain exact workflow listing/build logs and generated header mapping.
+
+## Windows build recipe and SDL Makefile backend selection — 2026-11-01
+- Report: `docs/audits/2026-11-01_windows_build_makefile_backend_trace.md`; commit `037f103ce9a0e115a4453f96516401710df0ca53`.
+- `engine/bflibrary/Makefile.am` explicitly selects SDL2 `src/x86-win-sdl2` source files or SDL1 `src/x86-win-sdl` files with `USE_SDL2`; `engine/README.md` documents an MSYS2/MinGW 32-bit Windows build installing SDL2 and using Autotools/`-m32`. Recipe is not proof of the current CI binary's backend.
+- `.github/workflows` confirmed a directory, but GitHub file-fetch does not enumerate directories; actual workflow still unidentified. The `WSCREEN_CONTROL` vs `LB_WSCREEN_CONTROL` mapping remains unverified.
+- Documentation only. Static source inspection passed; no native build, gameplay tests, protected code edits or parallel branch changes. Next: workflow inventory/build logs and macro resolution.
