@@ -211,3 +211,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - SDL2 `LbScreenSwap` optionally calls `LbI_SDL_BlitScaled` when `lbHasSecondSurface` then presents via `SDL_UpdateWindowSurface(lbWindow)`; SDL1 analogue presents using `SDL_Flip(lbScreenSurface)`. Both bracket the operation with mouse cursor begin/end hooks and propagate errors.
 - Current source evidence does not establish active backend per Windows build, final surface pitch/palette mapping, or live graphical equivalence. No GPU texture pipeline is implied by this SDL2 window-surface path.
 - Static C source inspection only; no original assets, implementation change, compilation or Windows test. Next review scaling, pixel format and platform build selection.
+
+## SDL indexed scaling and palette surface assumptions — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl_scaling_palette_pitch_source_audit.md`; commit `20eef8e08af647e25dc77a837cc12b0c8eb3d22b`.
+- SDL1/SDL2 scaling dispatch confirmed. SDL2 custom 8-bit index scaling uses raw buffers and image dimensions without pitch arguments; actual SDL pitch suitability remains unverified and no bug is asserted. SDL2 LbPaletteSet converts six-bit RGB channels to SDL_Color and applies indexed palettes to qualifying screen and second draw surfaces.
+- Source read only, no code edits, native builds, Windows screenshots or performance tests. Next: inspect surface creation/format/pitch and active Windows backend.
