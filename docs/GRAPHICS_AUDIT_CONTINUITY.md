@@ -227,3 +227,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_sdl_configure_backend_selection.md`; commit `ef8ffa283ed6eed1ec7851f9b69f384272188a0a`.
 - Autoconf engine and bflibrary both prefer SDL2 >=2.0.0 and fall back to SDL1 >=1.2.0 (or select it when SDL2 is disabled). The bflibrary WScreen-control option defaults to no; its `WSCREEN_CONTROL` definition and backend `LB_WSCREEN_CONTROL` tests need header/preprocessor mapping verification, not an assumed defect.
 - Actual Windows CI backend and build flags remain unverified. Source inspection only: no game changes, compilation or runtime tests. Next inspect CI workflow and macro mapping.
+
+## WScreen macro mapping and Windows CI path discovery — 2026-11-01
+- Report: `docs/audits/2026-11-01_wscreen_macro_ci_discovery_limits.md`; report commit `5e5a5addf7a51b4e868798bb36832bce1d911033`.
+- Source confirms Autoconf defines `WSCREEN_CONTROL` while both SDL backend sources test `LB_WSCREEN_CONTROL`. Header alias, generated configuration and actual Windows compile definitions remain unknown; this is NOT a confirmed bug.
+- Four candidate workflow file paths were not found; no complete workflow tree listing obtained, so the active Windows CI backend is still unverified. Search results do not establish absence.
+- Static source and path checks only. No gameplay, engine edits, builds, runtime graphics or other branch changes. Next obtain exact workflow listing/build logs and generated header mapping.
