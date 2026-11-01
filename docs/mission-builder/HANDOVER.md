@@ -314,3 +314,6 @@ Verified assembly process_action -> load_map_level uses current_levno and data/g
 
 ## MB-AUDIT-3.5 — Resource-table audit (2026-11-01)
 Mission resource table in syndre.sx ~82620 contains dynamically constructed data/mapNN.dat plus fixed font, block, sprite, animation and colour files; sound_bank_files0 holds fixed sound resource paths. World-map table includes fixed mmapblk and mminlogo resources (~83675). Separate assembly code ~1250 constructs map%02d.dat and reads RNC directly. This establishes multiple map-loading routes; no global filename remap is approved. Exact campaign-specific versus shared asset classification requires installed-resource evidence. Shared integration contract updated; static audit only.
+
+## MB-AUDIT-3.6 — Briefing uses direct mission and map reads (2026-11-01)
+The alternate direct map reader is inside mission_briefing at syndre.sx 1207–1273. It first reads data/game%02d.dat from current_levno, then directly reads data/map%02d.dat using embedded level__MapNumber; read errors return status 2. The main-menu briefing branch invokes it at line 54661. This is a separate pre-tactical resource load from load_map_level and both paths must be covered by campaign routing. Briefing path has no visible zero-to-one map fallback, unlike tactical loader. Source-only audit; no code changes or tests. MB-AUDIT-3.6.
