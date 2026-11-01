@@ -62,3 +62,10 @@ A third documentation-only workstream has been established:
 - Confirmed from Bullfrog library C source: LbSpriteSetup performs offset-to-pointer adjustment for TbSprite.Data; reset can reverse that conversion. Sprite drawing preparation checks dimensions, encoding uses width/height and the data pointer.
 - Crucial limit: no proof yet that private `hspr-0.tab` uses TbSprite or any particular entry stride. No direct assembly consumer analysis or newly decoded sprite data was performed.
 - Verification: source reads and report commit. No executable build, game test, or modification to gameplay. Next inspect original assembly consumer and table layout.
+
+## Original sprite descriptor assembly trace — 2026-11-01
+- Report: `docs/audits/2026-11-01_original_sprite_table_assembly_trace.md`; commit `3b2a01f1a24ab365d8073d82f5be2f9b4e0ca445`.
+- Full original `syndre.sx` blob successfully fetched, resolving the previous large-file access blocker. `init_level_data` calls `ac_LbSpriteSetup` with `h_sprites`, end pointer and `h_sprites_data`.
+- Direct drawing routines read sprite descriptor 32-bit pointer at +0, dimensions at +4/+5; 10,812-byte decoded sprite table therefore has a 1,802-entry *candidate* six-byte interpretation, pending private data checking.
+- Selected animation loops use 10-byte element indexing and sprite-table byte offsets. Exact valid element and sprite counts, rendering equivalence and lighting compatibility are unverified.
+- Tests: assembly source read and arithmetic only; no new private decoding, compilation or Windows gameplay. Next: CRC-checked private 6-byte/10-byte record validation.
