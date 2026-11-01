@@ -16,3 +16,6 @@ Do not change the original call or relabel it a confirmed bug on source inspecti
 PASS: direct reads of SDL1 and SDL2 palette setter implementations and original assembly call sites.
 NOT RUN: palette pointer alias test, native compilation, Windows runtime, screenshots, private palette-byte decoding.
 Documentation only, protected main and parallel workstreams unchanged.
+
+## Later source resolution — 2026-11-01
+Read `docs/audits/2026-11-01_palette_blackout_restore_source_trace.md`: original assembly implements `LbScreenSurfaceClear` at `syndre.sx:75307-75340`. When DrawFlags bit 0x2 is set, it zeroes 128,000 bytes of `WScreen`, including the 768-byte prefix read by `LbPaletteSet`, explaining the all-black palette argument in the inspected high-resolution path. A later active mission loop restores `GraphicsPalette` when the counter is two. No source repair or generalisation to other graphics modes is justified. Runtime behaviour has not been tested.
