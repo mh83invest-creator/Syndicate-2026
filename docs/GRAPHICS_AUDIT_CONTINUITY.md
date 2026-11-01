@@ -387,3 +387,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report `docs/audits/2026-11-01_windows_v07_successful_run_sdl2_import_verified.md`; commit `b3d4416ab80b26b00f8d881be9d24d98a2a90aee`.
 - Found Actions run **38483184953** (main SHA `a22b0b9580a9710b4e693e88854351835ef1ee40`, success, 2026-10-13), job **115590427796** (success). Job log's actual `objdump -p release/src/syndicatfx.exe` output contains **`DLL Name: SDL2.dll`**. Thus SDL2 backend is verified for **that compiled v0.7 Windows build**, upgrading prior workflow-only inference. Historic log records executable artifact upload ID **11858508104**; current artifact listing did not include executable, so artifact bytes NOT examined. Actual SDL window surface dimensions/BPP/pitch, scaler dispatch and Windows gameplay still unverified.
 - No engine, baseline or other branch edits. Next acquire runtime SDL format/pitch evidence in isolated diagnostics.
+
+## Low-resolution stretch makes SDL scaler dimension mismatch concrete — 2026-11-01
+- Report `docs/audits/2026-11-01_lowres_stretch_scaler_dimensions.md`; commit `a5b69c5eab38e60bcb4d57b7cd0a1c4f0d26f1e4`.
+- `display_set_lowres_stretch(true)` sets minimum SDL window-surface dimension 400. SDL2 mode-dimensions helper rescales 320x200 to **640x400** requested window size while `AppScreenSetup` still supplies a **320x200** indexed drawing area. Dimension mismatch selects custom scaler for 8-bit source; true-colour custom path further requires actual SDL destination BytesPerPixel>1. 640x480 mode not enlarged under this threshold. **Actual toggle state, SDL runtime format and pitch not verified.**
+- Next inspect stretch toggle call sites and Windows live SDL surfaces; no engine or parallel branch edits.
