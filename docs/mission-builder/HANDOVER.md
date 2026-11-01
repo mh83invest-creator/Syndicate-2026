@@ -224,3 +224,14 @@ Source evidence: `engine/src/syndre.sx` SHA `c35e22621a93d1e07c44d40de8867446ff7
 - Existing `level_finished` is a high-risk integration point shared with mainline code. Do not alter terminal flag 0x10, completion flag 0x2, or 50-country endgame condition without campaign-aware compatibility review.
 
 Status: STATIC AUDIT and handover update only; no code changes, builds or runtime tests. Version MB-AUDIT-1.3.
+
+## Audit 1.4 — Playable-city gating and loss flow (2026-11-01)
+Static source: `engine/src/syndre.sx` main blob SHA `c35e22621a93d1e07c44d40de8867446ff7c64bf`; line numbers belong to this snapshot.
+- `can_i_play_this_city` at 32871–32965 gates territory selection, with world-map cheat bypass, owner comparisons using `data_5539e`, `country_states` value 0xFF, special mission-number check `data_5b071 == 1`, and adjacency path over `data_5b069`. Hence a new scenario dispatcher must preserve classic city eligibility rules and must not blindly replace `current_levno`.
+- `draw_connecting_cities` around 32663–32755 also calls `can_i_play_this_city` when showing map connections; introducing mission availability needs UI and execution consistent or map highlights may lie.
+- `level_finished` failure route 55140–55192 scans agent/cyborg data and can trigger loss animation, terminal flag 0x10 and `set_default_player` when no surviving agents. This is another protected original campaign lifecycle transition distinct from mission failure display.
+- `country_states` comparisons with 0xFF appear in multiple world-map, selection and result paths, but a precise named rebellion predicate is still not conclusively identified. Do not equate every 0xFF test with revolt.
+- Original/American campaign switch still unverified; explicitly avoid claiming it was found.
+
+Integration guidance: campaign mode extension must coordinate map selectable-city presentation, actual tactical mission dispatch, and loss/terminal state routing. New-mode custom scenarios should use their own validated identity while preserving classic eligibility and endgame semantics.
+Tests: static assembly analysis only. No game code modified, compiled or run. Handover MB-AUDIT-1.4.
