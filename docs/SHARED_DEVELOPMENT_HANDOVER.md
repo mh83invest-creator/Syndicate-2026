@@ -78,3 +78,6 @@ Assembly `can_i_play_this_city` at `engine/src/syndre.sx` around 32871–32965 c
 
 ## MB-AUDIT-1.6 cross-team correction (2026-11-01)
 Assembly `AdjustStateHappiness` (syndre.sx lines 11835–11844) writes 0xFF as the upper clamp of happiness (>255). This does NOT establish that 0xFF means a tax rebellion. Previous hypothetical interpretation is explicitly unverified. Preserve the legacy selection and state-transition logic until the true event trigger is traced and tested. Mission Builder audit commit 42f1902. Documentation only.
+
+## Audit 1.7 — territory field mapping (2026-11-01)
+Mission Builder inspection reconciled the inline assembly country-state offsets to packed `CountryState` in `engine/src/wrcountry.h`: Happiness offset 0, OwningPlayer 2, Revenue 3, TaxPercent 4, Population 6; record size 10 bytes. Assembly `adjust_tax` changes TaxPercent; `AdjustStateHappiness` reads Revenue, requiring further investigation of the update chain. The true rebellion trigger and American Revolt selector remain unconfirmed. Do not change tax, happiness, campaign routing or mission IDs based on an assumed relationship. Detailed audit MB-AUDIT-1.7 on Mission Builder branch, commit 3cfb022. Documentation-only; no runtime tests.
