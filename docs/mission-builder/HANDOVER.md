@@ -305,3 +305,6 @@ In engine/util/install lines 183-269, verified installer enumerates game01-50 pl
 
 ## MB-AUDIT-3.2 (2026-11-01)
 Installer checks source folder and required filenames but does not identify campaign edition or verify retail-file content. Empty target required. Supplementary packages get MD5 checks. Generated run script only sets language. Detailed evidence in main save contract commit b119686. Documentation audit only.
+
+## MB-AUDIT-3.3 — Mission/map/text identifier trace (2026-11-01)
+Map selection reads the mission number from map_countries record data_5b071, sets current_levno (~32018–32021); load_map_level interpolates number into data/game01.dat then extracts level__MapNumber from loaded mission data (~27845–27903). load_text constructs numbered data/miss...dat based on language (~55249–55285). No distinct campaign ID was identified in these steps; do not classify original versus American Revolt by mission number or source installer range alone. Need independent retail asset inventory, explicit campaign resource mapping and gameplay validation. Main integration contract updated. Static audit only; no code changes or tests. MB-AUDIT-3.3.
