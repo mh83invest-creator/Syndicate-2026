@@ -114,3 +114,6 @@ The observed active assembly save menus route all slot descriptions, load and sa
 
 ## MB-AUDIT-2.8 — Menu load and save error caveat (2026-11-01)
 The inspected assembly main menu enters `LoadSaveGame`, and its slot list/read/write converge on native C wrappers. Assembly does not visibly check the C save result; C load_player returns void and silently returns if opening fails. Preserve original behaviour while designing explicit campaign-specific file-validation and error handling; do not represent the separate Continue path as verified. See save contract Audit 2.8. Documentation only.
+
+## MB-AUDIT-2.9 — Main-menu load path (2026-11-01)
+Assembly main-menu calls LoadSaveGame; that screen uses native C load/save wrappers. No separate Continue loader has been established in the reviewed assembly. Future Continue, if implemented, must use campaign namespace checks and never silently access a different mode's slots. Source inspection only.
