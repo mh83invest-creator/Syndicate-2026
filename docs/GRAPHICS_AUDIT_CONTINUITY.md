@@ -187,3 +187,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - `copy_back` scans the 25×16 dirty-byte grid when no full-redraw flag is set and calls `copy_screen_cube` for nonzero markers. That routine copies a fixed four-plane 16-row tile from `BScreen` to original `WScreen` only in Vres16 (`DrawFlags & 0x2`); no marker reset occurs in these inspected routines.
 - DOS-only dirty-row swap logic (`func_4c797`) is not equivalent to the current non-DOS SDL path, which calls whole-screen update/swap wrappers. Marker lifetime and actual SDL presentation require wider source tracing before lighting changes.
 - Verification: 85,803-line assembly blob inspected; static source and arithmetic only. No engine edits, native compilation, Windows rendering or private data tests. Next: enumerate dirty-grid clear/write sites and trace SDL update/swap lifecycle.
+
+## Dirty-grid writer inventory and non-DOS swap dispatch — 2026-11-01
+- Report: `docs/audits/2026-11-01_dirty_grid_writer_and_swap_dispatch.md`; commit `eed0c20a35bc5a4878cf0a86710662cfe1699c69`.
+- Complete exact-name reference scan within original `syndre.sx`: two indexed writers (1 from `set_all_changes`; 3 from `set_block_changes`), one DOS swap base pointer, one `copy_back` nonzero reader, one 400-byte declaration. No direct grid-clearing reference in this assembly file; indirect/linked writes remain unexcluded.
+- `swap_screen_vres16` clears the separate `data_60b4f` full-redraw flag, not the grid. Non-DOS presentation dispatches to whole-Vres16 update and `ac_swap_wscreen`; DOS-only marker-row copy must not be misrepresented as the SDL renderer.
+- Source scan and assembly review only. No code change, native build, Windows game, private asset parse or screenshots. Next inspect linked C presentation implementations and effective screen-buffer/pixel format ownership.
