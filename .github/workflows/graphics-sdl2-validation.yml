@@ -117,11 +117,17 @@ jobs:
           path: engine/dependency-bundle/**
           if-no-files-found: error
           retention-days: 30
+      - name: Probe native SDL2 window and draw surface formats
+        env:
+          SDL_VIDEODRIVER: dummy
+        run: |
+          gcc -std=c11 -Wall -Wextra bflibrary/tests/graphics_window_surface_diagnostics.c -o graphics_window_surface_diagnostics.exe $(pkg-config --cflags --libs sdl2)
+          ./graphics_window_surface_diagnostics.exe
       - name: Regenerate configure scripts
         run: autoreconf -ivf
       - name: Configure native 32-bit game
         env:
-          CFLAGS: -m32
+          CFLAGS: -m32 -DSYNDICATE_GRAPHICS_DIAGNOSTICS
           CXXFLAGS: -m32
           LDFLAGS: -m32 -L/mingw32/lib
         run: |
