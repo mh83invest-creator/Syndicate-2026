@@ -261,3 +261,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_sdl1_sdl2_generated_header_inclusion_trace.md`; commit `e1a7076fb5cd405a5133f82c9c3bb86c80c2d561`.
 - Both SDL screen backends conditionally include generated `bfconfig.h` under `HAVE_CONFIG_H` and check `LB_WSCREEN_CONTROL`; `configure.ac` generates a prefixed header with `AX_PREFIX_CONFIG_H(...,[LB])`. The source-level name mismatch is explained across both backends. The configuration default has screen-control disabled, but actual Windows compiler definitions remain unknown.
 - Read-only direct source verification; no build, Windows runtime, code modifications or other branch changes. Next: inspect real generated header and workflow/build logs.
+
+## SDL indexed-to-true-colour scaler write width and pitch risk — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl_indexed_truecolour_writes_and_pitch_risk.md`; commit `61311a7fa68d81e98780e27b64fbbc435162a558`.
+- Both SDL1 and SDL2 `LbI_SDL_BlitScaled_totcbpp` routines write converted pixels through `long *` while stepping by destination bytes per pixel. On 32-bit-long targets, 16/24-bit targets imply 4-byte stores with 2/3-byte strides; custom scaler also receives no explicit SDL pitch. Static potential overlap/bounds/pixel risk, NOT a reproduced runtime bug. Check selected SDL backend, destination formats, buffer pitches and guarded test harness before changing code.
+- Windows workflow and build defines still unverified; source-level macro naming was previously resolved by prefixed config generation. No game code changed, no native build/screenshots or other branch edits.
