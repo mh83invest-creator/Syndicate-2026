@@ -247,3 +247,6 @@ Inspected full assembly blob SHA `c35e22621a93d1e07c44d40de8867446ff7c64bf` (lin
 
 Proposed (not implemented) next audit: enumerate all assignments to country-state 0xFF (including indirect register writes) and map init tables, identify all state transitions and actual campaign branching. New rebellion mission pool should be mode-gated and triggered only after verified event semantics.
 Tests: full static assembly source inspection, no build or game execution. Game code unchanged. Handover version MB-AUDIT-1.5.
+
+## Audit 1.6 — Interpretation correction (2026-11-01)
+Assembly `AdjustStateHappiness` (syndre.sx lines 11835–11844, blob c35e22621a93d1e07c44d40de8867446ff7c64bf) writes 0xFF when the computed value exceeds 255: this is an upper-bound clamp, not proof of a low-happiness rebellion trigger. Previous descriptions of 0xFF as a rebellion/replay marker were hypotheses only. Owned-territory eligibility and completion handling of 0xFF remain verified, but meaning and cause remain unverified. Also `next_mission_countries` separately uses 0xFF as a sentinel; these fields must not be conflated. Do not implement revolt selection on this assumption. Source review only; no code edits or gameplay tests. MB-AUDIT-1.6.
