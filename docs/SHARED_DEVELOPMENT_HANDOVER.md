@@ -108,3 +108,6 @@ LB_FILENAME_TRANSFORM is defined as 1 in bflibrary/include/bffile.h. Both inspec
 
 ## MB-AUDIT-2.6 (2026-11-01)
 Save isolation acceptance gates documented in docs/CAMPAIGN_SAVE_INTEGRATION_CONTRACT.md (commit 30331d4). Both file resolvers and legacy saves must be protected. No implementation or test results yet.
+
+## MB-AUDIT-2.7 — Candidate save namespace boundary (2026-11-01)
+The observed active assembly save menus route all slot descriptions, load and save through native C load_save_text/load_player/save_player wrappers. These three form a potential scoped namespace boundary. Any implementation must establish campaign identity before both save menus and Continue, and preserve legacy files. Avoid global asset filename remapping. See save integration contract commit ae0c2fd. This is static analysis, not an implemented patch.
