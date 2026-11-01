@@ -281,3 +281,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_synthetic_asan_scaler_write_width.md`; commit `d2f4427e534f4df0fdb207edaf80354df62fc522`.
 - Independent Linux x86_64 Clang/ASan C harness modelled the source's 4-byte store and BPP stride using `uint32_t`/memcpy on tightly packed buffers. BPP 2 and 3 each reported heap-buffer-overflow (4-byte write); BPP 4 completed without ASan fault. This is a **synthetic model**, not compilation/execution of original scaler or proof of a Windows gameplay bug. No commercial assets used.
 - Next: test an exact source-derived scaler in an isolated harness, inspect real SDL surface pitch/format and active Windows build. Protected v0.7 and parallel audit branches remain untouched.
+
+## Source-derived SDL2 scaler ASan test (LP64) — 2026-11-01
+- Report: `docs/audits/2026-11-01_source_derived_scaler_asan_lp64.md`; commit `56518021e7f7f304bd028625eeefddd97906274d`.
+- Isolated, transcribed original scaler routine (no game assets), Clang 17 on Linux x86_64 with ASan: 2/3/4 destination BPP all raised `heap-buffer-overflow` and 8-byte stores, reflecting 8-byte `long` on LP64; all exited 1. Separate Windows-sized four-byte synthetic model had 2/3 BPP overflow and 4 BPP passed. Native `-m32` compile could not run: missing 32-bit C development headers.
+- NOT an integrated SDL/Syndicate or Windows runtime test. Next establish real Windows build SDL formats, pitch and scaler activation. No game code/other branch edits.
