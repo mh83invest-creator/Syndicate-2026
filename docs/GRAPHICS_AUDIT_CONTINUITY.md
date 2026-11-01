@@ -162,3 +162,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - `GraphicsPalette` has its own load entry and pointer. The mission-load routine loads it and then clears/passes original `WScreen` to a palette-set function that expects colour bytes. Runtime meaning is still unverified; **no fix authorised**.
 - Source-derived title/mission/post-level scratch pointer starts are all within the nominal WScreen allocation in the report's comparison. This does **not** establish valid object extents, runtime modes or drawing safety.
 - Cross-references prior core audit docs for pointer transitions, loader and SDL surface ownership. Verification: direct source read and arithmetic; no private asset decoding, Windows build or visual test. Other development branches remain untouched.
+
+## Resolved high-resolution palette blackout and restore — 2026-11-01
+- Report: `docs/audits/2026-11-01_palette_blackout_restore_source_trace.md`; commit `1c6a3769ee003852f2b14d60902531876f95f671`.
+- **Important resolution to preceding palette/WScreen investigations:** `LbScreenSurfaceClear` is implemented in original assembly (`syndre.sx:75307-75340`), not an unresolved external graphics library routine. For `DrawFlags & 0x2`, it zero-fills the first **128,000 bytes** of exported `WScreen` via `LbMemorySet`; the immediately subsequent `ac_LbPaletteSet(WScreen)` therefore receives 768 zero colour bytes: a temporary black palette, subject to successful calls.
+- The active mission loop initialises its `ebx` counter to zero; its third iteration (when `ebx==2`) sets `GraphicsPalette` after the screen-swap call, consistent with palette reveal. **Not a confirmed renderer bug; do not patch.** Other draw modes do not execute the same zero-fill path.
+- Source inspection verified; no Windows screenshots, runtime timing, gameplay tests, or private palette decoding. Next: phase ordering and non-hires palette paths.
