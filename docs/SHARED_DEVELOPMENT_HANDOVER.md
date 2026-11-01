@@ -123,3 +123,6 @@ Save integration assessment: not ready for a production code patch. Source seam 
 
 ## MB-AUDIT-3.1 — Installer inventory (2026-11-01)
 engine/util/install enumerates imported gameNN.dat, mapNN.dat, missNN.dat and other required assets from original Syndicate Plus data. This is a filename manifest, NOT proof of American Revolt mode or runtime availability. Save/screenshot directory setup is commented as game-managed. Do not modify resource routing before examining actual retail-data inventory in a disposable installation. See Mission Builder Audit 3.1. Documentation only.
+
+## MB-AUDIT-3.2 (2026-11-01)
+Installer validates source directory and filenames, not American Revolt compatibility. Requires empty target. See campaign save integration contract commit b119686. No code modification or runtime testing.
