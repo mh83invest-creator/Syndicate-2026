@@ -12,7 +12,7 @@ permissions:
 jobs:
   windows-i686:
     runs-on: windows-latest
-    name: Compile committed v0.7 source
+    name: Compile isolated graphics candidate
     defaults:
       run:
         shell: msys2 {0}
@@ -113,7 +113,7 @@ jobs:
       - name: Upload dependency bundle
         uses: actions/upload-artifact@v4
         with:
-          name: syndicate-2026-i686-dependencies
+          name: syndicate-2026-graphics-test-dependencies
           path: engine/dependency-bundle/**
           if-no-files-found: error
           retention-days: 30
@@ -182,7 +182,7 @@ jobs:
       - name: Upload version handover with build
         uses: actions/upload-artifact@v4
         with:
-          name: syndicate-2026-v0.7-handover
+          name: syndicate-2026-graphics-test-handover
           path: |
             docs/HANDOVER_POLICY.md
             docs/releases/v0.7.md
@@ -191,7 +191,7 @@ jobs:
       - name: Upload 32-bit executable without retail data
         uses: actions/upload-artifact@v4
         with:
-          name: syndicate-2026-v0.7-verified-source
+          name: syndicate-2026-graphics-isolated-executable
           path: engine/release/pkg/**
           if-no-files-found: error
           retention-days: 14
