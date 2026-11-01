@@ -375,3 +375,16 @@ Examined full syndre.sx blob c35e22621a93d1e07c44d40de8867446ff7c64bf. Literal `
 ac_dos_sopen at ~10112 opens data/mconscr.dat; at ~14854 it is in generic LbFileOpen_; at ~61722 it operates on AniName. ac_dos_fopen at ~60151 occurs in MIDI resource handling. ac_dos_creat at ~14838 is part of generic LbFileOpen_ creation. Generic LbFileSaveAt calls LbFileOpen_ at ~14810; LbFileReadRNC uses it at ~14926. Generic wrappers can handle arbitrary filenames, so these calls do not independently demonstrate save isolation, even though named direct consumer paths inspected here do not show save-file bypasses.
 
 Open: classify indirect jump tables and external references, trace filename provenance for generic file consumers, and perform Windows runtime verification before implementing namespace routing. Audit only; no game code, build, save migration or gameplay tests. Preserve original modes, v0.7, fixed 16 FPS and existing saves.
+
+## Parallel graphics audit coordination — 2026-11-01
+
+A third documentation-only workstream has been established:
+- Branch: `audit/graphics-assets-2026-11-01`, forked from `feature/v0.9-visual-showcase` at commit `d42db5258f2786ea26a8e6e3ee235e09fa404cf6`.
+- Continuity: `docs/GRAPHICS_AUDIT_CONTINUITY.md` on the graphics branch (commit `82c0b4c4e54c05ddf5a99f666b1ba1a1523a766d`).
+- Stage-1 evidence handover: `docs/audits/2026-11-01_graphics_asset_parallel_audit.md` on the graphics branch (commit `a012ee8e32b8c68c62a9c0fa6d5ae6fd63026880`).
+- Scope: inventory and source-to-asset correlation of original tiles, building faces, sprites, animations, effects, palettes, menu art and constraints relevant to proposed night lighting. Stage 1 reconciled existing evidence only; it is **not** a new pixel-level audit, renderer patch, CI build or Windows test.
+- Ownership: core source and v0.9 graphics implementation remain with `feature/v0.9-visual-showcase`; mission definitions and save-mode interfaces remain with `feature/mission-builder-audit`; graphics workstream records read-only asset findings and proposals, with no gameplay edits.
+- Integration contract: any proposed modifications to tile indices, palette selection, sprites, mission resource filenames, asset loaders, render buffers, map/object representation or screen overlays must be reviewed across all three workstreams before implementation. Keep the original and American Revolt modes, campaign-siloed save requirements, and protected v0.7 reference intact.
+- Confidentiality: original retail assets and reconstructed copyrighted frames must not be committed publicly.
+- Synchronisation: each branch is independent; the presence of this link does not mean another branch has received or merged its commits. Updates are not automatic; new findings need an explicit dated cross-branch handover.
+- Verification: GitHub documentation changes only. No source build, Windows gameplay test, image equivalence test or new graphics feature.
