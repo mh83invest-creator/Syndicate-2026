@@ -9,3 +9,6 @@ Main engine audit verified the C display conversion, buffer copy, optional softw
 Next checks: SDL surface lock and restoration contracts, audio/render timing, disposable Windows instrumentation. No source changes or runtime tests.
 
 The central `docs/SHARED_DEVELOPMENT_HANDOVER.md` update was attempted but blocked by a tool safety check; it remains unchanged in this step. This addendum is the confirmed GitHub handover for the audit, not a claim of central-file update.
+
+## SDL recovery follow-on — 2026-11-01
+The main audit traced the `LbScreenSwap` return contract and identified unchecked returns from window-surface restoration and draw-surface consistency checks. `LbScreenLock` has a direct failure return, while non-WSCREEN_CONTROL consistency checking can continue after SDL lock failure. Static source-only risks; no reproduced crash or performance diagnosis. Report: `docs/audits/2026-11-01-main-sdl-surface-recovery-return-contracts.md` (commit `9bdc249566bf1c2d166b3e26af3eceb7e1150e00`). No code, save or parallel-branch changes. Central shared handover remains unchanged by this follow-on.
