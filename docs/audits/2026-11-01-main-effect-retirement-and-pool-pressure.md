@@ -40,6 +40,12 @@ The table also maps subtype 43 to `func_1fb07` (removal), but the above 41→42 
 
 As `remove_model` unlinks and clears its marker, the next eligible allocation scan can reuse the slot. Time spent in a crowded spatial list and effect subtype 42 can continue while the record remains active, but the **pool size and per-`move_effects` top-level slot count remain fixed**.
 
+
+### MAIN-LIFE-05 — Fireball frame progression depends on separately loaded mission animation data
+The missing animation-data provenance is now identified directly in the same assembly blob: `mission_load_files:82620–82663` includes `data/hfra-0.ani` into `frames`/`frames_end`, `data/hele-0.ani` into `elements_ani`/`elements_ani_end`, and `data/hsta-0.ani` into `starts_ani` (without a separately declared end slot in that descriptor). `load_map_level:27901–27912` calls `ac_LbDataLoadAll(mission_load_files)` without checking its returned number of failed entries, before continuing to mission setup. At `move_effects:21295–21306`, the animation selection path dereferences `starts_ani` at an offset based on the chosen animation ID (for subtype 41, `func_1f48a:20746–20753` supplies `0x187`, decimal 391), without a local loaded-buffer/length check. `animate_model:33353–33372` uses `frames` as an array of **8-byte** records, obtains the next-frame index from field `+6`, then reads field `+5` of that next record for its completion flag, also without a local pointer or `frames_end` validation.
+
+These are **cross-resource integration contracts**, not proof that ordinary legal retail data are missing, that index 391 is invalid, or that a crash occurs. Existing graphics/asset audits own asset-specific inspection; the core audit owns the load-failure propagation and safe runtime decision. No animation files or images have been read in this stage. A later copy-only test should cover unavailable `hfra-0.ani`, unavailable `hsta-0.ani`, short positive reads, out-of-range next-frame indices, and observable behaviour through the original mission-load return path. Protect original explosion animation and 16 FPS processing.
+
 ## Why this matters for the explosion-performance investigation
 
 Prior source reports identified repeated 128-slot scans, conditional same-pass spawning, collision linked-list traversal and drawing. This checkpoint adds a lifecycle distinction:
