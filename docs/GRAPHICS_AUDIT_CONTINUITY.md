@@ -136,3 +136,12 @@ A third documentation-only workstream has been established:
 - Report: `docs/audits/2026-11-01_palette_set_fade_call_trace.md`; commit `045ce2b7e90dc08cfe5db65cb237651a9015abd0`.
 - Direct assembly calls set palette with GraphicsPalette (main-loop branch), m_select_pal (menu), WScreen (after mission palette load), and one conditional VGA path. WScreen argument is source-verified but semantics remain unresolved; do not claim an actual bug.
 - Bullfrog C library LbPaletteFade interpolates indexed palette bytes, with blocking and stepped modes. Actual runtime fades and RGB effects remain untested; no game changes.
+
+## Cross-workstream coordination — 2026-11-01
+Three streams coexist: mainline core audit on `main`, independent graphics source/asset audit on this `audit/graphics-assets-2026-11-01` branch, and Mission Builder/World Domination audit on `feature/mission-builder-audit`. Shared mainline coordination lives in `docs/SHARED_DEVELOPMENT_HANDOVER.md` on `main`; Mission Builder coordination in `docs/mission-builder/HANDOVER.md` on its branch.
+
+Graphics audit must remain independent of the `feature/v0.9-visual-showcase` graphics implementation branch. The last reviewed graphics handover includes indexed map/player colours, mission palette path and palette-set/fade tracing; these are static observations, not validated RGB values or runtime art changes. Mainline RNC/resource bounds findings and Mission Builder RNC/Huffman briefing investigations overlap in loader risks but are not permission for a graphics audit patch.
+
+Integration gates: no changes to palette tables, sprite indices, mission resources, map graphics, asset loaders or render buffers without coordinating with mainline and Mission Builder. Retain v0.7 gameplay baseline, original and American Revolt campaigns, 16 FPS tactical loop, siloed saves between missions only, and no mid-mission saving. Do not commit retail copyrighted art. Each branch must publish source-verified documentation and explicitly differentiate static audit from compiled/gameplay tests.
+
+This is a documentation-only synchronization note; no cross-branch merge or gameplay verification is implied.
