@@ -132,3 +132,6 @@ World-map selection yields a numeric current_levno; loader reads corresponding d
 
 ## MB-AUDIT-3.4 — Multi-file mission resource consistency (2026-11-01)
 Mission files determine embedded map numbers used for map resource loading; briefing text is separately numbered and language-dependent. A future campaign-aware resource loader must keep gameNN, mapNN and missNN coherent. No global filename-transform change approved. See Mission Builder Audit 3.4. No engine modification or test run.
+
+## MB-AUDIT-3.5 — Mission resource table and direct map read (2026-11-01)
+Assembly mission_load_files mixes dynamic mapNN with fixed fonts, sprites, animations and colours. Audio and world-map UI files use separate fixed tables. A separate direct map%02d.dat RNC read exists. Do not implement blanket resource path redirection for mission-builder; both map paths and fixed resources require review. No engine code or runtime testing. See Mission Builder Audit 3.5.
