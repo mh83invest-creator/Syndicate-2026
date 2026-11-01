@@ -317,3 +317,6 @@ Mission resource table in syndre.sx ~82620 contains dynamically constructed data
 
 ## MB-AUDIT-3.6 — Briefing uses direct mission and map reads (2026-11-01)
 The alternate direct map reader is inside mission_briefing at syndre.sx 1207–1273. It first reads data/game%02d.dat from current_levno, then directly reads data/map%02d.dat using embedded level__MapNumber; read errors return status 2. The main-menu briefing branch invokes it at line 54661. This is a separate pre-tactical resource load from load_map_level and both paths must be covered by campaign routing. Briefing path has no visible zero-to-one map fallback, unlike tactical loader. Source-only audit; no code changes or tests. MB-AUDIT-3.6.
+
+## MB-AUDIT-3.7 — Briefing failure and menu return (2026-11-01)
+Direct RNC mission and map reads in mission_briefing return status 2 upon -1 (syndre.sx ~1237-1269). Normal briefing exit returns an internal selected state (~2087-2119). Main menu caller stores EAX as its next menu-state value (~54655-54669), then processes it in screen dispatch. Preserve return contract when adding campaign-specific resource resolution. Actual user-facing error presentation and tactical entry on failures need Windows gameplay verification. No engine edits or tests.
