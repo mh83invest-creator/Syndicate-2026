@@ -120,3 +120,8 @@ A third documentation-only workstream has been established:
 - Report: `docs/audits/2026-11-01_player_map_colour_lookup.md`; commit `08eaf818215aa0bda5edc1bdfbe60c499559ac66`.
 - Original assembly defines exactly ten table bytes at `player_colour_for_map`: hex `06 07 0E 03 0B 0C 0D 0F 06 00`. Multiple draw paths index these using player-related data, while another accesses the lookup in WScreen rendering.
 - These are indexed lookup values, not proven RGB colours, valid player count or validated bounds. No engine changes or Windows/private-resource tests. Next inspect valid source indices and current palette mappings.
+
+## Player colour-index limits — 2026-11-01
+- Report: `docs/audits/2026-11-01_player_colour_index_limits.md`, commit `9f3a651b4b9aa2847356de10d1cdbf48bbbf2cf9`.
+- Assembly confirms an eight-slot search in one configuration path and successive slot identifiers during player initialisation; neither proves a universal global limit. The static ten-entry map-colour lookup has eight distinct first values, a ninth repeating the first, and a tenth zero.
+- Palette RGB values and all index bounds remain unverified; no engine edits, asset parsing or Windows tests. Next verify active palettes and source indices against private resources.
