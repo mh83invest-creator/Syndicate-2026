@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(void)
+int main(int argc, char **argv)
 {
+    (void)argc;
+    (void)argv;
     SDL_Window *window;
     SDL_Surface *screen, *draw;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
