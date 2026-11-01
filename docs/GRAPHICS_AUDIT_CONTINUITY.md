@@ -49,3 +49,10 @@ A third documentation-only workstream has been established:
 - Unresolved: the original assembly sprite-table entry layout and rendering consumer; oversized assembly source line queries returned empty data.
 - Status: source documentation only; no new decoded art, engine build, Windows visual test or game-code modification.
 - Next: source extract and private sprite-table record cross-check. Other audit branches unchanged.
+
+## Graphics block-face cross-check — 2026-11-01
+- Report: `docs/audits/2026-11-01_graphics_block_face_crosscheck.md` (commit `36ea7097aefa9be777a13d6cc5ea1d4862df5db5`).
+- Scope: independently reconcile existing map-column rebase, block face index selection, descriptor component and zero-offset sampling findings.
+- Confirmed as existing evidence: 12,288 map pointers; selected block IDs index 24-byte records, with draw-path component fields +0/+4/+12/+16/+20. Flag-test semantics do NOT establish illumination or geometry classifications.
+- Not performed: new binary decoding, compilation, Windows visual/performance testing or any engine change.
+- Next: original sprite-table assembly consumers; then private resource-to-pixel validation and scoped night-lighting feasibility.
