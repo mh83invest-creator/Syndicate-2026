@@ -121,6 +121,11 @@ jobs:
         run: |
           gcc -std=c11 -Wall -Wextra -Werror bflibrary/tests/graphics_scaler_layout_contract.c -o graphics_scaler_layout_contract.exe
           ./graphics_scaler_layout_contract.exe
+      - name: Exercise actual engine SDL2 scaler helpers
+        run: |
+          python bflibrary/tests/generate_graphics_actual_scaler_test.py
+          gcc -std=c11 -Wall -Wextra -Werror graphics_actual_scaler_test.c -o graphics_actual_scaler_test.exe
+          ./graphics_actual_scaler_test.exe
       - name: Probe native SDL2 window and draw surface formats
         env:
           SDL_VIDEODRIVER: dummy
