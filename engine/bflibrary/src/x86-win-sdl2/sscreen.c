@@ -18,6 +18,8 @@
  */
 /******************************************************************************/
 #include <assert.h>
+#include <stdint.h>
+#include <string.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include "bfscreen.h"
@@ -876,7 +878,7 @@ TbBool LbHwCheckIsModeAvailable(TbScreenMode mode)
 }
 
 static void LbI_SDL_BlitScaled_to8bpp(long src_w, long src_h, ubyte *src_buf,
-  long dst_w, long dst_h, ubyte *dst_buf)
+  long dst_w, long dst_h, long src_pitch, long dst_pitch, ubyte *dst_buf)
 {
     // denominator of a (source) pixel's fraction part
     const long denom_i = 2 * dst_h;
@@ -894,7 +896,6 @@ static void LbI_SDL_BlitScaled_to8bpp(long src_w, long src_h, ubyte *src_buf,
     const long halfdsrc_i = src_h / denom_i;
     const long halfdsrc_j = src_w / denom_j;
 
-    long dst_offset = 0;
     long src_offset = halfdsrc_i * src_w + halfdsrc_j;
 
     // start at fractional part of each (source) half-step
@@ -911,8 +912,7 @@ static void LbI_SDL_BlitScaled_to8bpp(long src_w, long src_h, ubyte *src_buf,
                 src_num_j -= denom_j;
                 ++src_offset;
             }
-            dst_buf[dst_offset] = src_buf[src_offset];
-            dst_offset++;
+            dst_buf[i * dst_pitch + j] = src_buf[(src_offset / src_w) * src_pitch + (src_offset % src_w)];
             src_offset += dsrc_j;
             src_num_j += dsrc_num_j;
         }
@@ -923,7 +923,7 @@ static void LbI_SDL_BlitScaled_to8bpp(long src_w, long src_h, ubyte *src_buf,
 
 static void LbI_SDL_BlitScaled_totcbpp(long src_w, long src_h, ubyte *src_buf,
   SDL_Color *pal, long rshift, long gshift, long bshift,
-  long dst_w, long dst_h, long dst_bpp, ubyte *dst_buf)
+  long dst_w, long dst_h, long src_pitch, long dst_pitch, long dst_bpp, ubyte *dst_buf)
 {
     // denominator of a (source) pixel's fraction part
     const long denom_i = 2 * dst_h;
@@ -941,7 +941,6 @@ static void LbI_SDL_BlitScaled_totcbpp(long src_w, long src_h, ubyte *src_buf,
     const long halfdsrc_i = src_h / denom_i;
     const long halfdsrc_j = src_w / denom_j;
 
-    long dst_offset = 0;
     long src_offset = halfdsrc_i * src_w + halfdsrc_j;
 
     // start at fractional part of each (source) half-step
@@ -959,9 +958,13 @@ static void LbI_SDL_BlitScaled_totcbpp(long src_w, long src_h, ubyte *src_buf,
                 src_num_j -= denom_j;
                 ++src_offset;
             }
-            c = pal[src_buf[src_offset]];
-            *((long *)(dst_buf+dst_offset)) = (c.r << rshift) + (c.g << gshift) + (c.b << bshift);
-            dst_offset += dst_bpp;
+            c = pal[src_buf[(src_offset / src_w) * src_pitch + (src_offset % src_w)]];
+            {
+                /* Copy only the destination pixel width; avoid unaligned long stores. */
+                const uint32_t pixel = ((uint32_t)c.r << rshift) +
+                  ((uint32_t)c.g << gshift) + ((uint32_t)c.b << bshift);
+                memcpy(dst_buf + i * dst_pitch + j * dst_bpp, &pixel, dst_bpp);
+            }
             src_offset += dsrc_j;
             src_num_j += dsrc_num_j;
         }
@@ -985,20 +988,25 @@ int LbI_SDL_BlitScaled(SDL_Surface *src, SDL_Surface *dst)
     if (src->format->BytesPerPixel != 1)
         return SDL_BlitScaled(src, NULL, dst, NULL);
 
-    if (SDL_MUSTLOCK(src) && SDL_LockSurface(src) < 0)
+    if (SDL_MUSTLOCK(src) && SDL_LockSurface(src) < 0) {
         LOGERR("cannot lock source surface: %s", SDL_GetError());
+        return -1;
+    }
 
-    if (SDL_MUSTLOCK(dst) && SDL_LockSurface(dst) < 0)
+    if (SDL_MUSTLOCK(dst) && SDL_LockSurface(dst) < 0) {
         LOGERR("cannot lock destination Surface: %s", SDL_GetError());
+        if (SDL_MUSTLOCK(src)) SDL_UnlockSurface(src);
+        return -1;
+    }
 
     dst_bpp = dst->format->BytesPerPixel;
     if (dst_bpp == 1)
         LbI_SDL_BlitScaled_to8bpp(src->w, src->h, src->pixels,
-          dst->w, dst->h, dst->pixels);
+          dst->w, dst->h, src->pitch, dst->pitch, dst->pixels);
     else
         LbI_SDL_BlitScaled_totcbpp(src->w, src->h, src->pixels,
           src->format->palette->colors, dst->format->Rshift, dst->format->Gshift, dst->format->Bshift,
-          dst->w, dst->h, dst_bpp, dst->pixels);
+          dst->w, dst->h, src->pitch, dst->pitch, dst_bpp, dst->pixels);
 
     if (SDL_MUSTLOCK(dst)) SDL_UnlockSurface(dst);
     if (SDL_MUSTLOCK(src)) SDL_UnlockSurface(src);
