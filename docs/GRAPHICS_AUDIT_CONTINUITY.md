@@ -316,3 +316,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report `docs/audits/2026-11-01_sdl2_surface_setup_reset_failure_matrix.md`; commit `2f6ca346e87e2b6d5aeaec6ddb9d254d173c8dd4`.
 - In mode setup `lbScreenInitialised=false` before draw creation; on draw creation failure setup invokes `LbScreenReset`, but reset returns without cleanup if not initialized. If optional 8-bit palette setup fails, draw surface is freed and pointer cleared but `lbHasSecondSurface` remains true. Application WScreen rebind restores old draw pointer on create failure, but does not explicitly restore flag; precise state varies with initial state and failure stage. Static conditional analysis only, not a reproduced Windows failure.
 - Four-case initial allocation/palette/rebind failure matrix recorded; no source edits or native tests. Next controlled fault injection and live Windows SDL state capture.
+
+## Four-case surface failure model — 2026-11-01
+- Report `docs/audits/2026-11-01_surface_failure_fault_injection_model.md`; commit `966657db3b60df5c45691c1aede4f5d9329d0ec7`.
+- Compiled and ran isolated C state-transition model under ASan/UBSan. Setup allocation failure: null draw, flag false. Setup palette failure: null draw, flag true (inconsistent). Rebind allocation and palette failures from a valid old surface: old draw restored, flag true. No sanitizer diagnostics. This is a **stubbed model**, NOT real SDL or a Windows runtime result; narrows prior rebind-flag concern.
+- Next: real SDL failure injection, cleanup/retry behaviour, and active Windows graphics backend. No engine, protected baseline, or parallel branch edits.
