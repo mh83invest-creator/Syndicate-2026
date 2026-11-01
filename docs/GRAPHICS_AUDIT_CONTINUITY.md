@@ -336,3 +336,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_palette_propagation_implementation_boundary.md`; commit `1ca01036799e63cd2c0262de6ff018cb354d7ea1`.
 - Both backends expose `lbPaletteColors[256]`, copy it to indexed draw surfaces with different SDL APIs (SDL2 `SDL_SetPaletteColors`, SDL1 `SDL_SetColors`), and feed source-surface palette colours into indexed-to-true-colour scaler. Normal screen setup calls `LbPaletteSet`; its implementation and partial-update/rollback semantics **not yet found/verified**. Candidate paths failed and default-branch GitHub code search returned no results, which does not establish absence.
 - Further work requires repository tree/checkout palette implementation lookup and native SDL tests. No engine or parallel branch changes.
+
+## Located palette implementation and partial update semantics — 2026-11-01
+- Report: `docs/audits/2026-11-01_palette_set_implementation_found_partial_updates.md`; commit `e460662e6ce7d78fc5f71f14a7c154db13db483c`.
+- Correct files: SDL2 `engine/bflibrary/src/x86-win-sdl2/spalette.c`, SDL1 `engine/bflibrary/src/x86-win-sdl/spalette.c`. Earlier candidate file paths were incorrect; now verified via GitHub tree and direct graphics-branch reads.
+- SDL2 `LbPaletteSet` updates internal six-bit and converted SDL palettes **before** surface API calls. Screen and draw palette SDL updates are attempted separately, and failures set return `Lb_FAIL` **without rollback**. A partial/divergent state is therefore possible on SDL errors; actual SDL failure behaviour untested. Normal setup invokes reset on failure after initialization; fade and other caller propagation pending.
+- No engine code, protected v0.7 or other branches changed.
