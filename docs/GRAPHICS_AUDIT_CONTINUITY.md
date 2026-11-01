@@ -222,3 +222,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - SDL1 and SDL2 secondary draw surface paths can wrap `lbDisplay.WScreen` with `SDL_CreateRGBSurfaceFrom` or allocate a fresh surface. Both record actual draw surface `pitch` in `lbDisplay.GraphicsScreenWidth`. SDL2 includes INDEX8/RGB555/RGB565/RGB24/RGB888 format selection; format availability is not proof of runtime use.
 - Custom 8-bit scaling still uses width-based raw buffer addressing, so actual pitch compatibility is an unverified conditional risk, not a confirmed defect. Windows backend selection and conditional compilation remain open.
 - Verification: source inspection only. No gameplay/engine edits, builds, screenshots, private asset decoding or other branch changes. Next trace Windows build defines and surface allocation branches.
+
+## SDL backend configuration and WScreen option — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl_configure_backend_selection.md`; commit `ef8ffa283ed6eed1ec7851f9b69f384272188a0a`.
+- Autoconf engine and bflibrary both prefer SDL2 >=2.0.0 and fall back to SDL1 >=1.2.0 (or select it when SDL2 is disabled). The bflibrary WScreen-control option defaults to no; its `WSCREEN_CONTROL` definition and backend `LB_WSCREEN_CONTROL` tests need header/preprocessor mapping verification, not an assumed defect.
+- Actual Windows CI backend and build flags remain unverified. Source inspection only: no game changes, compilation or runtime tests. Next inspect CI workflow and macro mapping.
