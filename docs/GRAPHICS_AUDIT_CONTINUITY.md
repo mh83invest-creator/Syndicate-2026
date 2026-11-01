@@ -155,3 +155,10 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_wscreen_palette_alias_source_trace.md`, commit `4e8c14452a444830ae2565cec97309369ab2dcaf`.
 - Source confirms mission load reads palette to GraphicsPalette, clears WScreen and passes WScreen to palette setter; a mode-specific branch derives UScreen and BScreen from WScreen, and another routine temporarily aliases WScreen to BScreen for rendering. SDL LbPaletteSet expects RGB triples, so the source-level pointer roles differ. Runtime effect unverified and no bug fix authorised.
 - Tests: assembly/library source inspection only, no builds or Windows rendering. No engine or other branches changed.
+
+## WScreen allocation, palette separation and phase bounds — 2026-11-01
+- Report: `docs/audits/2026-11-01_wscreen_allocation_palette_phase_bounds.md`; report commit `10d335e3ca14e5fe73fae323c100c770f41399a3`.
+- **Important pointer correction:** exported original `WScreen` is loader-allocated separately (256,048 bytes Vres16; 256,016 bytes MCGA). `lbDisplay.WScreen` is a *different field*, set to `VGABuffer + 307,200` within a separately allocated 614,416-byte VGA buffer. Do not conflate them; `ApSpriteDrawMCGA` temporarily bridges the two pointers.
+- `GraphicsPalette` has its own load entry and pointer. The mission-load routine loads it and then clears/passes original `WScreen` to a palette-set function that expects colour bytes. Runtime meaning is still unverified; **no fix authorised**.
+- Source-derived title/mission/post-level scratch pointer starts are all within the nominal WScreen allocation in the report's comparison. This does **not** establish valid object extents, runtime modes or drawing safety.
+- Cross-references prior core audit docs for pointer transitions, loader and SDL surface ownership. Verification: direct source read and arithmetic; no private asset decoding, Windows build or visual test. Other development branches remain untouched.
