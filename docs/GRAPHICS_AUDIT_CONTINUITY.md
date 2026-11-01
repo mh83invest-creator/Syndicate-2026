@@ -56,3 +56,9 @@ A third documentation-only workstream has been established:
 - Confirmed as existing evidence: 12,288 map pointers; selected block IDs index 24-byte records, with draw-path component fields +0/+4/+12/+16/+20. Flag-test semantics do NOT establish illumination or geometry classifications.
 - Not performed: new binary decoding, compilation, Windows visual/performance testing or any engine change.
 - Next: original sprite-table assembly consumers; then private resource-to-pixel validation and scoped night-lighting feasibility.
+
+## Sprite pointer setup source audit — 2026-11-01
+- Report: `docs/audits/2026-11-01_sprite_pointer_setup_source.md`; report commit `7ba11371c089ea6641516f0e9539510b813e084f`.
+- Confirmed from Bullfrog library C source: LbSpriteSetup performs offset-to-pointer adjustment for TbSprite.Data; reset can reverse that conversion. Sprite drawing preparation checks dimensions, encoding uses width/height and the data pointer.
+- Crucial limit: no proof yet that private `hspr-0.tab` uses TbSprite or any particular entry stride. No direct assembly consumer analysis or newly decoded sprite data was performed.
+- Verification: source reads and report commit. No executable build, game test, or modification to gameplay. Next inspect original assembly consumer and table layout.
