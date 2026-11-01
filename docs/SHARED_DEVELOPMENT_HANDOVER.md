@@ -84,3 +84,6 @@ Mission Builder inspection reconciled the inline assembly country-state offsets 
 
 ## MB-AUDIT-1.8 cross-team note (2026-11-01)
 Strategic tick calls AdjustStateHappiness before GetRevenueFromCity. Revenue routine calculates using previous stored rate, then copies newly selected tax into stored rate, so preserve original ordering. ComputerPlaysMap changes neighbouring-country ownership directly as rival expansion, not a confirmed rebellion trigger. Full source notes Mission Builder Audit 1.8. Static inspection only.
+
+## Cross-workstream — mission files are number-based (MB-AUDIT-1.9, 2026-11-01)
+Assembly mission loader builds `data/gameNN.dat` filenames using `current_levno`; briefing loader similarly uses language-specific `data/miss...dat`, and map resources use `level__MapNumber`. No campaign-identity dimension is visible in these inspected paths; do not globally reassign those paths or assume higher mission IDs work without isolated validation. `engine/src/wrcountry.h` declares 50 packed 10-byte territory records. American Revolt routing remains unconfirmed. No engine code change or runtime tests; detailed source audit on Mission Builder branch.
