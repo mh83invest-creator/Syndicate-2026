@@ -99,3 +99,6 @@ Current `game_data.c` uses `GetDirectoryHdd`/`SyndFXFileNameTransform` for relat
 
 ## Audit 2.3 resource note
 Original Syndicate Plus assets are required and not fully bundled. Unix uses configured GAME_DATA_PATH; Windows reads SyndicatFX InstallPath. Expansion assets remain unverified. See Mission Builder handover Audit 2.3. No runtime changes.
+
+## Critical file-path discrepancy (MB-AUDIT-2.4, 2026-11-01)
+The actual bflibrary LbFileOpen backend passes relative paths through registered SyndFXFileNameTransform, which prefixes the game-data directory even for `save/NN.gam`. A separate `game_transform_path_full` special-cases saves to GetDirectoryUser(), but is not that registered transform. Thus save locations depend on the call path. Prior assumption that all save paths resolve to the user directory is incorrect. Preserve legacy files, inspect LB_FILENAME_TRANSFORM build settings and test both paths before implementing campaign-specific saves. No engine edits. See MB-AUDIT-2.4.
