@@ -96,3 +96,6 @@ Current `game_data.c` uses `GetDirectoryHdd`/`SyndFXFileNameTransform` for relat
 
 ## Cross-workstream path findings MB-AUDIT-2.2 (2026-11-01)
 `game_transform_path_full` in `engine/src/game.c` explicitly routes `save/` paths to the user directory, other relative paths to the game data directory, and leaves absolute paths alone. Windows data install path comes from `Software\\SyndicatFX\\CurrentVersion` / `InstallPath`; Windows user path is `%APPDATA%\\SyndicatFX`. Unix-like builds use `GAME_DATA_PATH` for data, XDG/HOME for user saves. Distinct DOS path functions exist and must be reconciled with bffile before implementing strict per-campaign save isolation. Preserve legacy saves and all platform path behaviour. More detail in Mission Builder Audit 2.2; static source audit only.
+
+## Audit 2.3 resource note
+Original Syndicate Plus assets are required and not fully bundled. Unix uses configured GAME_DATA_PATH; Windows reads SyndicatFX InstallPath. Expansion assets remain unverified. See Mission Builder handover Audit 2.3. No runtime changes.
