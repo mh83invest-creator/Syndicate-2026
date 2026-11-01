@@ -296,3 +296,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_sdl2_swap_surface_restore_error_handling.md`; commit `47e1a2a292b62614c8a8b2f973ae4e7799957c8d`.
 - SDL2 window surface reference is refreshed for recreation on window/focus operations. Swap path conditionally invokes custom scaler between secondary draw and window surfaces then `SDL_UpdateWindowSurface`. `LbScreenSwapClear` ignores returns of the restoration and draw-surface-check functions before presenting; conditional static error-handling risk only, not a reproduced failure.
 - Fullscreen format checks do not enforce equality to hardware format; actual surface BPP/pitch unverified. No code, protected baseline or parallel branch changes; next runtime surface/resize/focus diagnostic.
+
+## SDL2 swap/rebind failure propagation — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl2_swap_rebind_failure_propagation.md`; commit `3b2cc9e7623aa129022ba8367528f7d378fbfde2`.
+- Source confirms **both** `LbScreenSwap` and `LbScreenSwapClear` ignore restore-lost and draw-surface-check returns. The draw-surface-check function logs SDL lock failure without early return; `SwapClear` invokes `SDL_FillRect` without inspecting its result after presentation. Blit and window-update errors are checked. These are static conditional error-path risks, not verified Windows runtime defects.
+- Documentation only; no gameplay, engine or sibling-branch edits. Next trace reset and free lifetime before any corrective proposal.
