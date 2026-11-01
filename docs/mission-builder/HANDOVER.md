@@ -311,3 +311,6 @@ Map selection reads the mission number from map_countries record data_5b071, set
 
 ## MB-AUDIT-3.4 — Mission/map/text resource linkage (2026-11-01)
 Verified assembly process_action -> load_map_level uses current_levno and data/gameNN.dat; loaded mission provides level__MapNumber, with zero mapped to one; map loader uses the resulting mapNN resource digits. load_text independently formats mission text by language. A campaign resource namespace must preserve all three dependencies together while leaving global graphics/audio unaffected. Static source inspection only; no implementation or tests. Main save contract also updated. Audit 3.4.
+
+## MB-AUDIT-3.5 — Resource-table audit (2026-11-01)
+Mission resource table in syndre.sx ~82620 contains dynamically constructed data/mapNN.dat plus fixed font, block, sprite, animation and colour files; sound_bank_files0 holds fixed sound resource paths. World-map table includes fixed mmapblk and mminlogo resources (~83675). Separate assembly code ~1250 constructs map%02d.dat and reads RNC directly. This establishes multiple map-loading routes; no global filename remap is approved. Exact campaign-specific versus shared asset classification requires installed-resource evidence. Shared integration contract updated; static audit only.
