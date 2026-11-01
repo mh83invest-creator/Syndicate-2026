@@ -302,3 +302,6 @@ Decision: NOT READY for production save-routing changes. The shared campaign sav
 
 ## MB-AUDIT-3.1 — Installer asset manifest (2026-11-01)
 In engine/util/install lines 183-269, verified installer enumerates game01-50 plus game90-99.dat, a selected list of mapNN.dat, miss01-50 plus language-numbered 101-150,201-250,301-350,401-450, and game UI, graphics and audio assets. These lists describe expected import names, not American Revolt campaign identification. Installer comments say save and screenshots directories are created on demand by game. Actual installed file presence and American Revolt support remain unverified; no source edits, build or gameplay tests. Shared integration contract also updated. MB-AUDIT-3.1.
+
+## MB-AUDIT-3.2 (2026-11-01)
+Installer checks source folder and required filenames but does not identify campaign edition or verify retail-file content. Empty target required. Supplementary packages get MD5 checks. Generated run script only sets language. Detailed evidence in main save contract commit b119686. Documentation audit only.
