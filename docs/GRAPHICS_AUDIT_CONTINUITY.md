@@ -131,3 +131,8 @@ A third documentation-only workstream has been established:
 - Original assembly: level palette IDs 1–5 repeat for 50 entries, followed by two zero bytes; current_levno indexes this table in the inspected file-selection branch. The palette resource loads into GraphicsPalette using LbFileReadRNC.
 - The subsequent ac_LbPaletteSet call receives WScreen. Exact implementation semantics and runtime palette effects require further tracing. RGB mapping still requires original palette resource bytes.
 - No engine changes, private data decoding or Windows tests. Next trace ac_LbPaletteSet and fades/effects.
+
+## Palette set callers and fades — 2026-11-01
+- Report: `docs/audits/2026-11-01_palette_set_fade_call_trace.md`; commit `045ce2b7e90dc08cfe5db65cb237651a9015abd0`.
+- Direct assembly calls set palette with GraphicsPalette (main-loop branch), m_select_pal (menu), WScreen (after mission palette load), and one conditional VGA path. WScreen argument is source-verified but semantics remain unresolved; do not claim an actual bug.
+- Bullfrog C library LbPaletteFade interpolates indexed palette bytes, with blocking and stepped modes. Actual runtime fades and RGB effects remain untested; no game changes.
