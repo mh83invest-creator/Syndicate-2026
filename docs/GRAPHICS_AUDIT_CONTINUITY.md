@@ -75,3 +75,9 @@ A third documentation-only workstream has been established:
 - Source cross-check: packed `TbSprite` in `engine/bflibrary/include/bfsprite.h` with pointer at +0 and, when `SPRITE_FORMAT_V2` is not selected, byte dimensions at +4/+5; direct assembly draw fields and `ac_LbSpriteSetup` align with this layout.
 - 10,812 bytes / 6 = 1,802 potential entries. Asset-level record count, pointer ranges, empty entries and animation reference integrity remain **unverified** because private retail archives are not available in this session.
 - Verification: GitHub header and assembly source read; no new data decode, build or Windows game test. Next: private archive availability and actual six-byte descriptor bounds validation.
+
+## Animation frame/element source trace — 2026-11-01
+- Report: `docs/audits/2026-11-01_animation_frame_element_source_trace.md`; commit `2024f0a681c1179a6c5c49d4307411f12226917c`.
+- Source confirmed: frame lookup uses 8-byte stride; frame +0 references ten-byte animation elements; frame +4 participates in sound control; element +0 addresses a sprite by table-relative byte offset, +2/+4 position, +6 drawing parameter and +8 next element reference.
+- Decoded file sizes imply **candidate**, not verified active, capacities: hfra-0.ani 8,948 frame slots; hele-0.ani 10,486 element slots; hspr-0.tab 1,802 sprite entries. hsta-0.ani semantics remain open.
+- Tests: original assembly blob inspection and divisibility calculations only; no private data record validation, Windows rendering or game code changes. Next trace starts_ani and validate private animation link chains.
