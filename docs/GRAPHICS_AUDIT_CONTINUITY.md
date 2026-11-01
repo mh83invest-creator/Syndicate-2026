@@ -239,3 +239,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - `engine/bflibrary/Makefile.am` explicitly selects SDL2 `src/x86-win-sdl2` source files or SDL1 `src/x86-win-sdl` files with `USE_SDL2`; `engine/README.md` documents an MSYS2/MinGW 32-bit Windows build installing SDL2 and using Autotools/`-m32`. Recipe is not proof of the current CI binary's backend.
 - `.github/workflows` confirmed a directory, but GitHub file-fetch does not enumerate directories; actual workflow still unidentified. The `WSCREEN_CONTROL` vs `LB_WSCREEN_CONTROL` mapping remains unverified.
 - Documentation only. Static source inspection passed; no native build, gameplay tests, protected code edits or parallel branch changes. Next: workflow inventory/build logs and macro resolution.
+
+## GitHub Actions PR-only lookup and macro verification gate — 2026-11-01
+- Report `docs/audits/2026-11-01_ci_run_visibility_and_macro_verification_gate.md`; commit `a8ee0bfd11d18f56c18298e3560eb53231778ec7`.
+- GitHub Actions connector returned zero workflow runs for documentation commit `3d5aa83d24b00076572ad4bf0c5e921830ea931d`, but this action filters to PR-triggered runs only. This does NOT rule out ordinary push CI nor identify active Windows backend.
+- Exact workflow directory inventory, generated header/preprocessor macro mapping and Windows compile flags remain open. Existing Autoconf/Makefile source evidence is preserved; no unsupported CI success/failure assertions.
+- No code changes or runtime tests. Next retrieve workflow tree and real Windows build/job evidence.
