@@ -1074,7 +1074,7 @@ TbResult LbScreenSwap(void)
     assert(!lbDisplay.VesaIsSetUp); // video mem paging not supported with SDL
     if (LbIScreenSurfaceRestoreLost() != Lb_SUCCESS)
         return Lb_FAIL;
-    if (LbIScreenDrawSurfaceCheck() != Lb_SUCCESS)
+    if (LbIScreenDrawSurfaceCheck() == Lb_FAIL)
         return Lb_FAIL;
 
     // Cursor needs to be drawn on WScreen pixels
@@ -1114,7 +1114,7 @@ TbResult LbScreenSwapClear(TbPixel colour)
     assert(!lbDisplay.VesaIsSetUp); // video mem paging not supported with SDL
     if (LbIScreenSurfaceRestoreLost() != Lb_SUCCESS)
         return Lb_FAIL;
-    if (LbIScreenDrawSurfaceCheck() != Lb_SUCCESS)
+    if (LbIScreenDrawSurfaceCheck() == Lb_FAIL)
         return Lb_FAIL;
 
     // Cursor needs to be drawn on WScreen pixels
@@ -1159,7 +1159,7 @@ TbResult LbScreenSwapBox(ubyte *sourceBuf, long sourceX, long sourceY,
     assert(!lbDisplay.VesaIsSetUp); // video mem paging not supported with SDL
     if (LbIScreenSurfaceRestoreLost() != Lb_SUCCESS)
         return Lb_FAIL;
-    if (LbIScreenDrawSurfaceCheck() != Lb_SUCCESS)
+    if (LbIScreenDrawSurfaceCheck() == Lb_FAIL)
         return Lb_FAIL;
 
     // First, copy the input buffer rect to our WScreen
