@@ -117,3 +117,6 @@ The inspected assembly main menu enters `LoadSaveGame`, and its slot list/read/w
 
 ## MB-AUDIT-2.9 — Main-menu load path (2026-11-01)
 Assembly main-menu calls LoadSaveGame; that screen uses native C load/save wrappers. No separate Continue loader has been established in the reviewed assembly. Future Continue, if implemented, must use campaign namespace checks and never silently access a different mode's slots. Source inspection only.
+
+## MB-AUDIT-3.0 — Build readiness gate (2026-11-01)
+Save integration assessment: not ready for a production code patch. Source seam known; legacy save location, original/expansion assets, mode identity and Windows execution still need verification. Updated CAMPAIGN_SAVE_INTEGRATION_CONTRACT.md at 59c8a7f. No engine code or build affected.
