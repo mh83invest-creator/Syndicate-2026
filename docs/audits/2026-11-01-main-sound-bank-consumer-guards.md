@@ -34,3 +34,6 @@ NOT PERFORMED: assembly text re-extraction, runtime sound-enabled/disabled tests
 2. Reconcile callsites with full extracted assembly when available and record whether any callers verify the batch load count or offer another independent guard.
 3. Build isolated, disposable missing/truncated-sample test cases and check Windows runtime behaviour before a repair proposal.
 Completed: native sound consumer-guard source inspection and handover. Unverified: runtime crash or safety, executable tests, audio asset integrity.
+
+## Follow-up: audio state and sample-pointer lifetime (2026-11-01)
+See successor source audit `docs/audits/2026-11-01-main-audio-state-and-sample-lifetime.md`, commit `cc2d7eca48ca2f8fd3c0aec56e879f1c3059002a` on `main`. It verifies that `GetSoundAble` and `GetSoundActive` return global device-state flags, not game `smptable` pointer/count checks, and that `SoundInstalled` is checked in the downstream playback API **after** `BFPlaySample` has indexed `smptable`. `SetBFSampleStatus` is an additional unguarded direct table consumer. It also separates generic `sound.dat` (`Sfx`/`SfxData`) from game-specific `smptable`/`smpdata`. Static C source evidence only; no crash demonstrated, original assembly allocation/callsite reachability, Windows tests and asset sizes remain unverified. No source modifications.
