@@ -104,3 +104,9 @@ A third documentation-only workstream has been established:
 - The original `draw_agent_element` path may replace an element's sprite offset using agent state and an alternate descriptor selection before calling `DrawASpriteHires16_A`. An offline viewer cannot assume the raw element +0 sprite is always the displayed agent sprite.
 - Inspected links and descriptor selections only test against their respective *base* pointers, not observed end bounds. Conditional risk only; no malformed asset or crash established.
 - Verification: source-only assembly inspection, no new asset decoding, build, Windows testing or gameplay modifications. Next trace alternate selection state and validate private sprite/animation record references.
+
+## Agent sprite variant selection arithmetic — 2026-11-01
+- Report: `docs/audits/2026-11-01_agent_sprite_substitution_arithmetic.md`; report commit `baa612aeb0809d853c78f9b44ff5831130f53efe`.
+- Assembly demonstrates six-byte sprite-offset division, an eight-value special range after subtracting 0x29, and state-derived variant selection using a byte from `data_5e4ab` with base index 0x461. The fallback preserves the raw element sprite reference.
+- State byte's meaning remains unknown; do not infer outfit, weapon, direction or other labels without corroboration. Additional source path corroborates variant substitution.
+- Source-only, no private asset-byte test, Windows rendering, compile or gameplay changes. Next: trace state-byte provenance and numeric bounds.
