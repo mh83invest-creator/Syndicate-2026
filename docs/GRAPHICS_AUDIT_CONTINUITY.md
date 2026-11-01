@@ -87,3 +87,8 @@ A third documentation-only workstream has been established:
 - Source confirms `starts_ani` is addressed with 16-bit word entries. Ordinary scaled indices and fixed offsets, including 0x4b0 and 0xf3e, are used in distinct animation and drawing paths.
 - Existing 3,940-byte decoded hsta-0.ani length is compatible with 1,970 candidate word entries, not 1,970 validated active sequences. Some offsets serve separate logical groups; their semantics and bounds require private asset validation.
 - Tests: original assembly source read and size arithmetic only. No game-code modifications, private asset decode, build or Windows runtime tests. Next: inspect starts/frame/element cross-reference and termination rules.
+
+## Animation progression and termination — 2026-11-01
+- Report: `docs/audits/2026-11-01_animation_advancement_termination.md`; report commit `e7b60c330e21b0f9613d46617455fa2e8ab0ff75`.
+- Original assembly source shows `frames[current]+6` as a next-frame state in examined routines, with `starts_ani` reset/default values. Element +8 provides subsequent ten-byte element index. Both types of transitions need private data validation for end bounds, loops, invalid links and sentinel behaviour.
+- Verification: original assembly read. No new data decoding, compilation or Windows tests. No game files or other workstreams changed.
