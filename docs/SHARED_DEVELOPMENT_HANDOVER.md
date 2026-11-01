@@ -129,3 +129,6 @@ Installer validates source directory and filenames, not American Revolt compatib
 
 ## MB-AUDIT-3.3 — Mission identifiers are not mode selectors (2026-11-01)
 World-map selection yields a numeric current_levno; loader reads corresponding data/gameNN.dat and uses embedded level__MapNumber for map assets; mission text uses numbered data/miss...dat. No verified campaign identity is passed in this path. Do not infer American Revolt solely from filename ranges. Resource routing and save isolation are distinct requirements. See Mission Builder Audit 3.3; static source inspection only.
+
+## MB-AUDIT-3.4 — Multi-file mission resource consistency (2026-11-01)
+Mission files determine embedded map numbers used for map resource loading; briefing text is separately numbered and language-dependent. A future campaign-aware resource loader must keep gameNN, mapNN and missNN coherent. No global filename-transform change approved. See Mission Builder Audit 3.4. No engine modification or test run.
