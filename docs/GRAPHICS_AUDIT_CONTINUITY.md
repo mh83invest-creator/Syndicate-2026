@@ -42,3 +42,10 @@ A third documentation-only workstream has been established:
 - Confidentiality: original retail assets and reconstructed copyrighted frames must not be committed publicly.
 - Synchronisation: each branch is independent; the presence of this link does not mean another branch has received or merged its commits. Updates are not automatic; new findings need an explicit dated cross-branch handover.
 - Verification: GitHub documentation changes only. No source build, Windows gameplay test, image equivalence test or new graphics feature.
+
+## Graphics sprite rendering follow-up — 2026-11-01
+- Report: `docs/audits/2026-11-01_sprite_rendering_followup.md`.
+- Verified: C display and sprite remap paths; 16-colour and MCGA rendering paths must not be conflated.
+- Unresolved: the original assembly sprite-table entry layout and rendering consumer; oversized assembly source line queries returned empty data.
+- Status: source documentation only; no new decoded art, engine build, Windows visual test or game-code modification.
+- Next: source extract and private sprite-table record cross-check. Other audit branches unchanged.
