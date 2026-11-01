@@ -276,3 +276,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_scaled_truecolour_last_pixel_bounds.md`; commit `ea23f3648e21d265bb62a7ede61584f7d339d0b4`.
 - For N tightly packed output pixels, destination B bytes/pixel, and a `long` store of L bytes, final store overhang is `max(0,L-B)`: on 32-bit Windows 2 bytes for B=2 and 1 byte for B=3. Real SDL row pitch/allocation padding and runtime reachability are unverified; this is symbolic source risk, not confirmed out-of-bounds at runtime.
 - Additional SDL1 distinction: the non-indexed scaled source path logs unsupported source length but continues; SDL2 instead delegates non-indexed scaled blitting to the native SDL function. No code changed, no native tests. Next isolated guarded synthetic pixel validation and confirmed Windows SDL surface formats.
+
+## Synthetic AddressSanitizer scaler write-width validation — 2026-11-01
+- Report: `docs/audits/2026-11-01_synthetic_asan_scaler_write_width.md`; commit `d2f4427e534f4df0fdb207edaf80354df62fc522`.
+- Independent Linux x86_64 Clang/ASan C harness modelled the source's 4-byte store and BPP stride using `uint32_t`/memcpy on tightly packed buffers. BPP 2 and 3 each reported heap-buffer-overflow (4-byte write); BPP 4 completed without ASan fault. This is a **synthetic model**, not compilation/execution of original scaler or proof of a Windows gameplay bug. No commercial assets used.
+- Next: test an exact source-derived scaler in an isolated harness, inspect real SDL surface pitch/format and active Windows build. Protected v0.7 and parallel audit branches remain untouched.
