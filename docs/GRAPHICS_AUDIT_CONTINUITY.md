@@ -291,3 +291,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_scaler_padded_pitch_standalone_test.md`; commit `fa386edf7f9a1ae3e14e4f116e7a20ca0271b01a`.
 - Source-derived scaler control flow tested with 4-byte `uint32_t` stores (deliberate model substitution to isolate pitch on Linux LP64), synthetic 3x3 4-BPP destination with pitch 16 (4 padding bytes per row). Padding marker check found **8 altered padding bytes**, exit 3 by test design; no ASan overflow was reported. Confirms width-based addressing cannot honour a padded destination row pitch in this standalone test; does **not** prove actual SDL/Windows corruption.
 - Original scaler source not changed. Pending real SDL surface format/pitch and compiled Windows build evidence. Protected v0.7 baseline and parallel branches untouched.
+
+## SDL2 window surface restoration and swap error handling — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl2_swap_surface_restore_error_handling.md`; commit `47e1a2a292b62614c8a8b2f973ae4e7799957c8d`.
+- SDL2 window surface reference is refreshed for recreation on window/focus operations. Swap path conditionally invokes custom scaler between secondary draw and window surfaces then `SDL_UpdateWindowSurface`. `LbScreenSwapClear` ignores returns of the restoration and draw-surface-check functions before presenting; conditional static error-handling risk only, not a reproduced failure.
+- Fullscreen format checks do not enforce equality to hardware format; actual surface BPP/pitch unverified. No code, protected baseline or parallel branch changes; next runtime surface/resize/focus diagnostic.
