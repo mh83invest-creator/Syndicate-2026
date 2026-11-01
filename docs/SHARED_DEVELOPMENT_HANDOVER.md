@@ -135,3 +135,6 @@ Mission files determine embedded map numbers used for map resource loading; brie
 
 ## MB-AUDIT-3.5 — Mission resource table and direct map read (2026-11-01)
 Assembly mission_load_files mixes dynamic mapNN with fixed fonts, sprites, animations and colours. Audio and world-map UI files use separate fixed tables. A separate direct map%02d.dat RNC read exists. Do not implement blanket resource path redirection for mission-builder; both map paths and fixed resources require review. No engine code or runtime testing. See Mission Builder Audit 3.5.
+
+## MB-AUDIT-3.6 — Briefing resource loader (2026-11-01)
+The alternate direct game/map loader belongs to mission_briefing, called from the main menu. Both briefing and tactical resource reads need coherent campaign selection; briefing returns status 2 on missing RNC data and does not visibly use the tactical loader's map-number zero fallback. See Mission Builder Audit 3.6; documentation only.
