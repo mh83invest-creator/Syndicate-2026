@@ -193,3 +193,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Complete exact-name reference scan within original `syndre.sx`: two indexed writers (1 from `set_all_changes`; 3 from `set_block_changes`), one DOS swap base pointer, one `copy_back` nonzero reader, one 400-byte declaration. No direct grid-clearing reference in this assembly file; indirect/linked writes remain unexcluded.
 - `swap_screen_vres16` clears the separate `data_60b4f` full-redraw flag, not the grid. Non-DOS presentation dispatches to whole-Vres16 update and `ac_swap_wscreen`; DOS-only marker-row copy must not be misrepresented as the SDL renderer.
 - Source scan and assembly review only. No code change, native build, Windows game, private asset parse or screenshots. Next inspect linked C presentation implementations and effective screen-buffer/pixel format ownership.
+
+## C-level Vres16 and MCGA presentation boundary — 2026-11-01
+- Report: `docs/audits/2026-11-01_display_c_vres16_mcga_presentation_trace.md`; report commit `560fe6c27ef336af7aa58a92379be4e6afe867cf`.
+- `engine/src/display.c` converts four planar 400×80-byte inputs from original `WScreen` into 640×400 indexed pixels at `VScreen` inside a 640×480 cleared target; high-resolution presentation copies 640×480 bytes from `VGABuffer` into the separate `lbDisplay.WScreen`, while MCGA copies 320×200 from original `WScreen`. `LbScreenSwap` follows.
+- Critical open alias question: the read of `VGABuffer` versus conversion write to `VScreen` requires source trace of pointer assignments/ownership before treating these as equivalent. SDL back-end surface pitch, palette and actual display behaviour remain unverified.
+- Verified GitHub C source inspection only; no engine edits, compilations, Windows screenshots or private data. Next: `VScreen` provenance and SDL1/SDL2 swap implementation.
