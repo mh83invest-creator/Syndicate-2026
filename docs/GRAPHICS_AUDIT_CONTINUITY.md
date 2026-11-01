@@ -347,3 +347,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_palette_fade_error_handling.md`; commit `727a9c2dc5ee9e7f04285d5e01cbf5420332f767`.
 - Generic `LbPaletteFade` timed and stepped modes ignore `LbPaletteSet` and `LbPaletteGet` failures; timed mode also ignores `LbScreenSwap` failure. Returns fade counter, not API success. Both interpolation branches divide by `fade_to` with no local zero guard; actual zero-input reachability not established. SDL1 palette set similarly allows nontransactional partial updates; SDL1 has distinct `LbIPaletteRestoreLost` after focus changes.
 - Source audit only, no runtime test or code edits. Next inspect fade callers, zero inputs and focus restoration invocation.
+
+## SDL1 focus palette restoration event chain — 2026-11-01
+- Report `docs/audits/2026-11-01_sdl1_focus_palette_restore_event_chain.md`; commit `a176e85334d6a39fc10e602a3fd9572102144453`.
+- SDL1 `swindows.c:98-119,131-151` routes activation events to `WEvent`, which invokes `LbIPaletteRestoreLost` when active with palette. `WEvent` ignores restoration return and reports event success; restore helper itself checks `SDL_SetColors`. Source-connected path, not actual failure evidence. Fade zero-input caller reachability and Windows backend unverified.
+- Graphics documentation only; no engine, protected baseline or parallel branch changes. Next expand fade caller trace and verify active Windows backend.
