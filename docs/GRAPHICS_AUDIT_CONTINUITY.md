@@ -266,3 +266,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_sdl_indexed_truecolour_writes_and_pitch_risk.md`; commit `61311a7fa68d81e98780e27b64fbbc435162a558`.
 - Both SDL1 and SDL2 `LbI_SDL_BlitScaled_totcbpp` routines write converted pixels through `long *` while stepping by destination bytes per pixel. On 32-bit-long targets, 16/24-bit targets imply 4-byte stores with 2/3-byte strides; custom scaler also receives no explicit SDL pitch. Static potential overlap/bounds/pixel risk, NOT a reproduced runtime bug. Check selected SDL backend, destination formats, buffer pitches and guarded test harness before changing code.
 - Windows workflow and build defines still unverified; source-level macro naming was previously resolved by prefixed config generation. No game code changed, no native build/screenshots or other branch edits.
+
+## SDL indexed scaler activation conditions — 2026-11-01
+- Report `docs/audits/2026-11-01_indexed_scaler_activation_conditions.md`; commit `8b8a0f320beaa04d4f37889833b95d360c5976d3`.
+- In SDL2, equal-sized draw/screen surfaces use native `SDL_BlitSurface`. Scaled non-indexed sources use native `SDL_BlitScaled`. Scaled 8-bit indexed sources invoke custom conversion; a 2- or 3-byte destination pixel then reaches the earlier documented `long *` store-width risk on four-byte-long targets. Custom scaling still lacks pitch parameters. This is a **conditional static risk**, not a proven Windows rendering failure.
+- Actual Windows SDL backend, displayed window format and CI build flags still unverified. Test matrix documented for equal/scaled indexed 8/16/24/32-bit destinations; no game code changes or runtime tests.
