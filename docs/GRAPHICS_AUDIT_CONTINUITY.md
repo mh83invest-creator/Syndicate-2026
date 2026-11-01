@@ -245,3 +245,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - GitHub Actions connector returned zero workflow runs for documentation commit `3d5aa83d24b00076572ad4bf0c5e921830ea931d`, but this action filters to PR-triggered runs only. This does NOT rule out ordinary push CI nor identify active Windows backend.
 - Exact workflow directory inventory, generated header/preprocessor macro mapping and Windows compile flags remain open. Existing Autoconf/Makefile source evidence is preserved; no unsupported CI success/failure assertions.
 - No code changes or runtime tests. Next retrieve workflow tree and real Windows build/job evidence.
+
+## SDL2 screen pointer ownership branches — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl2_wscreen_control_conditional_semantics.md`; commit `7a9d5836b5b1fba087d2a137cbc42035b732d2ef`.
+- SDL2 `LB_WSCREEN_CONTROL` enabled: library refreshes `lbDisplay.WScreen` from draw surface on lock, sets pitch, clears display pointers on unlock and skips pointer-rebinding check. Disabled: drawing surface checks for application WScreen pointer changes and may be recreated. Surface-creation conditions also vary by flag.
+- Current Autoconf macro mapping and Windows executable build remain unverified. Workflow directory lookup still blocked by available connector; no CI existence or backend conclusion inferred.
+- Source-only documentation; no gameplay changes, compilation, Windows tests or cross-workstream edits. Next obtain generated defines and CI build evidence.
