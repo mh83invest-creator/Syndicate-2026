@@ -251,3 +251,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - SDL2 `LB_WSCREEN_CONTROL` enabled: library refreshes `lbDisplay.WScreen` from draw surface on lock, sets pitch, clears display pointers on unlock and skips pointer-rebinding check. Disabled: drawing surface checks for application WScreen pointer changes and may be recreated. Surface-creation conditions also vary by flag.
 - Current Autoconf macro mapping and Windows executable build remain unverified. Workflow directory lookup still blocked by available connector; no CI existence or backend conclusion inferred.
 - Source-only documentation; no gameplay changes, compilation, Windows tests or cross-workstream edits. Next obtain generated defines and CI build evidence.
+
+## WScreen prefix macro source resolution — 2026-11-01
+- Report: `docs/audits/2026-11-01_wscreen_macro_prefix_generation_resolved.md`; commit `bbdd86d8bd093103e50560b6bea5eeb42933e8df`.
+- **Supersedes the earlier unexplained macro mismatch:** `engine/bflibrary/configure.ac:10-11` invokes `AX_PREFIX_CONFIG_H([include/bfconfig.h], [LB])`. The configured `WSCREEN_CONTROL` option is therefore consistent with SDL sources checking `LB_WSCREEN_CONTROL`. SDL2 screen source conditionally includes `bfconfig.h`, and Makefile searches generated include directory. Source naming is explained; no typo/fix established.
+- Active Windows generated header, `HAVE_CONFIG_H` setting, linked SDL version and CI workflow still unverified. No code changes, Windows builds or runtime tests. Next inspect real Windows CI configuration/build artifacts.
