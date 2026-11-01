@@ -36,3 +36,18 @@ User authorised completing the earlier graphics audit follow-through: implement 
 - The **latest** expected Windows CI validation at workflow SHA `1a17fe34ed4444bf11d860484874afe6eb74d35c` is run **41294440760**. It remained in progress at this addendum; verify its eventual completed result separately. Source patch log instrumentation and corrected swap return handling have not yet been accepted on runtime evidence.
 - Local Linux standalone performance model (320x200 to 640x400, 32-bit packed) reported ~0.192 ms/frame old-style vs ~0.199 ms/frame pitch-aware (~1.04x), **not actual game or exact engine-scaler benchmark**.
 - Windows real-game / retail-data screenshots / explosions / camera performance / saves still untested. See `docs/GRAPHICS_WINDOWS_RUNTIME_VALIDATION.md` for release acceptance matrix. **No merge.**
+
+## FINAL Windows CI result — confirmed
+
+**PASS**: Final experimental workflow run [41294440760](https://github.com/mh83invest-creator/Syndicate-2026/actions/runs/41294440760), on source SHA `1a17fe34ed4444bf11d860484874afe6eb74d35c` completed successfully. Job `124812222289` has no failed steps.
+
+Exact Windows job-log evidence:
+- `PASS: 12 isolated pitch/width/padding cases`.
+- `WINDOW surface width=640 height=400 bpp=32 bytes=4 pitch=2560 format=SDL_PIXELFORMAT_RGB888`.
+- `DRAW surface width=320 height=200 bpp=8 bytes=1 pitch=320 format=SDL_PIXELFORMAT_INDEX8`.
+- Build/verification imports include `DLL Name: SDL2.dll`.
+- Experimental artifact `syndicate-2026-graphics-isolated-executable` uploaded, artifact ID `13078279341` (15,941,904 bytes reported by workflow log). GitHub Actions artifact listing also confirms this name and ID; `expired=false` at verification. Test dependencies artifact ID `13078806913`; handover artifact ID `13078788433`.
+
+**Scope of PASS**: Native Windows i686 successful compile/package, standalone layout tests and real SDL2 headless/dummy window format probe. Diagnostics for the actual game's scaler route and window surface are compiled into the engine, but the game was **not launched with real data**; the dummy-window test is a separate executable. Native visual accuracy, frame timing, explosions, palette behaviour, alt-tab, camera scrolling, game saves and comparison with protected v0.7 **remain to be tested**.
+
+No merge/release or production baseline modification performed. Runtime acceptance instructions at `docs/GRAPHICS_WINDOWS_RUNTIME_VALIDATION.md`. Work may proceed with local Windows gameplay smoke tests using the experimental artifact.
