@@ -296,3 +296,6 @@ Main menu `func_37b93` calls `LoadSaveGame` at assembly ~54630. The separate men
 
 ## MB-AUDIT-2.9 — Verified load menu versus unverified Continue (2026-11-01)
 The only literal assembly caller of LoadSaveGame is main-menu func_37b93 at line 54631. Its nested save screen calls ac_load_player and ac_save_player, and main-menu slot preview calls ac_load_save_text. No distinct Continue loader identified in complete assembly call-name scan. A separate Continue feature remains unverified and must not be described as existing. Save isolation contract updated on main. Static source-only audit; no gameplay tests. Audit 2.9.
+
+## MB-AUDIT-3.0 — Build-readiness assessment (2026-11-01)
+Decision: NOT READY for production save-routing changes. The shared campaign save contract on main now records evidence and gates (commit 59c8a7f). Verified C save integration seam exists, but legacy location, retail resource inventory, startup identity, and runtime tests are unresolved. Do not touch main game behaviour. No code modification, compilation or gameplay tests this session.
