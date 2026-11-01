@@ -256,3 +256,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_wscreen_macro_prefix_generation_resolved.md`; commit `bbdd86d8bd093103e50560b6bea5eeb42933e8df`.
 - **Supersedes the earlier unexplained macro mismatch:** `engine/bflibrary/configure.ac:10-11` invokes `AX_PREFIX_CONFIG_H([include/bfconfig.h], [LB])`. The configured `WSCREEN_CONTROL` option is therefore consistent with SDL sources checking `LB_WSCREEN_CONTROL`. SDL2 screen source conditionally includes `bfconfig.h`, and Makefile searches generated include directory. Source naming is explained; no typo/fix established.
 - Active Windows generated header, `HAVE_CONFIG_H` setting, linked SDL version and CI workflow still unverified. No code changes, Windows builds or runtime tests. Next inspect real Windows CI configuration/build artifacts.
+
+## SDL1/SDL2 generated configuration header inclusion — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl1_sdl2_generated_header_inclusion_trace.md`; commit `e1a7076fb5cd405a5133f82c9c3bb86c80c2d561`.
+- Both SDL screen backends conditionally include generated `bfconfig.h` under `HAVE_CONFIG_H` and check `LB_WSCREEN_CONTROL`; `configure.ac` generates a prefixed header with `AX_PREFIX_CONFIG_H(...,[LB])`. The source-level name mismatch is explained across both backends. The configuration default has screen-control disabled, but actual Windows compiler definitions remain unknown.
+- Read-only direct source verification; no build, Windows runtime, code modifications or other branch changes. Next: inspect real generated header and workflow/build logs.
