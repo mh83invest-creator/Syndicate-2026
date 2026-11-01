@@ -181,3 +181,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Main-loop order matters: screen swap occurs **before** scroll calls and `copy_back`. Scrolling may set the flag after the current swap, allowing `copy_back` to use it and a subsequent swap to consume it. Preserve this two-stage update sequence.
 - `DrawFlags`: default Vres16 `0x2`; CLI `-L` selects `0x4` (named `DrwF_Unkn04`, not `DrwF_ScreenMCGA=0x1`). The `0x4` swap helper calls `nullsub_6`, which only returns, before the common non-DOS presentation. Actual `swap_wscreen` chooses `VGABuffer` 640×480 vs game `WScreen` 320×200 based on high-res bit. Menu phases may save/temporarily change flags.
 - Source review only; no build, Windows graphics testing or private data. No game code or other branches changed. Next: trace `copy_screen_cube` consumption/clearing of dirty markers and determine impact on map lighting overlays.
+
+## Dirty cube copy and marker lifetime — 2026-11-01
+- Report: `docs/audits/2026-11-01_dirty_cube_copy_source_trace.md`; report commit `20b45a179b3cc5e6836a6b6c4bdfdf92226a1856`.
+- `copy_back` scans the 25×16 dirty-byte grid when no full-redraw flag is set and calls `copy_screen_cube` for nonzero markers. That routine copies a fixed four-plane 16-row tile from `BScreen` to original `WScreen` only in Vres16 (`DrawFlags & 0x2`); no marker reset occurs in these inspected routines.
+- DOS-only dirty-row swap logic (`func_4c797`) is not equivalent to the current non-DOS SDL path, which calls whole-screen update/swap wrappers. Marker lifetime and actual SDL presentation require wider source tracing before lighting changes.
+- Verification: 85,803-line assembly blob inspected; static source and arithmetic only. No engine edits, native compilation, Windows rendering or private data tests. Next: enumerate dirty-grid clear/write sites and trace SDL update/swap lifecycle.
