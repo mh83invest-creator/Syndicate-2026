@@ -125,3 +125,9 @@ A third documentation-only workstream has been established:
 - Report: `docs/audits/2026-11-01_player_colour_index_limits.md`, commit `9f3a651b4b9aa2847356de10d1cdbf48bbbf2cf9`.
 - Assembly confirms an eight-slot search in one configuration path and successive slot identifiers during player initialisation; neither proves a universal global limit. The static ten-entry map-colour lookup has eight distinct first values, a ninth repeating the first, and a tenth zero.
 - Palette RGB values and all index bounds remain unverified; no engine edits, asset parsing or Windows tests. Next verify active palettes and source indices against private resources.
+
+## Mission palette loading source trace — 2026-11-01
+- Report: `docs/audits/2026-11-01_mission_palette_loading_path.md`, commit `cef9c1faf16c638808baf285a6fd8c25c2766db7`.
+- Original assembly: level palette IDs 1–5 repeat for 50 entries, followed by two zero bytes; current_levno indexes this table in the inspected file-selection branch. The palette resource loads into GraphicsPalette using LbFileReadRNC.
+- The subsequent ac_LbPaletteSet call receives WScreen. Exact implementation semantics and runtime palette effects require further tracing. RGB mapping still requires original palette resource bytes.
+- No engine changes, private data decoding or Windows tests. Next trace ac_LbPaletteSet and fades/effects.
