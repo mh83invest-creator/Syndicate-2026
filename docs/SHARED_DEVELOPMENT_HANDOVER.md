@@ -105,3 +105,6 @@ The actual bflibrary LbFileOpen backend passes relative paths through registered
 
 ## MB-AUDIT-2.5 — active filename transform verified in source (2026-11-01)
 LB_FILENAME_TRANSFORM is defined as 1 in bflibrary/include/bffile.h. Both inspected SDL file backends call lbFileNameTransform for LbFileOpen, and game_initialise registers SyndFXFileNameTransform before resources load. Thus source C save/NN.gam through LbFileOpen resolves against the data root. DOS low-level save routing uses a different user-root path resolver. Test the actual Windows executable with harmless isolated test slots before introducing campaign save siloing; do not migrate or overwrite legacy saves. Static source verification only. See Audit 2.5.
+
+## MB-AUDIT-2.6 (2026-11-01)
+Save isolation acceptance gates documented in docs/CAMPAIGN_SAVE_INTEGRATION_CONTRACT.md (commit 30331d4). Both file resolvers and legacy saves must be protected. No implementation or test results yet.
