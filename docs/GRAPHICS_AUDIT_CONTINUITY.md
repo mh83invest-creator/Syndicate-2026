@@ -402,3 +402,7 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report `docs/audits/2026-11-01_native_sdl2_surface_pitch_probe.md`, commit `6fafcab26338086c18953b978d42987a82e9c49b`.
 - Ran actual installed **Linux SDL2 runtime** via Python ctypes using `SDL_CreateRGBSurface`: 16 8/16/24/32-bpp configurations with widths 3,5,320,640. Padded row examples: 3px 8bpp pitch4 vs packed3; 3px 16bpp pitch8 vs packed6; 3px 24bpp pitch12 vs packed9. Width640 32bpp pitch2560 = packed2560. Confirms pitch divergence possible, but **does not establish it in actual Windows game**; no Windows runtime, gameplay, source scaler execution or new synthetic memory test. Code unchanged.
 - Prior consolidated report remains authoritative for ranking. Next actual Windows surface logging/dispatch testing needs isolated diagnostic executable, not speculative fixes.
+
+## Isolated SDL2 and Win32-width store validation — 2026-11-01
+- Report `docs/audits/2026-11-01_isolated_sdl2_and_win32_store_sanitizer_validation.md`; commit `bc537d506bb32b97083a60134fcad91471b382c6`.
+- Re-ran 5 genuine SDL2-created Linux surface pitches (3px 8/16/24bpp padded; 5px 24bpp padded; 640px 32bpp packed). Compiled isolated six-pixel C 4-byte-store model with ASan/UBSan. 2-byte destination stride: heap-buffer-overflow plus misaligned store; 3-byte: misaligned store, no ASan overflow reported in this execution; 4-byte: clean. Not original game or Windows runtime. No engine edits. Remaining gate: isolated Windows actual SDL window-format/pitch/dispatch observation.
