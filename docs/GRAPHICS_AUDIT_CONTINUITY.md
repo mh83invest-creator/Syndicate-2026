@@ -382,3 +382,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report `docs/audits/2026-11-01_windows_v07_artifact_verification_boundary.md`; commit `3ce142403125872166774c7b69d00de5061952ab`.
 - Confirmed root Windows workflow installs/probes SDL2 and configure defaults SDL2-first; workflow's `objdump` prints imports but rejection test covers MSYS audio DLLs only, not SDL identity. Workflow push trigger is `main` and selected paths, not graphics audit docs commits. Connected GitHub fetch rejected Actions run listing and repository artifact listing URLs, so **no actual CI status, executable or SDL DLL import table was verified**.
 - Next need known run ID/artifact or other accessible build evidence and live SDL surface dimensions/BPP/pitch. No engine or cross-branch changes.
+
+## Verified successful Windows v0.7 executable SDL2 import — 2026-11-01
+- Report `docs/audits/2026-11-01_windows_v07_successful_run_sdl2_import_verified.md`; commit `b3d4416ab80b26b00f8d881be9d24d98a2a90aee`.
+- Found Actions run **38483184953** (main SHA `a22b0b9580a9710b4e693e88854351835ef1ee40`, success, 2026-10-13), job **115590427796** (success). Job log's actual `objdump -p release/src/syndicatfx.exe` output contains **`DLL Name: SDL2.dll`**. Thus SDL2 backend is verified for **that compiled v0.7 Windows build**, upgrading prior workflow-only inference. Historic log records executable artifact upload ID **11858508104**; current artifact listing did not include executable, so artifact bytes NOT examined. Actual SDL window surface dimensions/BPP/pitch, scaler dispatch and Windows gameplay still unverified.
+- No engine, baseline or other branch edits. Next acquire runtime SDL format/pitch evidence in isolated diagnostics.
