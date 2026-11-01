@@ -117,6 +117,10 @@ jobs:
           path: engine/dependency-bundle/**
           if-no-files-found: error
           retention-days: 30
+      - name: Validate scaler memory-layout contract
+        run: |
+          gcc -std=c11 -Wall -Wextra -Werror bflibrary/tests/graphics_scaler_layout_contract.c -o graphics_scaler_layout_contract.exe
+          ./graphics_scaler_layout_contract.exe
       - name: Probe native SDL2 window and draw surface formats
         env:
           SDL_VIDEODRIVER: dummy
