@@ -150,3 +150,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_palette_set_abi_wscreen.md`; report commit `7a4cf6becf073492e711a886fd73cbf57be29289`.
 - Both SDL1 and SDL2 LbPaletteSet implementations treat their argument as RGB triplets (six-bit source channels). Original mission loader passes WScreen after loading GraphicsPalette, which remains an unresolved buffer/alias discrepancy, **not a confirmed bug**.
 - No source change, builds, private palette decoding or Windows tests. Next trace WScreen buffer alias and palette state at mission loading.
+
+## WScreen buffer alias and palette call — 2026-11-01
+- Report: `docs/audits/2026-11-01_wscreen_palette_alias_source_trace.md`, commit `4e8c14452a444830ae2565cec97309369ab2dcaf`.
+- Source confirms mission load reads palette to GraphicsPalette, clears WScreen and passes WScreen to palette setter; a mode-specific branch derives UScreen and BScreen from WScreen, and another routine temporarily aliases WScreen to BScreen for rendering. SDL LbPaletteSet expects RGB triples, so the source-level pointer roles differ. Runtime effect unverified and no bug fix authorised.
+- Tests: assembly/library source inspection only, no builds or Windows rendering. No engine or other branches changed.
