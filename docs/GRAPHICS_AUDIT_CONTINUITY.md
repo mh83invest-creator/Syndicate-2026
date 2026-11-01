@@ -326,3 +326,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_surface_palette_failure_reachability_correction.md`; commit `12e79d6637ffb7ec12559b30fa4b43905aceea1f`.
 - `AppScreenSetup` passes `GraphicsPalette` (when non-null) to `LbScreenSetup`, whose draw-surface creation passes `set_palette=(palette==NULL)`, so prior stubbed **initial draw-creation palette failure** does NOT match normal application setup with non-null palette. Later `LbPaletteSet` happens **after** `lbScreenInitialised=true` and has a distinct reset path. Rebind continues to request palette copy `true`; failure handling remains relevant there.
 - Local SDL2 runtime library detected, but pkg-config SDL2 metadata and standard dev header absent. No real SDL test/build conducted. Previous model remains a synthetic conditional result only; its normal-startup applicability is expressly superseded here.
+
+## Late application palette failure and SDL2 reset — 2026-11-01
+- Report: `docs/audits/2026-11-01_palette_set_late_failure_reset_order.md`; commit `0ce7625296d9e989c11142715da3c6dfd033f059`.
+- `AppScreenSetup` supplies non-null `GraphicsPalette`; SDL2 setup creates secondary surface with `set_palette=false`, marks screen initialized, then applies `LbPaletteSet`. On palette failure, reset guard now permits cleanup, freeing the secondary surface where present and clearing handles and flags. Distinct from earlier synthetic pre-initialization palette failure. Internal `LbPaletteSet` partial-failure semantics and actual Windows SDL behaviour remain unverified.
+- Static source-only audit. No game code or sibling branch changes; next inspect palette propagation implementation and live SDL recovery.
