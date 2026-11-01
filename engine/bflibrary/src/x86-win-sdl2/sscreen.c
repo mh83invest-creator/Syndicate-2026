@@ -1072,8 +1072,10 @@ TbResult LbScreenSwap(void)
 
     LOGDBG("starting");
     assert(!lbDisplay.VesaIsSetUp); // video mem paging not supported with SDL
-    LbIScreenSurfaceRestoreLost();
-    LbIScreenDrawSurfaceCheck();
+    if (LbIScreenSurfaceRestoreLost() != Lb_SUCCESS)
+        return Lb_FAIL;
+    if (LbIScreenDrawSurfaceCheck() != Lb_SUCCESS)
+        return Lb_FAIL;
 
     // Cursor needs to be drawn on WScreen pixels
     LbMouseOnBeginSwap();
@@ -1110,8 +1112,10 @@ TbResult LbScreenSwapClear(TbPixel colour)
 
     LOGDBG("starting");
     assert(!lbDisplay.VesaIsSetUp); // video mem paging not supported with SDL
-    LbIScreenSurfaceRestoreLost();
-    LbIScreenDrawSurfaceCheck();
+    if (LbIScreenSurfaceRestoreLost() != Lb_SUCCESS)
+        return Lb_FAIL;
+    if (LbIScreenDrawSurfaceCheck() != Lb_SUCCESS)
+        return Lb_FAIL;
 
     // Cursor needs to be drawn on WScreen pixels
     LbMouseOnBeginSwap();
@@ -1138,7 +1142,10 @@ TbResult LbScreenSwapClear(TbPixel colour)
         }
     }
     LbMouseOnEndSwap();
-    SDL_FillRect(lbDrawSurface, NULL, colour);
+    if (SDL_FillRect(lbDrawSurface, NULL, colour) < 0) {
+        LOGERR("draw surface clear failed: %s", SDL_GetError());
+        ret = Lb_FAIL;
+    }
     return ret;
 }
 
@@ -1150,8 +1157,10 @@ TbResult LbScreenSwapBox(ubyte *sourceBuf, long sourceX, long sourceY,
 
     LOGDBG("starting");
     assert(!lbDisplay.VesaIsSetUp); // video mem paging not supported with SDL
-    LbIScreenSurfaceRestoreLost();
-    LbIScreenDrawSurfaceCheck();
+    if (LbIScreenSurfaceRestoreLost() != Lb_SUCCESS)
+        return Lb_FAIL;
+    if (LbIScreenDrawSurfaceCheck() != Lb_SUCCESS)
+        return Lb_FAIL;
 
     // First, copy the input buffer rect to our WScreen
     ret = LbScreenLock();
