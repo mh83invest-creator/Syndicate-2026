@@ -75,3 +75,6 @@ Assembly `can_i_play_this_city` at `engine/src/syndre.sx` around 32871–32965 c
 
 ## Cross-development note — possible replay/rebellion marker (2026-11-01, MB-AUDIT-1.5)
 `engine/src/syndre.sx` `can_i_play_this_city` has a branch allowing active-player-owned countries with `country_states == 0xFF` to be selected; `level_finished` changes this marker to 0xAA on successful completion. These are source-verified candidate paths for an existing replay/rebellion state; the cause of 0xFF has NOT been traced and must not be assumed to be tax rebellion without verification. Preserve these paths and classic `data_5b071` mission mapping during engine changes. No code changes or gameplay test. See MB-AUDIT-1.5 on Mission Builder branch.
+
+## MB-AUDIT-1.6 cross-team correction (2026-11-01)
+Assembly `AdjustStateHappiness` (syndre.sx lines 11835–11844) writes 0xFF as the upper clamp of happiness (>255). This does NOT establish that 0xFF means a tax rebellion. Previous hypothetical interpretation is explicitly unverified. Preserve the legacy selection and state-transition logic until the true event trigger is traced and tested. Mission Builder audit commit 42f1902. Documentation only.
