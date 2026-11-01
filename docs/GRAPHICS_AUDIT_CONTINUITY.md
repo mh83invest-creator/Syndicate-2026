@@ -306,3 +306,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_sdl2_surface_reset_mode_change_rebind_lifetime.md`; commit `86f115ebd91f24d5fa60d8df45f7c09a5e74e320`.
 - SDL2 reset and mode changes free only secondary draw surfaces; SDL retains management of the window surface. Rebind after WScreen pointer change creates a replacement and frees the old draw surface only on successful recreation. The create helper mutates global draw pointer/secondary flag before palette setup; error-path consistency under failed creation remains a conditional risk, not a reproduced bug.
 - Next inspect failure cleanups/flags, then controlled fault injection. No game code changes, Windows runtime tests or cross-branch edits.
+
+## SDL1/SDL2 draw-surface palette failure state — 2026-11-01
+- Report `docs/audits/2026-11-01_sdl_draw_surface_creation_palette_failure_flags.md`; commit `05b9e93551bb4efb1158e0351fd9e0a4c0cbfc61`.
+- Both SDL1 and SDL2 draw-surface creation set `lbHasSecondSurface=true` before applying optional 8-bit palette. Palette failure frees/nulls `lbDrawSurface` and returns failure **without clearing flag**, leaving possible inconsistent global state. Allocation failure occurs before flag assignment and must be considered separately. Conditional static concern only; native SDL failure injection pending.
+- Documented four-case allocation/palette/rebind/reset validation matrix. No engine changes or sibling-branch edits.
