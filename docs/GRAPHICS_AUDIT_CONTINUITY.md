@@ -115,3 +115,8 @@ A third documentation-only workstream has been established:
 - Report: `docs/audits/2026-11-01_agent_variant_player_state_provenance.md`; report commit `8b42c0145e01fb6219b85ff43348b2455b562996`.
 - `data_5e4ab` is written in player/network slot initialisation and menu state paths; independently, its byte indexes `player_colour_for_map` and contributes to agent sprite variant selection. This is stronger evidence of player-side graphical identity, but **does not yet prove exact semantic labels or colours**.
 - Source-only inspection; no private art inspection, native build or Windows runtime. Next: trace `player_colour_for_map` and bounds/mode behaviour. Other branches untouched.
+
+## Player map-colour static table — 2026-11-01
+- Report: `docs/audits/2026-11-01_player_map_colour_lookup.md`; commit `08eaf818215aa0bda5edc1bdfbe60c499559ac66`.
+- Original assembly defines exactly ten table bytes at `player_colour_for_map`: hex `06 07 0E 03 0B 0C 0D 0F 06 00`. Multiple draw paths index these using player-related data, while another accesses the lookup in WScreen rendering.
+- These are indexed lookup values, not proven RGB colours, valid player count or validated bounds. No engine changes or Windows/private-resource tests. Next inspect valid source indices and current palette mappings.
