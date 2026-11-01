@@ -271,3 +271,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report `docs/audits/2026-11-01_indexed_scaler_activation_conditions.md`; commit `8b8a0f320beaa04d4f37889833b95d360c5976d3`.
 - In SDL2, equal-sized draw/screen surfaces use native `SDL_BlitSurface`. Scaled non-indexed sources use native `SDL_BlitScaled`. Scaled 8-bit indexed sources invoke custom conversion; a 2- or 3-byte destination pixel then reaches the earlier documented `long *` store-width risk on four-byte-long targets. Custom scaling still lacks pitch parameters. This is a **conditional static risk**, not a proven Windows rendering failure.
 - Actual Windows SDL backend, displayed window format and CI build flags still unverified. Test matrix documented for equal/scaled indexed 8/16/24/32-bit destinations; no game code changes or runtime tests.
+
+## True-colour scaler final-pixel bounds and SDL1 dispatch — 2026-11-01
+- Report: `docs/audits/2026-11-01_scaled_truecolour_last_pixel_bounds.md`; commit `ea23f3648e21d265bb62a7ede61584f7d339d0b4`.
+- For N tightly packed output pixels, destination B bytes/pixel, and a `long` store of L bytes, final store overhang is `max(0,L-B)`: on 32-bit Windows 2 bytes for B=2 and 1 byte for B=3. Real SDL row pitch/allocation padding and runtime reachability are unverified; this is symbolic source risk, not confirmed out-of-bounds at runtime.
+- Additional SDL1 distinction: the non-indexed scaled source path logs unsupported source length but continues; SDL2 instead delegates non-indexed scaled blitting to the native SDL function. No code changed, no native tests. Next isolated guarded synthetic pixel validation and confirmed Windows SDL surface formats.
