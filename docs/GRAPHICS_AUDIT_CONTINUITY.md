@@ -216,3 +216,9 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_sdl_scaling_palette_pitch_source_audit.md`; commit `20eef8e08af647e25dc77a837cc12b0c8eb3d22b`.
 - SDL1/SDL2 scaling dispatch confirmed. SDL2 custom 8-bit index scaling uses raw buffers and image dimensions without pitch arguments; actual SDL pitch suitability remains unverified and no bug is asserted. SDL2 LbPaletteSet converts six-bit RGB channels to SDL_Color and applies indexed palettes to qualifying screen and second draw surfaces.
 - Source read only, no code edits, native builds, Windows screenshots or performance tests. Next: inspect surface creation/format/pitch and active Windows backend.
+
+## SDL surface creation and pitch ownership — 2026-11-01
+- Report: `docs/audits/2026-11-01_sdl_surface_creation_pitch_ownership.md`; commit `c8f9d9077374e3f8e85786d7a01f422060eae6a4`.
+- SDL1 and SDL2 secondary draw surface paths can wrap `lbDisplay.WScreen` with `SDL_CreateRGBSurfaceFrom` or allocate a fresh surface. Both record actual draw surface `pitch` in `lbDisplay.GraphicsScreenWidth`. SDL2 includes INDEX8/RGB555/RGB565/RGB24/RGB888 format selection; format availability is not proof of runtime use.
+- Custom 8-bit scaling still uses width-based raw buffer addressing, so actual pitch compatibility is an unverified conditional risk, not a confirmed defect. Windows backend selection and conditional compilation remain open.
+- Verification: source inspection only. No gameplay/engine edits, builds, screenshots, private asset decoding or other branch changes. Next trace Windows build defines and surface allocation branches.
