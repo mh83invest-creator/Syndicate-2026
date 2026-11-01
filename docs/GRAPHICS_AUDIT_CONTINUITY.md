@@ -362,3 +362,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report `docs/audits/2026-11-01_fade_caller_engine_src_scan.md`; commit `4c982d65b8d2e54657548469ac1d4503c50920aa`.
 - Searched all 17 `engine/src/*.c` files and 12 selected `bflibrary/src/general/*.c` files on graphics branch for `LbPaletteFade(...)`. No direct app calls; only library function definition in `general/gpalette.c:38`. This is NOT a complete repository symbol scan. No evidence of `fade_to=0` from these sources, so prior zero-divisor risk remains conditional, not confirmed reachable.
 - Next bounded scan of remaining general library and alternate fade wrappers. Documentation only; no engine or sibling branch changes.
+
+## Completed general-library fade caller scan — 2026-11-01
+- Report: `docs/audits/2026-11-01_fade_caller_all_general_sources_complete.md`; commit `83b1ac6bb64b8a4d58a62695bd5fd1dbedab423d`.
+- All **59** C/C++ files under `engine/bflibrary/src/general` scanned using graphics-branch file contents: only `gpalette.c:38` defines `LbPaletteFade`, no direct call. Along with previous all **17** `engine/src` C files, **76 files** checked, zero direct callers in those directories. Fade division by zero remains source-level potential only: no demonstrated zero-valued caller or gameplay reachability. Platform-specific and indirect usages untested.
+- Next prioritise Windows SDL surface/format testability and higher-evidence scaler issues. No engine or other branch edits.
