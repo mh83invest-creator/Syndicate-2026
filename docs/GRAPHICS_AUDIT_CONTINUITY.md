@@ -357,3 +357,8 @@ This is a documentation-only synchronization note; no cross-branch merge or game
 - Report: `docs/audits/2026-11-01_fade_callsite_search_limit_backend_selector.md`; commit `7c25746261f955efdf112e675e313dc34fde15aa`.
 - `engine/bflibrary/Makefile.am` selects SDL2 source branch with `USE_SDL2`; `configure.ac` probes SDL2 with SDL1 fallback. This does not identify the actual Windows executable backend. Repository-wide `LbPaletteFade` caller enumeration was attempted but hit tool-call cap, so caller inventory and zero-divisor reachability are NOT VERIFIED; no claim either way. Previously inspected main.c/game.c lacked direct calls.
 - Static graphics audit only; no runtime tests, code changes or other branch edits. Continue with rate-limited full caller search.
+
+## Fade caller search — all engine/src C files and selected general library — 2026-11-01
+- Report `docs/audits/2026-11-01_fade_caller_engine_src_scan.md`; commit `4c982d65b8d2e54657548469ac1d4503c50920aa`.
+- Searched all 17 `engine/src/*.c` files and 12 selected `bflibrary/src/general/*.c` files on graphics branch for `LbPaletteFade(...)`. No direct app calls; only library function definition in `general/gpalette.c:38`. This is NOT a complete repository symbol scan. No evidence of `fade_to=0` from these sources, so prior zero-divisor risk remains conditional, not confirmed reachable.
+- Next bounded scan of remaining general library and alternate fade wrappers. Documentation only; no engine or sibling branch changes.
