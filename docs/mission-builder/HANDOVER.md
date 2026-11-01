@@ -250,3 +250,13 @@ Tests: full static assembly source inspection, no build or game execution. Game 
 
 ## Audit 1.6 — Interpretation correction (2026-11-01)
 Assembly `AdjustStateHappiness` (syndre.sx lines 11835–11844, blob c35e22621a93d1e07c44d40de8867446ff7c64bf) writes 0xFF when the computed value exceeds 255: this is an upper-bound clamp, not proof of a low-happiness rebellion trigger. Previous descriptions of 0xFF as a rebellion/replay marker were hypotheses only. Owned-territory eligibility and completion handling of 0xFF remain verified, but meaning and cause remain unverified. Also `next_mission_countries` separately uses 0xFF as a sentinel; these fields must not be conflated. Do not implement revolt selection on this assumption. Source review only; no code edits or gameplay tests. MB-AUDIT-1.6.
+
+## Audit 1.7 — Territory layout reconciled against assembly (2026-11-01)
+Read complete assembly blob `c35e22621a93d1e07c44d40de8867446ff7c64bf` and `engine/src/wrcountry.h`.
+- Assembly declarations at lines ~83933–83942 place `country_states`, `data_5539e`, `data_5539f`, `data_553a0`, `data_553a2` contiguously. Given 10-byte stride, these correspond respectively to `CountryState.Happiness` offset 0, `OwningPlayer` offset 2, `Revenue` offset 3, `TaxPercent` offset 4, and `Population` offset 6. This reconciles formerly anonymous assembly variables with the packed C struct.
+- `adjust_tax` (~33082–33106) writes the `TaxPercent` byte at offset 4 (per country).
+- `GetRevenueFromCity` (~11854–11892) reads offset 3 (`Revenue`) and writes the current tax value at offset 3 in its routine. `AdjustStateHappiness` (~11803–11844) reads this Revenue byte rather than the directly edited TaxPercent byte. Therefore tax UI changes may not take effect until the revenue/update pathway copies TaxPercent into Revenue. This needs timing confirmation.
+- The only explicit `movw $0xff,country_states` at 11844 occurs after exceeding 255; the exact in-game meaning of happiness reaching 255 is unresolved. Do not invent a low-happiness rebellion threshold.
+- World-map replay eligibility checks happiness equal to 255, yet no direct low-happiness rebellion setter was found. This is an architectural discrepancy requiring gameplay and data verification before random-revolt implementation.
+- American Revolt menu/campaign selection still not identified in current engine assembly. Do not claim independent mode selector exists; need inspect package/resource selection and whether user's existing build supports expansion selection.
+Status: static audit, no code or runtime changes. Handover MB-AUDIT-1.7.
