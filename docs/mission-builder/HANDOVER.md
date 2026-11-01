@@ -213,3 +213,14 @@ Inspected full assembly source blob `c35e22621a93d1e07c44d40de8867446ff7c64bf`, 
 - Mission result integration for a custom scenario should initially observe these terminal flags and the existing campaign handler, not overwrite the original campaign logic. Actual extension implementation deferred pending comprehensive branch tracing.
 - No direct isolated rebel-mission selector proven yet; continue examining special `country_states` values, selection and mission ID mapping.
 Verification: static assembly reading only; no engine code changes, Windows build, or runtime tests. Handover MB-AUDIT-1.2.
+
+## Audit 1.3 — Campaign endgame and mission-result mutation (2026-11-01)
+Source evidence: `engine/src/syndre.sx` SHA `c35e22621a93d1e07c44d40de8867446ff7c64bf` (all lines below are for this blob).
+- `level_finished` at lines 54998 onward checks completion flag bit 0x2 at 55045. It updates country happiness and ownership in `country_states` and `data_5539e` (~55047–55069), resets two related territory values to 30 (~55071–55079), then counts territories controlled by active player with happiness below 0xFF across 50 entries (~55086–55104).
+- If the count is 50, `level_finished` plays the endgame win animation and sets terminal flag bit 0x10 (~55103–55130). This identifies a protected existing campaign win condition that optional World Domination must not silently replace in Original Campaign.
+- Map-selection routine checks `can_i_play_this_city`, then maps selected city via `data_5b071` to `current_levno` (~32002–32023). An alternate event/mission selector for random rebellions must be upstream of (or explicitly compatible with) this pipeline.
+- `AdjustStateHappiness` adjusts per-country happiness, clamps to 0..255 (~11803–11844). This function alone does not directly dispatch a rebellion mission. The precise rebellion predicate remains unverified.
+- Further analysis needed: follow all `country_states` comparisons with 0xFF and callers of `can_i_play_this_city`; map original campaign versus American Revolt selection and endgame boundaries.
+- Existing `level_finished` is a high-risk integration point shared with mainline code. Do not alter terminal flag 0x10, completion flag 0x2, or 50-country endgame condition without campaign-aware compatibility review.
+
+Status: STATIC AUDIT and handover update only; no code changes, builds or runtime tests. Version MB-AUDIT-1.3.
