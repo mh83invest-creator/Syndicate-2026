@@ -102,3 +102,6 @@ Original Syndicate Plus assets are required and not fully bundled. Unix uses con
 
 ## Critical file-path discrepancy (MB-AUDIT-2.4, 2026-11-01)
 The actual bflibrary LbFileOpen backend passes relative paths through registered SyndFXFileNameTransform, which prefixes the game-data directory even for `save/NN.gam`. A separate `game_transform_path_full` special-cases saves to GetDirectoryUser(), but is not that registered transform. Thus save locations depend on the call path. Prior assumption that all save paths resolve to the user directory is incorrect. Preserve legacy files, inspect LB_FILENAME_TRANSFORM build settings and test both paths before implementing campaign-specific saves. No engine edits. See MB-AUDIT-2.4.
+
+## MB-AUDIT-2.5 — active filename transform verified in source (2026-11-01)
+LB_FILENAME_TRANSFORM is defined as 1 in bflibrary/include/bffile.h. Both inspected SDL file backends call lbFileNameTransform for LbFileOpen, and game_initialise registers SyndFXFileNameTransform before resources load. Thus source C save/NN.gam through LbFileOpen resolves against the data root. DOS low-level save routing uses a different user-root path resolver. Test the actual Windows executable with harmless isolated test slots before introducing campaign save siloing; do not migrate or overwrite legacy saves. Static source verification only. See Audit 2.5.
