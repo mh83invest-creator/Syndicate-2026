@@ -93,3 +93,6 @@ C entry engine/src/main.c process_options currently has no campaign/American Rev
 
 ## MB-AUDIT-2.1 — Asset and save directory isolation risk (2026-11-01)
 Current `game_data.c` uses `GetDirectoryHdd`/`SyndFXFileNameTransform` for relative game resources and uses fixed `save/%02d.gam` names for all C save listing/read/write paths. `dos.c` has additional path translation entry points. Campaign-specific resource and save routing must inspect these independently and preserve existing `save/NN.gam` files; do not change the global transform casually. Detailed source evidence in Mission Builder handover Audit 2.1. No build or gameplay testing.
+
+## Cross-workstream path findings MB-AUDIT-2.2 (2026-11-01)
+`game_transform_path_full` in `engine/src/game.c` explicitly routes `save/` paths to the user directory, other relative paths to the game data directory, and leaves absolute paths alone. Windows data install path comes from `Software\\SyndicatFX\\CurrentVersion` / `InstallPath`; Windows user path is `%APPDATA%\\SyndicatFX`. Unix-like builds use `GAME_DATA_PATH` for data, XDG/HOME for user saves. Distinct DOS path functions exist and must be reconciled with bffile before implementing strict per-campaign save isolation. Preserve legacy saves and all platform path behaviour. More detail in Mission Builder Audit 2.2; static source audit only.
