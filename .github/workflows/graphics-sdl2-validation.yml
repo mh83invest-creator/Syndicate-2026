@@ -126,6 +126,11 @@ jobs:
           python bflibrary/tests/generate_graphics_actual_scaler_test.py
           gcc -std=c11 -Wall -Wextra -Werror graphics_actual_scaler_test.c -o graphics_actual_scaler_test.exe
           ./graphics_actual_scaler_test.exe
+      - name: Verify legacy visual byte parity for normal scaler formats
+        run: |
+          python bflibrary/tests/generate_graphics_scaler_visual_parity.py
+          gcc -std=c11 -Wall -Wextra -Werror graphics_scaler_visual_parity.c -o graphics_scaler_visual_parity.exe
+          ./graphics_scaler_visual_parity.exe
       - name: Probe native SDL2 window and draw surface formats
         env:
           SDL_VIDEODRIVER: dummy
