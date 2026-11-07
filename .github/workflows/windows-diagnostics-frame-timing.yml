@@ -165,6 +165,14 @@ jobs:
           PY
       - name: Compile original engine
         run: make -C release V=1
+      - name: Verify compiled diagnostics and audio timer linkage
+        run: |
+          set -eux
+          test -f release/src/syndicatfx.exe
+          test -f release/bfsoundlib/libbfsound.a
+          strings release/src/syndicatfx.exe | grep -F 'SYND_DIAG mode='
+          strings release/src/syndicatfx.exe | grep -F 'SYND_DIAG_AUDIO calls='
+          nm release/bfsoundlib/libbfsound.a | grep 'SyndicateAudioDiagnosticsRead'
       - name: Reject MSYS audio DLL imports
         run: |
           set -eu
@@ -190,6 +198,7 @@ jobs:
           path: |
             docs/HANDOVER_POLICY.md
             docs/releases/v0.7.md
+            docs/releases/v0.7-D1-diagnostics.md
           if-no-files-found: error
           retention-days: 90
       - name: Upload 32-bit executable without retail data
