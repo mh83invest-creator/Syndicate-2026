@@ -73,6 +73,7 @@ libbfsound_a_SOURCES = \
   src/variable.c
 
 libbfsound_a_CPPFLAGS = \
+  -DSYNDICATE_DIAGNOSTICS \
   -I"$(top_srcdir)/include" -I"$(builddir)/include"
 
 libbfsoundheadersdir = $(includedir)/bfsound
