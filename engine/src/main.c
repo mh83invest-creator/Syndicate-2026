@@ -14,6 +14,7 @@
 #include "bfsound.h"
 
 #include "display.h"
+#include "eg_environment_capture.h"
 #include "game.h"
 #include "game_data.h"
 #include "guitext.h"
@@ -168,6 +169,7 @@ process_options (int *argc, char ***argv)
     {"nosound",     0, NULL, 's'},
     {"windowed",    0, NULL, 'w'},
     {"no-stretch",  0, NULL, 'S'},
+    {"eg-capture-environment", 0, NULL, 'G'},
     {"help",	    0, NULL, 'h'},
     {NULL,          0, NULL,  0 },
   };
@@ -175,7 +177,7 @@ process_options (int *argc, char ***argv)
   argv0 = (*argv)[0];
   index = 0;
 
-  while ((val = getopt_long (*argc, *argv, "R:D:I:p:n:c:LHdswSh", options, &index)) >= 0)
+  while ((val = getopt_long (*argc, *argv, "R:D:I:p:n:c:LHdswShG", options, &index)) >= 0)
     {
       switch (val)
       {
@@ -230,6 +232,10 @@ process_options (int *argc, char ***argv)
 
       case 'S':
           cmdln_lores_stretch = false;
+          break;
+
+      case 'G':
+          eg_environment_capture_requested = 1;
           break;
 
       case 'h':
