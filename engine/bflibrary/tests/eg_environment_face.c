@@ -1,9 +1,9 @@
 #include "eg_environment_face.h"
 
-static uint32_t get_be32(const uint8_t *p)
+static uint32_t get_le32(const uint8_t *p)
 {
-    return ((uint32_t)p[0]<<24) | ((uint32_t)p[1]<<16)
-         | ((uint32_t)p[2]<<8) | (uint32_t)p[3];
+    return (uint32_t)p[0] | ((uint32_t)p[1]<<8)
+         | ((uint32_t)p[2]<<16) | ((uint32_t)p[3]<<24);
 }
 
 /* Scale2x only picks neighbours of the same original mask class as
