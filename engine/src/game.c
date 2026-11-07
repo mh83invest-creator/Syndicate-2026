@@ -225,3 +225,68 @@ void game_update_menu(void)
 {
     game_update_full(true, 30);
 }
+
+/* v0.8 experimental camera-only step control.
+ * Default speed 3: exactly one call per input, identical to v0.7.
+ * [ and ] decrease/increase speed. SDL preference path persists choice.
+ * This is a keyboard prototype, NOT the final options-menu slider.
+ */
+static int camera_speed_value = 3;
+static int camera_speed_loaded = 0;
+static int camera_speed_prev_down = 0;
+static int camera_speed_prev_up = 0;
+static int camera_speed_fraction = 0;
+static char *camera_speed_pref_dir = NULL;
+
+static void camera_speed_save(void)
+{
+    char path[1024];
+    FILE *f;
+    if (!camera_speed_pref_dir) return;
+    if (snprintf(path,sizeof(path), "%scamera-speed.cfg",camera_speed_pref_dir) >= (int)sizeof(path)) return;
+    f=fopen(path,"w");
+    if (f) { fprintf(f,"%d\n",camera_speed_value); fclose(f); }
+}
+
+static void camera_speed_load(void)
+{
+    char path[1024];
+    FILE *f;
+    int saved;
+    if (camera_speed_loaded) return;
+    camera_speed_loaded=1;
+    camera_speed_pref_dir=SDL_GetPrefPath("Syndicate2026","Syndicate2026");
+    if (!camera_speed_pref_dir) return;
+    if (snprintf(path,sizeof(path),"%scamera-speed.cfg",camera_speed_pref_dir) >= (int)sizeof(path)) return;
+    f=fopen(path,"r");
+    if (!f) return;
+    if (fscanf(f,"%d",&saved)==1 && saved>=1 && saved<=5) camera_speed_value=saved;
+    fclose(f);
+}
+
+int camera_scroll_steps(void)
+{
+    const Uint8 *keys;
+    int down,up;
+    int steps;
+    camera_speed_load();
+    keys=SDL_GetKeyboardState(NULL);
+    down=keys && keys[SDL_SCANCODE_LEFTBRACKET];
+    up=keys && keys[SDL_SCANCODE_RIGHTBRACKET];
+    if (down && !camera_speed_prev_down && camera_speed_value>1) {
+        --camera_speed_value; camera_speed_fraction=0; camera_speed_save();
+    }
+    if (up && !camera_speed_prev_up && camera_speed_value<5) {
+        ++camera_speed_value; camera_speed_fraction=0; camera_speed_save();
+    }
+    camera_speed_prev_down=down;
+    camera_speed_prev_up=up;
+    if (camera_speed_value == 3) return 1;
+    if (camera_speed_value == 5) return 2;
+    /* 1: 50%, 2: 75%, 4: 150% of original directional steps. */
+    camera_speed_fraction += (camera_speed_value==1) ? 2 :
+        (camera_speed_value==2) ? 3 : 6;
+    steps = camera_speed_fraction / 4;
+    camera_speed_fraction %= 4;
+    return steps;
+}
