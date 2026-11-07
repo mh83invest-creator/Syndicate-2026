@@ -71,9 +71,17 @@ struct SyndicateFrameDiagnostics {
     Uint64 between_over_62ms;
     Uint64 between_over_125ms;
     Uint64 between_over_250ms;
+    Uint64 outside_n;
+    Uint64 outside_ticks;
+    Uint64 outside_max_ticks;
+    Uint64 outside_gt16ms;
+    Uint64 outside_gt33ms;
+    Uint64 outside_gt62ms;
+    Uint64 outside_gt125ms;
 };
 static struct SyndicateFrameDiagnostics synd_diag[2];
 static Uint64 synd_diag_previous_entry;
+static Uint64 synd_diag_previous_exit;
 static int synd_diag_previous_mode = -1;
 
 static void syndicate_diagnostics_report(void)
@@ -104,7 +112,7 @@ static void syndicate_diagnostics_report(void)
         if (d->frames == 0)
             continue;
         fprintf(out,
-          "SYND_DIAG mode=%s frames=%llu event_ms=%.3f wait_ms=%.3f update_ms=%.3f avg_event_ms=%.3f avg_update_ms=%.3f between_n=%llu between_avg_ms=%.3f between_max_ms=%.3f between_gt62=%llu between_gt125=%llu between_gt250=%llu\n",
+          "SYND_DIAG mode=%s frames=%llu event_ms=%.3f wait_ms=%.3f update_ms=%.3f avg_event_ms=%.3f avg_update_ms=%.3f between_n=%llu between_avg_ms=%.3f between_max_ms=%.3f between_gt62=%llu between_gt125=%llu between_gt250=%llu outside_n=%llu outside_avg_ms=%.3f outside_max_ms=%.3f outside_gt16=%llu outside_gt33=%llu outside_gt62=%llu outside_gt125=%llu\n",
           mode == 0 ? "tactical16" : "menu30",
           (unsigned long long)d->frames,
           (double)d->event_ticks * factor,
@@ -118,7 +126,14 @@ static void syndicate_diagnostics_report(void)
           (double)d->between_max_ticks * factor,
           (unsigned long long)d->between_over_62ms,
           (unsigned long long)d->between_over_125ms,
-          (unsigned long long)d->between_over_250ms);
+          (unsigned long long)d->between_over_250ms,
+          (unsigned long long)d->outside_n,
+          d->outside_n ? (double)d->outside_ticks * factor / (double)d->outside_n : 0.0,
+          (double)d->outside_max_ticks * factor,
+          (unsigned long long)d->outside_gt16ms,
+          (unsigned long long)d->outside_gt33ms,
+          (unsigned long long)d->outside_gt62ms,
+          (unsigned long long)d->outside_gt125ms);
     }
     fflush(out);
     if (out != stderr)
@@ -243,6 +258,22 @@ game_update_full(bool wait, int max_fps)
         if (elapsed > ((diag_freq * 250) / 1000))
             ++diag->between_over_250ms;
     }
+    if (diag_freq != 0 && synd_diag_previous_exit != 0 &&
+        synd_diag_previous_mode == diag_mode) {
+        const Uint64 outside = diag_start - synd_diag_previous_exit;
+        ++diag->outside_n;
+        diag->outside_ticks += outside;
+        if (outside > diag->outside_max_ticks)
+            diag->outside_max_ticks = outside;
+        if (outside > ((diag_freq * 16) / 1000))
+            ++diag->outside_gt16ms;
+        if (outside > ((diag_freq * 33) / 1000))
+            ++diag->outside_gt33ms;
+        if (outside > ((diag_freq * 62) / 1000))
+            ++diag->outside_gt62ms;
+        if (outside > ((diag_freq * 125) / 1000))
+            ++diag->outside_gt125ms;
+    }
     synd_diag_previous_entry = diag_start;
     synd_diag_previous_mode = diag_mode;
 #endif
@@ -308,6 +339,7 @@ game_update_full(bool wait, int max_fps)
     diag->event_ticks += diag_event_ticks;
     diag->wait_ticks += SDL_GetPerformanceCounter() - diag_wait_start;
     diag->total_ticks += SDL_GetPerformanceCounter() - diag_start;
+    synd_diag_previous_exit = SDL_GetPerformanceCounter();
 #endif
 }
 
