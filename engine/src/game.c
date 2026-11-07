@@ -65,8 +65,16 @@ struct SyndicateFrameDiagnostics {
     Uint64 event_ticks;
     Uint64 wait_ticks;
     Uint64 total_ticks;
+    Uint64 between_updates;
+    Uint64 between_ticks;
+    Uint64 between_max_ticks;
+    Uint64 between_over_62ms;
+    Uint64 between_over_125ms;
+    Uint64 between_over_250ms;
 };
 static struct SyndicateFrameDiagnostics synd_diag[2];
+static Uint64 synd_diag_previous_entry;
+static int synd_diag_previous_mode = -1;
 
 static void syndicate_diagnostics_report(void)
 {
@@ -96,14 +104,21 @@ static void syndicate_diagnostics_report(void)
         if (d->frames == 0)
             continue;
         fprintf(out,
-          "SYND_DIAG mode=%s frames=%llu event_ms=%.3f wait_ms=%.3f update_ms=%.3f avg_event_ms=%.3f avg_update_ms=%.3f\n",
+          "SYND_DIAG mode=%s frames=%llu event_ms=%.3f wait_ms=%.3f update_ms=%.3f avg_event_ms=%.3f avg_update_ms=%.3f between_n=%llu between_avg_ms=%.3f between_max_ms=%.3f between_gt62=%llu between_gt125=%llu between_gt250=%llu\n",
           mode == 0 ? "tactical16" : "menu30",
           (unsigned long long)d->frames,
           (double)d->event_ticks * factor,
           (double)d->wait_ticks * factor,
           (double)d->total_ticks * factor,
           (double)d->event_ticks * factor / (double)d->frames,
-          (double)d->total_ticks * factor / (double)d->frames);
+          (double)d->total_ticks * factor / (double)d->frames,
+          (unsigned long long)d->between_updates,
+          d->between_updates != 0 ?
+            ((double)d->between_ticks * factor / (double)d->between_updates) : 0.0,
+          (double)d->between_max_ticks * factor,
+          (unsigned long long)d->between_over_62ms,
+          (unsigned long long)d->between_over_125ms,
+          (unsigned long long)d->between_over_250ms);
     }
     fflush(out);
     if (out != stderr)
@@ -201,14 +216,36 @@ game_update_full(bool wait, int max_fps)
     const int32_t frame_duration = 1000 / max_fps;
 #if defined(SYNDICATE_DIAGNOSTICS)
     const Uint64 diag_start = SDL_GetPerformanceCounter();
+    const Uint64 diag_freq = SDL_GetPerformanceFrequency();
+    const int diag_mode = max_fps == 30 ? 1 : 0;
     Uint64 diag_event_ticks;
     Uint64 diag_wait_start;
-    struct SyndicateFrameDiagnostics *diag =
-      &synd_diag[max_fps == 30 ? 1 : 0];
+    struct SyndicateFrameDiagnostics *diag = &synd_diag[diag_mode];
 #endif
 
     static int32_t last_frame_ticks;
     int32_t start_ticks;
+
+#if defined(SYNDICATE_DIAGNOSTICS)
+    /* Gap includes prior pacing and intervening simulation/draw.
+     * Ignore mode switches; do not alter the game update cadence. */
+    if (diag_freq != 0 && synd_diag_previous_entry != 0 &&
+        synd_diag_previous_mode == diag_mode) {
+        const Uint64 elapsed = diag_start - synd_diag_previous_entry;
+        ++diag->between_updates;
+        diag->between_ticks += elapsed;
+        if (elapsed > diag->between_max_ticks)
+            diag->between_max_ticks = elapsed;
+        if (elapsed > ((diag_freq * 62) / 1000))
+            ++diag->between_over_62ms;
+        if (elapsed > ((diag_freq * 125) / 1000))
+            ++diag->between_over_125ms;
+        if (elapsed > ((diag_freq * 250) / 1000))
+            ++diag->between_over_250ms;
+    }
+    synd_diag_previous_entry = diag_start;
+    synd_diag_previous_mode = diag_mode;
+#endif
 
     display_unlock();
 
