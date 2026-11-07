@@ -3,7 +3,7 @@ name: Syndicate 2026 isolated SDL2 graphics validation
 on:
   workflow_dispatch:
   push:
-    branches: [fix/graphics-sdl2-scaler-isolated-2026-11-01]
+    branches: [fix/graphics-sdl2-scaler-isolated-2026-11-01, feature/eg-v0.1-environment-live-integration]
     paths: ['engine/**', '.github/workflows/graphics-sdl2-validation.yml']
 
 permissions:
