@@ -39,7 +39,7 @@ syndicatfx_SOURCES = \
 	wrcountry.c \
 	wrcountry.h
 
-syndicatfx_CPPFLAGS =
+syndicatfx_CPPFLAGS = -DSYNDICATE_DIAGNOSTICS
 
 syndicatfx_WRAPPERS = wrappers_dos.o wrappers_game.o wrappers_libc.o wrappers_util.o
 
