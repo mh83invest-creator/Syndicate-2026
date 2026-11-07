@@ -47,7 +47,7 @@ int eg_expand_environment_face(const uint8_t *face, size_t face_bytes,
         || out_mask_count < EG_FACE_OUTPUT_PIXELS) return 0;
     for (y=0; y<EG_FACE_H; y++) {
         uint32_t w[5];
-        for (k=0; k<5; k++) w[k]=get_be32(face+y*20+k*4);
+        for (k=0; k<5; k++) w[k]=get_le32(face+y*20+k*4);
         for (x=0; x<EG_FACE_W; x++) {
             uint32_t bit=1u<<(31-x);
             size_t i=y*EG_FACE_W+x;
