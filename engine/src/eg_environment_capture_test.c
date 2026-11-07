@@ -29,6 +29,34 @@ int main(void)
     eg_scale2x_indices(pixels,3,3,scaled);
     for(int i=0;i<36;i++)EG_CHECK(scaled[i]==7);
     EG_CHECK(eg_environment_capture_requested==0);
-    puts("PASS: EG-v0.1 original 4-plane map extraction and scale2x");
+    /* Exercise the exact opt-in runtime export path using synthetic pixels,
+     * verify native Windows BMP headers, palette mapping, and one-shot flag.
+     */
+    {
+        unsigned char palette[768]={0};
+        unsigned char header[54];
+        FILE *img;
+        palette[3]=63;  /* pixel index 1 => red, 6-bit channel */
+        eg_environment_capture_requested=1;
+        eg_capture_environment_once(planes,palette);
+        EG_CHECK(eg_environment_capture_requested==0);
+        img=fopen("EG_environment_original.bmp","rb");
+        EG_CHECK(img!=NULL);
+        EG_CHECK(fread(header,1,54,img)==54);
+        EG_CHECK(header[0]=='B' && header[1]=='M');
+        EG_CHECK(header[18]==0x80 && header[19]==0x02);
+        EG_CHECK(header[22]==0x90 && header[23]==0x01);
+        EG_CHECK(header[28]==24);
+        EG_CHECK(fclose(img)==0);
+        img=fopen("EG_environment_enhanced_4x.bmp","rb");
+        EG_CHECK(img!=NULL);
+        EG_CHECK(fread(header,1,54,img)==54);
+        EG_CHECK(header[18]==0 && header[19]==10);
+        EG_CHECK(header[22]==0x40 && header[23]==0x06);
+        EG_CHECK(fclose(img)==0);
+        EG_CHECK(remove("EG_environment_original.bmp")==0);
+        EG_CHECK(remove("EG_environment_enhanced_4x.bmp")==0);
+    }
+    puts("PASS: EG-v0.1 original 4-plane extraction, scale2x and native BMP export");
     return 0;
 }
