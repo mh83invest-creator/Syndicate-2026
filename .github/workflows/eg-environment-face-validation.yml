@@ -6,6 +6,7 @@ on:
     paths:
       - 'engine/bflibrary/tests/eg_environment_face.*'
       - 'engine/bflibrary/tests/eg_environment_face_test.c'
+      - 'engine/bflibrary/tests/eg_environment_legacy_compose.*'
       - '.github/workflows/eg-environment-face-validation.yml'
   workflow_dispatch:
 jobs:
@@ -26,3 +27,5 @@ jobs:
           cd engine/bflibrary/tests
           gcc -std=c11 -O2 -Wall -Wextra -Werror -pedantic eg_environment_face.c eg_environment_face_test.c -o eg_environment_face_test.exe
           ./eg_environment_face_test.exe
+          gcc -std=c11 -O2 -Wall -Wextra -Werror -pedantic eg_environment_legacy_compose.c eg_environment_legacy_compose_test.c -o eg_environment_legacy_compose_test.exe
+          ./eg_environment_legacy_compose_test.exe
