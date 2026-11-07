@@ -19349,7 +19349,7 @@ full_redraw:	/* 0x1e300 */
 		cmpb   $0x0,EXPORT_SYMBOL(eg_environment_capture_requested)
 		je     eg_env_capture_fullmap_done
 		pushal
-		push   $EXPORT_SYMBOL(GraphicsPalette)
+		push   EXPORT_SYMBOL(GraphicsPalette)
 		push   BScreen
 		call   EXPORT_SYMBOL(eg_capture_environment_once)
 		add    $0x8,%esp
