@@ -1,7 +1,7 @@
 /* EG-v0.1 experimental, environment-only offline block face expander.
  * This module is NOT connected to the production renderer.
  * The 320-byte source layout is the audited candidate: 16 rows of five
- * big-endian 32-bit words (mask, then four colour bitplanes).
+ * little-endian 32-bit x86 words (mask, then four colour bitplanes).
  * Mask bits are preserved as uninterpreted bits, not assumed opacity.
  */
 #ifndef EG_ENVIRONMENT_FACE_H
