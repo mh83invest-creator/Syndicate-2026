@@ -80,7 +80,7 @@ static void syndicate_diagnostics_report(void)
         if (d->frames == 0)
             continue;
         fprintf(stderr,
-          "SYND_DIAG mode=%s frames=%llu event_ms=%.3f wait_ms=%.3f update_ms=%.3f avg_event_ms=%.3f avg_update_ms=%.3f\\n",
+          "SYND_DIAG mode=%s frames=%llu event_ms=%.3f wait_ms=%.3f update_ms=%.3f avg_event_ms=%.3f avg_update_ms=%.3f\n",
           mode == 0 ? "tactical16" : "menu30",
           (unsigned long long)d->frames,
           (double)d->event_ticks * factor,
