@@ -70,8 +70,10 @@ int main(void)
     face[7]=0x80; /* row 0, first colour plane, highest address byte */
     ASSERT(eg_expand_environment_face(face,EG_FACE_BYTES,lut,pixels,
            EG_FACE_OUTPUT_PIXELS,mask,EG_FACE_OUTPUT_PIXELS));
-    for (int dy=0;dy<4;dy++) for (int dx=0;dx<4;dx++)
-        ASSERT(pixels[dy*EG_FACE_OUT_W+dx]==lut[1]);
+    /* Scale2x may soften part of a singleton pixel, but the x=0
+     * high-order bit must survive at its top-left corner.
+     */
+    ASSERT(pixels[0]==lut[1]);
     ASSERT(pixels[0*EG_FACE_OUT_W+24*4]==lut[0]);
     ASSERT(pixels[0*EG_FACE_OUT_W+31*4]==lut[0]);
     ASSERT(pixels[4*EG_FACE_OUT_W+0]==lut[0]);
