@@ -23,6 +23,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
+#if defined(SYNDICATE_DIAGNOSTICS)
+#include <SDL.h>
+#endif
 
 #include "bfaudio.h"
 #include "bfmemory.h"
@@ -101,10 +104,38 @@ void EnsureAILStartup(void)
     }
 }
 
+#if defined(SYNDICATE_DIAGNOSTICS)
+static uint64_t snd_diag_timer_calls;
+static uint64_t snd_diag_timer_ticks;
+static uint64_t snd_diag_timer_max_ticks;
+
+void SyndicateAudioDiagnosticsRead(uint64_t *calls,
+  uint64_t *total_ticks, uint64_t *maximum_ticks)
+{
+    if (calls != NULL)
+        *calls = snd_diag_timer_calls;
+    if (total_ticks != NULL)
+        *total_ticks = snd_diag_timer_ticks;
+    if (maximum_ticks != NULL)
+        *maximum_ticks = snd_diag_timer_max_ticks;
+}
+#endif
+
 TbBool sound_update(void)
 {
-    if (AILStartupAlreadyInitiated)
+    if (AILStartupAlreadyInitiated) {
+#if defined(SYNDICATE_DIAGNOSTICS)
+        const Uint64 begin = SDL_GetPerformanceCounter();
+#endif
         AIL_API_timer();
+#if defined(SYNDICATE_DIAGNOSTICS)
+        const Uint64 elapsed = SDL_GetPerformanceCounter() - begin;
+        ++snd_diag_timer_calls;
+        snd_diag_timer_ticks += elapsed;
+        if (elapsed > snd_diag_timer_max_ticks)
+            snd_diag_timer_max_ticks = elapsed;
+#endif
+    }
     return true;
 }
 
