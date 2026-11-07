@@ -24,7 +24,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #if defined(SYNDICATE_DIAGNOSTICS)
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #endif
 
 #include "bfaudio.h"
