@@ -144,7 +144,7 @@ print_help (const char *argv0)
 "Available options:\n"
 "  --windowed    -w    Run in windowed mode\n"
 "  --no-stretch  -S    Don't display 320x200 graphics stretched to 640x480\n"
-"  --eg-capture-environment -G    Save two environment comparison PPMs (once)\\n"
+"  --eg-capture-environment -G    Save two environment comparison PPMs (once)\n"
 "  --help        -h    Display the help message\n",
   argv0);
 }
