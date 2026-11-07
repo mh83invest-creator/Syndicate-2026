@@ -7,6 +7,9 @@ on:
     paths:
       - 'engine/src/game.c'
       - 'engine/src/Makefile.am'
+      - 'engine/bfsoundlib/src/bfaudio.c'
+      - 'engine/bfsoundlib/include/bfaudio.h'
+      - 'engine/bfsoundlib/Makefile.am'
       - '.github/workflows/windows-diagnostics-frame-timing.yml'
 
 permissions:
@@ -33,6 +36,9 @@ jobs:
           test "${GITHUB_REF}" = "refs/heads/diagnostics/explosion-frame-timing-2026-11-07"
           grep -q 'syndicatfx_CPPFLAGS = -DSYNDICATE_DIAGNOSTICS' engine/src/Makefile.am
           grep -q 'SYND_DIAG mode=' engine/src/game.c
+          grep -q 'SYND_DIAG_AUDIO calls=' engine/src/game.c
+          grep -q -- '-DSYNDICATE_DIAGNOSTICS' engine/bfsoundlib/Makefile.am
+          grep -q 'SyndicateAudioDiagnosticsRead' engine/bfsoundlib/src/bfaudio.c
           git rev-parse HEAD
       - name: Require version handover and source tree
         shell: bash
