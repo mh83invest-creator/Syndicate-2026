@@ -135,6 +135,18 @@ static void syndicate_diagnostics_report(void)
           (unsigned long long)d->outside_gt62ms,
           (unsigned long long)d->outside_gt125ms);
     }
+    {
+        uint64_t calls = 0;
+        uint64_t ticks = 0;
+        uint64_t max_ticks = 0;
+        SyndicateAudioDiagnosticsRead(&calls, &ticks, &max_ticks);
+        fprintf(out,
+          "SYND_DIAG_AUDIO calls=%llu ail_timer_ms=%.3f ail_timer_max_ms=%.3f ail_timer_avg_ms=%.3f\n",
+          (unsigned long long)calls,
+          (double)ticks * (1000.0 / (double)freq),
+          (double)max_ticks * (1000.0 / (double)freq),
+          calls ? (double)ticks * (1000.0 / (double)freq) / (double)calls : 0.0);
+    }
     fflush(out);
     if (out != stderr)
         fclose(out);
