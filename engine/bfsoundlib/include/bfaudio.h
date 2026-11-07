@@ -21,6 +21,7 @@
 #define BFSOUNDLIB_BFAUDIO_H_
 
 #include "bftypes.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,6 +65,12 @@ struct AudioInitOptions {
 void EnsureAILStartup(void);
 void InitAudio(AudioInitOptions *audOpts);
 void FreeAudio(void);
+
+#if defined(SYNDICATE_DIAGNOSTICS)
+/* Diagnostic-only snapshot; elapsed ticks use SDL performance-counter units. */
+void SyndicateAudioDiagnosticsRead(uint64_t *calls,
+  uint64_t *total_ticks, uint64_t *maximum_ticks);
+#endif
 
 void SetSoundMasterVolume(long vol);
 void SetMusicMasterVolume(long vol);
