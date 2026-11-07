@@ -71,15 +71,31 @@ static struct SyndicateFrameDiagnostics synd_diag[2];
 static void syndicate_diagnostics_report(void)
 {
     const Uint64 freq = SDL_GetPerformanceFrequency();
+    char *pref_path = SDL_GetPrefPath("Syndicate2026", "Diagnostics");
+    FILE *out = stderr;
     int mode;
-    if (freq == 0)
+    if (pref_path != NULL) {
+        char file_path[1024];
+        int len = snprintf(file_path, sizeof(file_path),
+          "%ssyndicate-frame-diagnostics.txt", pref_path);
+        if (len > 0 && len < (int)sizeof(file_path)) {
+            FILE *f = fopen(file_path, "w");
+            if (f != NULL)
+                out = f;
+        }
+        SDL_free(pref_path);
+    }
+    if (freq == 0) {
+        if (out != stderr)
+            fclose(out);
         return;
+    }
     for (mode = 0; mode != 2; ++mode) {
         const struct SyndicateFrameDiagnostics *d = &synd_diag[mode];
         const double factor = 1000.0 / (double)freq;
         if (d->frames == 0)
             continue;
-        fprintf(stderr,
+        fprintf(out,
           "SYND_DIAG mode=%s frames=%llu event_ms=%.3f wait_ms=%.3f update_ms=%.3f avg_event_ms=%.3f avg_update_ms=%.3f\n",
           mode == 0 ? "tactical16" : "menu30",
           (unsigned long long)d->frames,
@@ -89,7 +105,9 @@ static void syndicate_diagnostics_report(void)
           (double)d->event_ticks * factor / (double)d->frames,
           (double)d->total_ticks * factor / (double)d->frames);
     }
-    fflush(stderr);
+    fflush(out);
+    if (out != stderr)
+        fclose(out);
 }
 #endif
 
