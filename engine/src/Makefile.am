@@ -6,6 +6,8 @@ MKW = $(PYTHON) $(top_srcdir)/util/mkwrappers
 syndicatfx_SOURCES = \
 	display.c \
 	display.h \
+	eg_environment_capture.c \
+	eg_environment_capture.h \
 	dos.c \
 	dos.h \
 	game_data.c \
