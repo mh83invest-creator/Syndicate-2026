@@ -131,6 +131,13 @@ jobs:
           python bflibrary/tests/generate_graphics_scaler_visual_parity.py
           gcc -std=c11 -Wall -Wextra -Werror graphics_scaler_visual_parity.c -o graphics_scaler_visual_parity.exe
           ./graphics_scaler_visual_parity.exe
+      - name: Execute actual SDL2 scaler wrapper with native surfaces
+        env:
+          SDL_VIDEODRIVER: dummy
+        run: |
+          python bflibrary/tests/generate_graphics_sdl2_wrapper_integration.py
+          gcc -std=c11 -Wall -Wextra -Werror graphics_sdl2_wrapper_integration.c -o graphics_sdl2_wrapper_integration.exe $(pkg-config --cflags --libs sdl2)
+          ./graphics_sdl2_wrapper_integration.exe
       - name: Probe native SDL2 window and draw surface formats
         env:
           SDL_VIDEODRIVER: dummy
