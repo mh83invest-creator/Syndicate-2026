@@ -144,6 +144,11 @@ jobs:
         run: |
           gcc -std=c11 -Wall -Wextra bflibrary/tests/graphics_window_surface_diagnostics.c -o graphics_window_surface_diagnostics.exe $(pkg-config --cflags --libs sdl2)
           ./graphics_window_surface_diagnostics.exe
+      - name: Verify EG-v0.1 isolated environment face renderer
+        run: |
+          cd bflibrary/tests
+          gcc -std=c11 -O2 -Wall -Wextra -Werror -pedantic eg_environment_face.c eg_environment_face_test.c -o eg_environment_face_test.exe
+          ./eg_environment_face_test.exe
       - name: Regenerate configure scripts
         run: autoreconf -ivf
       - name: Configure native 32-bit game
