@@ -58,6 +58,42 @@
 
 #define SAVEGAME_PATH "save/"
 
+#if defined(SYNDICATE_DIAGNOSTICS)
+/* Bounded C-level frame-pacing measurements. Nothing is logged in a hot frame. */
+struct SyndicateFrameDiagnostics {
+    Uint64 frames;
+    Uint64 event_ticks;
+    Uint64 wait_ticks;
+    Uint64 total_ticks;
+};
+static struct SyndicateFrameDiagnostics synd_diag[2];
+
+static void syndicate_diagnostics_report(void)
+{
+    const Uint64 freq = SDL_GetPerformanceFrequency();
+    int mode;
+    if (freq == 0)
+        return;
+    for (mode = 0; mode != 2; ++mode) {
+        const struct SyndicateFrameDiagnostics *d = &synd_diag[mode];
+        const double factor = 1000.0 / (double)freq;
+        if (d->frames == 0)
+            continue;
+        fprintf(stderr,
+          "SYND_DIAG mode=%s frames=%llu event_ms=%.3f wait_ms=%.3f update_ms=%.3f avg_event_ms=%.3f avg_update_ms=%.3f\\n",
+          mode == 0 ? "tactical16" : "menu30",
+          (unsigned long long)d->frames,
+          (double)d->event_ticks * factor,
+          (double)d->wait_ticks * factor,
+          (double)d->total_ticks * factor,
+          (double)d->event_ticks * factor / (double)d->frames,
+          (double)d->total_ticks * factor / (double)d->frames);
+    }
+    fflush(stderr);
+}
+#endif
+
+
 /******************************************************************************/
 
 bool
@@ -105,6 +141,9 @@ game_handle_sdl_events (void)
 void
 game_quit(void)
 {
+#if defined(SYNDICATE_DIAGNOSTICS)
+    syndicate_diagnostics_report();
+#endif
     host_reset();
     LbBaseReset();
     exit(0);
@@ -142,13 +181,29 @@ static void
 game_update_full(bool wait, int max_fps)
 {
     const int32_t frame_duration = 1000 / max_fps;
+#if defined(SYNDICATE_DIAGNOSTICS)
+    const Uint64 diag_start = SDL_GetPerformanceCounter();
+    Uint64 diag_event_ticks;
+    Uint64 diag_wait_start;
+    struct SyndicateFrameDiagnostics *diag =
+      &synd_diag[max_fps == 30 ? 1 : 0];
+#endif
 
     static int32_t last_frame_ticks;
     int32_t start_ticks;
 
     display_unlock();
 
+#if defined(SYNDICATE_DIAGNOSTICS)
+    {
+        Uint64 begin = SDL_GetPerformanceCounter();
+        game_handle_sdl_events();
+        diag_event_ticks = SDL_GetPerformanceCounter() - begin;
+    }
+    diag_wait_start = SDL_GetPerformanceCounter();
+#else
     game_handle_sdl_events();
+#endif
 
     start_ticks = SDL_GetTicks();
 
@@ -193,6 +248,12 @@ game_update_full(bool wait, int max_fps)
     last_frame_ticks = SDL_GetTicks();
 
     display_lock();
+#if defined(SYNDICATE_DIAGNOSTICS)
+    diag->frames++;
+    diag->event_ticks += diag_event_ticks;
+    diag->wait_ticks += SDL_GetPerformanceCounter() - diag_wait_start;
+    diag->total_ticks += SDL_GetPerformanceCounter() - diag_start;
+#endif
 }
 
 void reset_input(void)
